@@ -824,6 +824,11 @@ input[type="date"],
 input[type="time"] {
   appearance: none;
   -webkit-appearance: none;
+  min-height: 44px;
+  line-height: 1.25;
+  padding-top: 0.62rem;
+  padding-bottom: 0.62rem;
+  display: block;
 }
 
 .password-field {
