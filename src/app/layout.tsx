@@ -25,8 +25,18 @@ const pacifico = Pacifico({
   weight: "400",
 });
 
+const appBaseUrlRaw =
+  process.env.APP_BASE_URL ??
+  process.env.NEXT_PUBLIC_APP_URL ??
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://tlaloc-lisboa-16i8.vercel.app");
+const appBaseUrl = appBaseUrlRaw.startsWith("http")
+  ? appBaseUrlRaw
+  : `https://${appBaseUrlRaw}`;
+const siteDescription =
+  "An authentic Mexican corner in the heart of Alcântara, Lisboa — homestyle recipes, craft margaritas, and warm hospitality that keeps you coming back.";
+
 export const metadata: Metadata = {
-  metadataBase: new URL("https://tlaloccantina.pt"),
+  metadataBase: new URL(appBaseUrl),
   icons: {
     icon: "/favicon.webp",
     shortcut: "/favicon.webp",
@@ -35,14 +45,13 @@ export const metadata: Metadata = {
     default: "Tláloc Cantina | Mexican Restaurant in Lisbon",
     template: "%s | Tláloc Cantina",
   },
-  description:
-    "Official Tláloc Cantina website with QR menu, online reservations, and updates.",
+  description: siteDescription,
   openGraph: {
     title: "Tláloc Cantina",
-    description:
-      "Mexican food in Alcântara, Lisbon. Explore the menu and book your table.",
+    description: siteDescription,
     type: "website",
     locale: "en_US",
+    url: appBaseUrl,
     images: [
       {
         url: "/op_image.webp",
@@ -51,6 +60,12 @@ export const metadata: Metadata = {
         alt: "Tláloc Cantina",
       },
     ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Tláloc Cantina",
+    description: siteDescription,
+    images: ["/op_image.webp"],
   },
 };
 
