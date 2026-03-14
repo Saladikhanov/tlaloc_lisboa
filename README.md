@@ -57,6 +57,49 @@ Optional:
 npm run prisma:studio
 ```
 
+## Infrastructure schema (Vercel + Supabase)
+
+```mermaid
+flowchart LR
+    U[User Browser / Mobile QR]
+    V[Vercel - Next.js App Router<br/>Pages + API routes]
+    S[(Supabase Postgres)]
+    R[Resend SMTP]
+    T[Twilio WhatsApp API]
+    A[Admin Back Office]
+
+    U -->|Open site / QR menu| V
+    U -->|Submit reservation form| V
+    U -->|Admin login| V
+
+    V -->|Read/write menu + reservations + admin users<br/>via Prisma| S
+    A -->|Manage menu/order/status/password| V
+
+    V -->|Send reservation emails| R
+    V -->|Send WhatsApp notifications| T
+
+    R -->|Email to restaurant + guest| U
+    T -->|WhatsApp to restaurant + guest| U
+```
+
+### Runtime data flow
+
+1. User opens public pages (`/en`, `/pt`, `/menu`, `/reserve`) on Vercel.
+2. Reservation form posts to `POST /api/reservations`.
+3. API stores reservation in Supabase Postgres through Prisma.
+4. API sends notifications through SMTP (Resend) and WhatsApp (Twilio), when configured.
+5. Restaurant receives email with confirmation link (`/api/reservations/confirm?...`).
+6. Link call updates reservation status to `confirmed` in Supabase.
+7. Admin back office (`/admin`) reads/writes menu and reservations from the same DB.
+
+### Environment boundaries
+
+- **Local dev**: Next.js reads `.env`.
+- **Production**: Vercel reads Environment Variables.
+- **Database**:
+  - `DATABASE_URL` -> pooled runtime connection
+  - `DIRECT_URL` -> Prisma migrations (`prisma migrate`)
+
 ## Expansion plan
 
 - Add database (PostgreSQL + Prisma).
