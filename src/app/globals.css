@@ -341,6 +341,7 @@ a {
   border-radius: 14px;
   padding: 1rem;
   background: linear-gradient(180deg, var(--card) 0%, var(--card-soft) 100%);
+  position: relative;
 }
 
 .card h3 {
@@ -638,6 +639,145 @@ a {
   color: var(--accent);
   border-radius: 999px;
   padding: 0.1rem 0.45rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.1;
+}
+
+.reservation-status {
+  min-height: 24px;
+  text-transform: capitalize;
+  font-weight: 700;
+}
+
+.reservation-status-new {
+  color: #ffb4b4;
+  border-color: rgba(232, 53, 26, 0.7);
+  background: rgba(232, 53, 26, 0.2);
+}
+
+.icon-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(19, 8, 0, 0.95);
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.danger-icon-btn {
+  border-color: rgba(232, 53, 26, 0.7);
+  color: #ffb4b4;
+  background: rgba(232, 53, 26, 0.2);
+}
+
+.reservation-delete-corner-btn {
+  position: absolute;
+  top: 0.65rem;
+  right: 0.65rem;
+}
+
+.confirm-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  border: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(2px);
+}
+
+.confirm-modal-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 91;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.confirm-modal-card {
+  position: relative;
+  width: min(460px, calc(100vw - 2rem));
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: linear-gradient(180deg, var(--card) 0%, var(--card-soft) 100%);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+  padding: 1rem;
+}
+
+.confirm-modal-actions {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.9rem;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.confirm-modal-actions .btn {
+  min-width: 120px;
+}
+
+.reservation-list-loader {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.reservation-skeleton-card {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.skeleton-line {
+  height: 12px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0.08) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.15s linear infinite;
+}
+
+.skeleton-line.w-35 {
+  width: 35%;
+}
+.skeleton-line.w-40 {
+  width: 40%;
+}
+.skeleton-line.w-50 {
+  width: 50%;
+}
+.skeleton-line.w-55 {
+  width: 55%;
+}
+.skeleton-line.w-60 {
+  width: 60%;
+}
+.skeleton-line.w-65 {
+  width: 65%;
+}
+.skeleton-line.w-70 {
+  width: 70%;
+}
+.skeleton-line.w-75 {
+  width: 75%;
+}
+
+@keyframes skeleton-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
 }
 
 .form-shell {
@@ -655,6 +795,10 @@ a {
   gap: 0.85rem;
 }
 
+.form-grid > div {
+  min-width: 0;
+}
+
 label {
   display: block;
   font-size: 0.86rem;
@@ -666,12 +810,20 @@ input,
 textarea,
 select {
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   border: 1px solid var(--line);
   background: #201003;
   color: var(--text);
   border-radius: 10px;
   padding: 0.7rem 0.75rem;
   font: inherit;
+}
+
+input[type="date"],
+input[type="time"] {
+  appearance: none;
+  -webkit-appearance: none;
 }
 
 .password-field {

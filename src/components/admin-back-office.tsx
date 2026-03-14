@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import type { ReservationRecord } from "@/lib/types";
 
 type AdminMenuItem = {
@@ -27,6 +28,24 @@ type AdminMenuSection = {
 };
 
 type TabId = "reservations" | "menu" | "security";
+type DeleteReservationModalState = {
+  id: string;
+  guestName: string;
+} | null;
+
+const toWhatsAppUrl = (phone: string): string => {
+  const raw = phone.trim();
+  if (!raw) {
+    return "#";
+  }
+
+  if (raw.startsWith("whatsapp:")) {
+    return `https://wa.me/${raw.replace("whatsapp:", "").replace(/[^\d]/g, "")}`;
+  }
+
+  const digits = raw.replace(/[^\d]/g, "");
+  return digits ? `https://wa.me/${digits}` : "#";
+};
 
 export default function AdminBackOffice() {
   const [activeTab, setActiveTab] = useState<TabId>("reservations");
@@ -38,6 +57,8 @@ export default function AdminBackOffice() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [actionKey, setActionKey] = useState<string | null>(null);
+  const [deleteReservationModal, setDeleteReservationModal] =
+    useState<DeleteReservationModalState>(null);
 
   const [newSection, setNewSection] = useState({
     slug: "",
@@ -250,6 +271,27 @@ export default function AdminBackOffice() {
     });
   }
 
+  async function confirmDeleteReservation() {
+    if (!deleteReservationModal) {
+      return;
+    }
+
+    const reservationId = deleteReservationModal.id;
+    await runAction(`delete-reservation-${reservationId}`, async () => {
+      const response = await fetch(`/api/admin/reservations/${reservationId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        setStatusMessage("Could not delete reservation.");
+        return;
+      }
+
+      setDeleteReservationModal(null);
+      await loadAll();
+    });
+  }
+
   return (
     <div style={{ marginTop: "1rem", display: "grid", gap: "1rem" }}>
       <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap" }}>
@@ -282,18 +324,71 @@ export default function AdminBackOffice() {
 
       {activeTab === "reservations" ? (
         <div style={{ display: "grid", gap: "0.6rem" }}>
-          {reservations.length === 0 ? (
+          {isLoading || isRefreshing ? (
+            <div className="reservation-list-loader" aria-live="polite" aria-busy="true">
+              <article className="card reservation-skeleton-card">
+                <div className="skeleton-line w-35" />
+                <div className="skeleton-line w-75" />
+                <div className="skeleton-line w-55" />
+                <div className="skeleton-line w-65" />
+              </article>
+              <article className="card reservation-skeleton-card">
+                <div className="skeleton-line w-40" />
+                <div className="skeleton-line w-70" />
+                <div className="skeleton-line w-60" />
+                <div className="skeleton-line w-50" />
+              </article>
+            </div>
+          ) : reservations.length === 0 ? (
             <div className="card">No reservations yet.</div>
           ) : (
             reservations.map((reservation) => (
               <article className="card" key={reservation.id}>
+                <button
+                  className="icon-btn danger-icon-btn reservation-delete-corner-btn"
+                  type="button"
+                  aria-label={`Delete reservation for ${reservation.firstName} ${reservation.lastName}`}
+                  title="Delete reservation"
+                  onClick={() =>
+                    setDeleteReservationModal({
+                      id: reservation.id,
+                      guestName: `${reservation.firstName} ${reservation.lastName}`,
+                    })
+                  }
+                  disabled={actionKey !== null}
+                >
+                  <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                    <path
+                      d="M3 6h18M9 6V4h6v2M8 10v7M12 10v7M16 10v7M6 6l1 14h10l1-14"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+                <p className="footer-note" style={{ marginTop: 0, marginBottom: "0.35rem" }}>
+                  Reservation #{reservation.id.slice(0, 8)}
+                </p>
                 <strong>
                   {reservation.firstName} {reservation.lastName}
                 </strong>
                 <p>
                   {reservation.date} at {reservation.time} · Guests: {reservation.guests}
                 </p>
-                <p>{reservation.email}</p>
+                <p>
+                  <a
+                    href={toWhatsAppUrl(reservation.phone)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {reservation.phone}
+                  </a>
+                </p>
+                <p>
+                  <a href={`mailto:${reservation.email}`}>{reservation.email}</a>
+                </p>
                 <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.4rem", flexWrap: "wrap" }}>
                   <button
                     className="btn btn-secondary"
@@ -323,7 +418,11 @@ export default function AdminBackOffice() {
                       ? "Updating..."
                       : "Cancelled"}
                   </button>
-                  <span className="pill">{reservation.status}</span>
+                  <span
+                    className={`pill reservation-status reservation-status-${reservation.status}`}
+                  >
+                    {reservation.status}
+                  </span>
                 </div>
               </article>
             ))
@@ -840,6 +939,64 @@ export default function AdminBackOffice() {
           <p className="footer-note">Admin credentials are now stored in Prisma.</p>
         </section>
       ) : null}
+
+      <AnimatePresence>
+        {deleteReservationModal ? (
+          <>
+            <motion.button
+              className="confirm-modal-backdrop"
+              type="button"
+              aria-label="Close delete confirmation"
+              onClick={() => setDeleteReservationModal(null)}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.18, ease: "easeOut" }}
+            />
+            <div
+              className="confirm-modal-wrap"
+              onClick={() => setDeleteReservationModal(null)}
+            >
+              <motion.section
+                className="confirm-modal-card"
+                role="dialog"
+                aria-modal="true"
+                onClick={(event) => event.stopPropagation()}
+                initial={{ opacity: 0, y: 8, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 8, scale: 0.97 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+              >
+                <h3>Delete reservation?</h3>
+                <p className="footer-note" style={{ marginTop: "0.6rem" }}>
+                  This will permanently remove reservation for{" "}
+                  <strong>{deleteReservationModal.guestName}</strong>.
+                </p>
+                <div className="confirm-modal-actions">
+                  <button
+                    className="btn btn-secondary"
+                    type="button"
+                    onClick={() => setDeleteReservationModal(null)}
+                    disabled={actionKey !== null}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="btn btn-primary"
+                    type="button"
+                    onClick={confirmDeleteReservation}
+                    disabled={actionKey !== null}
+                  >
+                    {actionKey === `delete-reservation-${deleteReservationModal.id}`
+                      ? "Deleting..."
+                      : "Delete"}
+                  </button>
+                </div>
+              </motion.section>
+            </div>
+          </>
+        ) : null}
+      </AnimatePresence>
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import PublicNav from "@/components/public-nav";
+import DeliveryButton from "@/components/delivery-button";
 import { routing } from "@/i18n/routing";
 
 type Props = {
@@ -47,14 +48,7 @@ export default async function HomePage({ params }: Props) {
             <Link className="btn btn-secondary" href="/reserve">
               {t("reserve")}
             </Link>
-            <a
-              className="btn btn-secondary"
-              href="https://www.ubereats.com/pt-en/store/tlaloc-un-rincon-mexicana/WZywXn7kQiOh8tBFs4dwog"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {t("orderDelivery")}
-            </a>
+            <DeliveryButton label={t("orderDelivery")} />
           </div>
         </section>
       </main>

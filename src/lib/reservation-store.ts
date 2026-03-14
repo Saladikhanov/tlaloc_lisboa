@@ -68,3 +68,9 @@ export const updateReservationStatus = async (
 
   return toReservationRecord(reservation);
 };
+
+export const deleteReservation = async (id: string): Promise<void> => {
+  await getPrisma().reservation.delete({
+    where: { id },
+  });
+};
