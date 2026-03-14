@@ -14,6 +14,7 @@ function ReservePageContent() {
   const t = useTranslations("ReservePage");
   const [status, setStatus] = useState<Status>("idle");
   const [message, setMessage] = useState("");
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const confirm = searchParams.get("confirm");
   const confirmFeedback = useMemo(() => {
     if (confirm === "success") {
@@ -69,8 +70,9 @@ function ReservePageContent() {
     }
 
     form.reset();
-    setStatus("success");
-    setMessage(t("success"));
+    setStatus("idle");
+    setMessage("");
+    setIsSuccessModalOpen(true);
   }
 
   return (
@@ -152,6 +154,34 @@ function ReservePageContent() {
           {effectiveMessage ? <span className="footer-note">{effectiveMessage}</span> : null}
         </div>
       </form>
+
+      {isSuccessModalOpen ? (
+        <>
+          <button
+            className="confirm-modal-backdrop"
+            type="button"
+            aria-label={t("successModalClose")}
+            onClick={() => setIsSuccessModalOpen(false)}
+          />
+          <div className="confirm-modal-wrap" onClick={() => setIsSuccessModalOpen(false)}>
+            <section className="confirm-modal-card" onClick={(event) => event.stopPropagation()}>
+              <h3>{t("successModalTitle")}</h3>
+              <p className="footer-note" style={{ marginTop: "0.6rem" }}>
+                {t("success")}
+              </p>
+              <div className="confirm-modal-actions">
+                <button
+                  className="btn btn-primary"
+                  type="button"
+                  onClick={() => setIsSuccessModalOpen(false)}
+                >
+                  {t("successModalClose")}
+                </button>
+              </div>
+            </section>
+          </div>
+        </>
+      ) : null}
     </main>
   );
 }

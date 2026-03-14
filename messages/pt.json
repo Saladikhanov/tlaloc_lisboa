@@ -48,6 +48,8 @@
     "confirmSuccess": "Reserva confirmada com sucesso.",
     "confirmInvalid": "Link de confirmacao invalido ou expirado.",
     "confirmError": "Nao foi possivel confirmar a reserva neste momento.",
+    "successModalTitle": "Reserva Enviada",
+    "successModalClose": "Fechar",
     "success": "Pedido de reserva enviado. Recebera confirmacao por email e WhatsApp se as credenciais estiverem configuradas."
   }
 }
