@@ -1,7 +1,6 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
 import type { ReservationRecord } from "@/lib/types";
 
 type AdminMenuItem = {
@@ -37,7 +36,16 @@ type AdminWorkingHours = {
   dinnerClose: string | null;
 };
 
-type TabId = "reservations" | "menu" | "hours" | "security";
+type AdminMessageTemplate = {
+  id: string;
+  key: "reservation_new" | "reservation_confirmed" | "reservation_cancelled";
+  subjectEn: string;
+  subjectPt: string;
+  bodyEn: string;
+  bodyPt: string;
+};
+
+type TabId = "reservations" | "calendar" | "menu" | "hours" | "security";
 type DeleteReservationModalState = {
   id: string;
   guestName: string;
@@ -45,8 +53,140 @@ type DeleteReservationModalState = {
 
 const weekdayLabels = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const mondayFirstOrder: number[] = [1, 2, 3, 4, 5, 6, 0];
+const weekdayShortMondayFirst = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-const toWhatsAppUrl = (phone: string): string => {
+const getTodayMonthKey = (): string => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  return `${year}-${month}`;
+};
+
+const parseIsoDate = (
+  isoDate: string,
+): { year: number; month: number; day: number } | null => {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoDate);
+  if (!match) {
+    return null;
+  }
+  return {
+    year: Number(match[1]),
+    month: Number(match[2]),
+    day: Number(match[3]),
+  };
+};
+
+const formatEuropeanDate = (isoDate: string): string => {
+  const parsed = parseIsoDate(isoDate);
+  if (!parsed) {
+    return isoDate;
+  }
+
+  return `${String(parsed.day).padStart(2, "0")}/${String(parsed.month).padStart(2, "0")}/${parsed.year}`;
+};
+
+const compareReservationChronological = (
+  a: ReservationRecord,
+  b: ReservationRecord,
+): number => {
+  const aKey = `${a.date}T${a.time}`;
+  const bKey = `${b.date}T${b.time}`;
+  const bySlot = aKey.localeCompare(bKey);
+  if (bySlot !== 0) {
+    return bySlot;
+  }
+
+  return a.createdAt.localeCompare(b.createdAt);
+};
+
+const defaultMessageTemplates: Omit<AdminMessageTemplate, "id">[] = [
+  {
+    key: "reservation_new",
+    subjectEn: "We received your reservation request",
+    subjectPt: "Recebemos o seu pedido de reserva",
+    bodyEn:
+      "Hi {firstName},\nWe received your reservation request.\nDate: {date}\nTime: {time}\nGuests: {guests}\nWe will confirm shortly.\nTlaloc Cantina",
+    bodyPt:
+      "Ola {firstName},\nRecebemos o seu pedido de reserva.\nData: {date}\nHora: {time}\nPessoas: {guests}\nVamos confirmar em breve.\nTlaloc Cantina",
+  },
+  {
+    key: "reservation_confirmed",
+    subjectEn: "Reservation confirmed - Tlaloc Cantina",
+    subjectPt: "Reserva confirmada - Tlaloc Cantina",
+    bodyEn:
+      "Hi {firstName},\nYour reservation is confirmed.\nDate: {date}\nTime: {time}\nGuests: {guests}\nSee you soon!\nTlaloc Cantina",
+    bodyPt:
+      "Ola {firstName},\nA sua reserva foi confirmada.\nData: {date}\nHora: {time}\nPessoas: {guests}\nAte breve!\nTlaloc Cantina",
+  },
+  {
+    key: "reservation_cancelled",
+    subjectEn: "We could not confirm your reservation",
+    subjectPt: "Nao conseguimos confirmar a reserva",
+    bodyEn:
+      "Hi {firstName},\nWe are sorry, but we could not confirm your reservation.\nDate: {date}\nTime: {time}\nGuests: {guests}\nPlease share another date/time and we will gladly assist.\nTlaloc Cantina",
+    bodyPt:
+      "Ola {firstName},\nPedimos desculpa, mas nao conseguimos confirmar a sua reserva.\nData: {date}\nHora: {time}\nPessoas: {guests}\nSe quiser, envie-nos outra data/hora.\nTlaloc Cantina",
+  },
+];
+
+const renderTemplate = (value: string, reservation: ReservationRecord): string => {
+  const variables: Record<string, string> = {
+    firstName: reservation.firstName,
+    lastName: reservation.lastName,
+    fullName: `${reservation.firstName} ${reservation.lastName}`.trim(),
+    date: reservation.date,
+    time: reservation.time,
+    guests: reservation.guests,
+    phone: reservation.phone,
+    email: reservation.email,
+    occasion: reservation.occasion ?? "-",
+    notes: reservation.notes ?? "-",
+    status: reservation.status,
+    locale: reservation.locale,
+  };
+
+  return value.replace(/\{([a-zA-Z0-9_]+)\}/g, (_match, variableName: string) => {
+    return variables[variableName] ?? "";
+  });
+};
+
+const getTemplateByKey = (
+  templates: AdminMessageTemplate[],
+  key: AdminMessageTemplate["key"],
+): AdminMessageTemplate => {
+  const fromState = templates.find((template) => template.key === key);
+  if (fromState) {
+    return fromState;
+  }
+
+  const fallback = defaultMessageTemplates.find((template) => template.key === key)!;
+  return { id: `default-${key}`, ...fallback };
+};
+
+const getContactTemplate = (
+  reservation: ReservationRecord,
+  templates: AdminMessageTemplate[],
+): { subject: string; body: string } => {
+  const isPortuguese = reservation.locale === "pt";
+  const key: AdminMessageTemplate["key"] =
+    reservation.status === "confirmed"
+      ? "reservation_confirmed"
+      : reservation.status === "cancelled"
+        ? "reservation_cancelled"
+        : "reservation_new";
+  const template = getTemplateByKey(templates, key);
+
+  return {
+    subject: renderTemplate(isPortuguese ? template.subjectPt : template.subjectEn, reservation),
+    body: renderTemplate(isPortuguese ? template.bodyPt : template.bodyEn, reservation),
+  };
+};
+
+const toWhatsAppUrl = (
+  phone: string,
+  reservation: ReservationRecord,
+  templates: AdminMessageTemplate[],
+): string => {
   const raw = phone.trim();
   if (!raw) {
     return "#";
@@ -57,7 +197,30 @@ const toWhatsAppUrl = (phone: string): string => {
   }
 
   const digits = raw.replace(/[^\d]/g, "");
-  return digits ? `https://wa.me/${digits}` : "#";
+  if (!digits) {
+    return "#";
+  }
+
+  const { body } = getContactTemplate(reservation, templates);
+  return `https://wa.me/${digits}?text=${encodeURIComponent(body)}`;
+};
+
+const toEmailUrl = (
+  email: string,
+  reservation: ReservationRecord,
+  templates: AdminMessageTemplate[],
+): string => {
+  const normalized = email.trim();
+  if (!normalized) {
+    return "mailto:";
+  }
+
+  const { subject, body } = getContactTemplate(reservation, templates);
+  const params = new URLSearchParams({
+    subject,
+    body,
+  });
+  return `mailto:${normalized}?${params.toString()}`;
 };
 
 export default function AdminBackOffice() {
@@ -67,6 +230,9 @@ export default function AdminBackOffice() {
   const [reservations, setReservations] = useState<ReservationRecord[]>([]);
   const [menuSections, setMenuSections] = useState<AdminMenuSection[]>([]);
   const [workingHours, setWorkingHours] = useState<AdminWorkingHours[]>([]);
+  const [messageTemplates, setMessageTemplates] = useState<AdminMessageTemplate[]>([]);
+  const [calendarMonth, setCalendarMonth] = useState(getTodayMonthKey);
+  const [selectedCalendarDay, setSelectedCalendarDay] = useState<number | null>(null);
   const [selectedBulkWeekdays, setSelectedBulkWeekdays] = useState<number[]>([1, 2, 3, 4]);
   const [bulkHours, setBulkHours] = useState({
     lunchOpen: "12:00",
@@ -77,6 +243,7 @@ export default function AdminBackOffice() {
   const [statusMessage, setStatusMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showReadInPending, setShowReadInPending] = useState(false);
   const [actionKey, setActionKey] = useState<string | null>(null);
   const [deleteReservationModal, setDeleteReservationModal] =
     useState<DeleteReservationModalState>(null);
@@ -109,6 +276,78 @@ export default function AdminBackOffice() {
     () => [...menuSections].sort((a, b) => a.order - b.order),
     [menuSections],
   );
+  const activeReservations = useMemo(
+    () =>
+      reservations
+        .filter(
+          (reservation) =>
+            (showReadInPending ? true : reservation.isRead !== true),
+        )
+        .sort(compareReservationChronological),
+    [reservations, showReadInPending],
+  );
+  const confirmedReservations = useMemo(
+    () => reservations.filter((reservation) => reservation.status === "confirmed"),
+    [reservations],
+  );
+  const calendarMonthDate = useMemo(() => {
+    const match = /^(\d{4})-(\d{2})$/.exec(calendarMonth);
+    if (!match) {
+      return new Date();
+    }
+    return new Date(Number(match[1]), Number(match[2]) - 1, 1);
+  }, [calendarMonth]);
+  const monthLabel = useMemo(
+    () =>
+      calendarMonthDate.toLocaleDateString("en-GB", {
+        month: "long",
+        year: "numeric",
+      }),
+    [calendarMonthDate],
+  );
+  const calendarCells = useMemo(() => {
+    const year = calendarMonthDate.getFullYear();
+    const monthIndex = calendarMonthDate.getMonth();
+    const firstDayWeekdayMondayIndex =
+      (new Date(Date.UTC(year, monthIndex, 1, 12, 0, 0)).getUTCDay() + 6) % 7;
+    const daysInMonth = new Date(Date.UTC(year, monthIndex + 1, 0, 12, 0, 0)).getUTCDate();
+
+    const reservationsByDay = new Map<number, ReservationRecord[]>();
+    for (const reservation of confirmedReservations) {
+      const parsed = parseIsoDate(reservation.date);
+      if (!parsed || parsed.year !== year || parsed.month !== monthIndex + 1) {
+        continue;
+      }
+      const list = reservationsByDay.get(parsed.day) ?? [];
+      list.push(reservation);
+      reservationsByDay.set(parsed.day, list);
+    }
+
+    for (const [day, list] of reservationsByDay) {
+      list.sort((a, b) => a.time.localeCompare(b.time));
+      reservationsByDay.set(day, list);
+    }
+
+    const totalCells = Math.ceil((firstDayWeekdayMondayIndex + daysInMonth) / 7) * 7;
+    const cells: Array<{ day: number | null; reservations: ReservationRecord[] }> = [];
+    for (let index = 0; index < totalCells; index += 1) {
+      const day = index - firstDayWeekdayMondayIndex + 1;
+      if (day < 1 || day > daysInMonth) {
+        cells.push({ day: null, reservations: [] });
+      } else {
+        cells.push({ day, reservations: reservationsByDay.get(day) ?? [] });
+      }
+    }
+
+    return cells;
+  }, [calendarMonthDate, confirmedReservations]);
+  const selectedDayReservations = useMemo(() => {
+    if (selectedCalendarDay === null) {
+      return [];
+    }
+    const found = calendarCells.find((cell) => cell.day === selectedCalendarDay);
+    return found?.reservations ?? [];
+  }, [calendarCells, selectedCalendarDay]);
   const workingHoursMondayFirst = useMemo(() => {
     return [...workingHours].sort(
       (a, b) => mondayFirstOrder.indexOf(a.weekday) - mondayFirstOrder.indexOf(b.weekday),
@@ -123,10 +362,12 @@ export default function AdminBackOffice() {
     }
     setStatusMessage("");
     try {
-      const [reservationResponse, menuResponse, workingHoursResponse] = await Promise.all([
+      const [reservationResponse, menuResponse, workingHoursResponse, messageTemplatesResponse] =
+        await Promise.all([
         fetch("/api/reservations", { cache: "no-store" }),
         fetch("/api/admin/menu", { cache: "no-store" }),
         fetch("/api/admin/working-hours", { cache: "no-store" }),
+        fetch("/api/admin/message-templates", { cache: "no-store" }),
       ]);
 
       const reservationJson = (await reservationResponse.json()) as { data?: ReservationRecord[] };
@@ -134,10 +375,14 @@ export default function AdminBackOffice() {
       const workingHoursJson = (await workingHoursResponse.json()) as {
         data?: AdminWorkingHours[];
       };
+      const messageTemplatesJson = (await messageTemplatesResponse.json()) as {
+        data?: AdminMessageTemplate[];
+      };
 
       setReservations(reservationJson.data ?? []);
       setMenuSections(menuJson.data ?? []);
       setWorkingHours(workingHoursJson.data ?? []);
+      setMessageTemplates(messageTemplatesJson.data ?? []);
       setNewItem((prev) =>
         prev.sectionId || !menuJson.data?.[0]?.id
           ? prev
@@ -154,6 +399,16 @@ export default function AdminBackOffice() {
   useEffect(() => {
     void loadAll(true);
   }, [loadAll]);
+
+  useEffect(() => {
+    if (selectedCalendarDay === null) {
+      return;
+    }
+    const exists = calendarCells.some((cell) => cell.day === selectedCalendarDay);
+    if (!exists) {
+      setSelectedCalendarDay(null);
+    }
+  }, [calendarCells, selectedCalendarDay]);
 
   async function runAction(key: string, action: () => Promise<void>) {
     setActionKey(key);
@@ -330,6 +585,33 @@ export default function AdminBackOffice() {
     });
   }
 
+  async function saveMessageTemplatesConfiguration() {
+    await runAction("save-message-templates", async () => {
+      const response = await fetch("/api/admin/message-templates", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          data: messageTemplates.map((template) => ({
+            key: template.key,
+            subjectEn: template.subjectEn,
+            subjectPt: template.subjectPt,
+            bodyEn: template.bodyEn,
+            bodyPt: template.bodyPt,
+          })),
+        }),
+      });
+
+      const json = (await response.json().catch(() => ({}))) as { error?: string };
+      if (!response.ok) {
+        setStatusMessage(json.error ?? "Could not save message templates.");
+        return;
+      }
+
+      setStatusMessage("Message templates updated.");
+      await loadAll();
+    });
+  }
+
   function toggleBulkDay(day: number) {
     setSelectedBulkWeekdays((prev) =>
       prev.includes(day) ? prev.filter((candidate) => candidate !== day) : [...prev, day],
@@ -382,6 +664,21 @@ export default function AdminBackOffice() {
     setStatusMessage("Selected days marked as closed. Click Save working hours to persist.");
   }
 
+  async function markReservationRead(id: string) {
+    await runAction(`read-reservation-${id}`, async () => {
+      const response = await fetch(`/api/admin/reservations/${id}`, {
+        method: "PATCH",
+      });
+
+      if (!response.ok) {
+        setStatusMessage("Could not mark reservation as read.");
+        return;
+      }
+
+      await loadAll();
+    });
+  }
+
   async function confirmDeleteReservation() {
     if (!deleteReservationModal) {
       return;
@@ -414,6 +711,13 @@ export default function AdminBackOffice() {
           Reservations
         </button>
         <button
+          className={`btn ${activeTab === "calendar" ? "btn-primary" : "btn-secondary"}`}
+          onClick={() => setActiveTab("calendar")}
+          type="button"
+        >
+          Confirmed Calendar
+        </button>
+        <button
           className={`btn ${activeTab === "menu" ? "btn-primary" : "btn-secondary"}`}
           onClick={() => setActiveTab("menu")}
           type="button"
@@ -442,6 +746,19 @@ export default function AdminBackOffice() {
 
       {activeTab === "reservations" ? (
         <div style={{ display: "grid", gap: "0.6rem" }}>
+          <label
+            className="ios-switch-field"
+            style={{ marginBottom: "0.2rem", alignSelf: "flex-start" }}
+          >
+            <input
+              className="ios-switch-input"
+              type="checkbox"
+              checked={showReadInPending}
+              onChange={(event) => setShowReadInPending(event.target.checked)}
+            />
+            <span className="ios-switch" aria-hidden="true" />
+            <span>Show read reservations</span>
+          </label>
           {isLoading || isRefreshing ? (
             <div className="reservation-list-loader" aria-live="polite" aria-busy="true">
               <article className="card reservation-skeleton-card">
@@ -457,47 +774,74 @@ export default function AdminBackOffice() {
                 <div className="skeleton-line w-50" />
               </article>
             </div>
-          ) : reservations.length === 0 ? (
-            <div className="card">No reservations yet.</div>
+          ) : activeReservations.length === 0 ? (
+            <div className="card">No reservations in inbox.</div>
           ) : (
-            reservations.map((reservation) => (
+            activeReservations.map((reservation) => (
               <article className="card" key={reservation.id}>
-                <button
-                  className="icon-btn danger-icon-btn reservation-delete-corner-btn"
-                  type="button"
-                  aria-label={`Delete reservation for ${reservation.firstName} ${reservation.lastName}`}
-                  title="Delete reservation"
-                  onClick={() =>
-                    setDeleteReservationModal({
-                      id: reservation.id,
-                      guestName: `${reservation.firstName} ${reservation.lastName}`,
-                    })
-                  }
-                  disabled={actionKey !== null}
-                >
-                  <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-                    <path
-                      d="M3 6h18M9 6V4h6v2M8 10v7M12 10v7M16 10v7M6 6l1 14h10l1-14"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </button>
+                <div className="reservation-card-actions">
+                  <button
+                    className={`icon-btn reservation-delete-corner-btn ${reservation.isRead ? "read-icon-btn" : ""}`}
+                    type="button"
+                    aria-label={`${reservation.isRead ? "Already read" : "Mark as read"} for ${reservation.firstName} ${reservation.lastName}`}
+                    title={reservation.isRead ? "Already read" : "Mark as read"}
+                    onClick={() => markReservationRead(reservation.id)}
+                    disabled={actionKey !== null || reservation.isRead}
+                  >
+                    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                      <path
+                        d="M5 12.5l4.2 4.2L19 7"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                  <button
+                    className="icon-btn danger-icon-btn reservation-delete-corner-btn"
+                    type="button"
+                    aria-label={`Delete reservation for ${reservation.firstName} ${reservation.lastName}`}
+                    title="Delete reservation"
+                    onClick={() =>
+                      setDeleteReservationModal({
+                        id: reservation.id,
+                        guestName: `${reservation.firstName} ${reservation.lastName}`,
+                      })
+                    }
+                    disabled={actionKey !== null}
+                  >
+                    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                      <path
+                        d="M3 6h18M9 6V4h6v2M8 10v7M12 10v7M16 10v7M6 6l1 14h10l1-14"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                </div>
                 <p className="footer-note" style={{ marginTop: 0, marginBottom: "0.35rem" }}>
                   Reservation #{reservation.id.slice(0, 8)}
                 </p>
+                {reservation.isRead ? (
+                  <p className="footer-note" style={{ marginTop: 0, marginBottom: "0.35rem" }}>
+                    Read
+                  </p>
+                ) : null}
                 <strong>
                   {reservation.firstName} {reservation.lastName}
                 </strong>
                 <p>
-                  {reservation.date} at {reservation.time} · Guests: {reservation.guests}
+                  {formatEuropeanDate(reservation.date)} at {reservation.time} · Guests:{" "}
+                  {reservation.guests}
                 </p>
                 <p>
                   <a
-                    href={toWhatsAppUrl(reservation.phone)}
+                    href={toWhatsAppUrl(reservation.phone, reservation, messageTemplates)}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -505,7 +849,9 @@ export default function AdminBackOffice() {
                   </a>
                 </p>
                 <p>
-                  <a href={`mailto:${reservation.email}`}>{reservation.email}</a>
+                  <a href={toEmailUrl(reservation.email, reservation, messageTemplates)}>
+                    {reservation.email}
+                  </a>
                 </p>
                 <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.4rem", flexWrap: "wrap" }}>
                   <button
@@ -546,6 +892,138 @@ export default function AdminBackOffice() {
             ))
           )}
         </div>
+      ) : null}
+
+      {activeTab === "calendar" ? (
+        <section className="card">
+          <div className="admin-calendar-head">
+            <h3>Confirmed Reservations Calendar</h3>
+            <div style={{ display: "flex", gap: "0.45rem" }}>
+              <button
+                className="btn btn-secondary"
+                type="button"
+                onClick={() => {
+                  const prev = new Date(
+                    calendarMonthDate.getFullYear(),
+                    calendarMonthDate.getMonth() - 1,
+                    1,
+                  );
+                  setCalendarMonth(
+                    `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, "0")}`,
+                  );
+                  setSelectedCalendarDay(null);
+                }}
+              >
+                Prev
+              </button>
+              <button
+                className="btn btn-secondary"
+                type="button"
+                onClick={() => {
+                  const next = new Date(
+                    calendarMonthDate.getFullYear(),
+                    calendarMonthDate.getMonth() + 1,
+                    1,
+                  );
+                  setCalendarMonth(
+                    `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}`,
+                  );
+                  setSelectedCalendarDay(null);
+                }}
+              >
+                Next
+              </button>
+            </div>
+          </div>
+          <p className="footer-note" style={{ marginTop: "0.5rem" }}>
+            {monthLabel}
+          </p>
+          <div className="admin-calendar-grid">
+            {weekdayShortMondayFirst.map((weekday) => (
+              <div key={weekday} className="admin-calendar-weekday">
+                {weekday}
+              </div>
+            ))}
+            {calendarCells.map((cell, index) =>
+              cell.day ? (
+                <button
+                  key={`${cell.day}-${index}`}
+                  type="button"
+                  className={`admin-calendar-day ${selectedCalendarDay === cell.day ? "active" : ""}`}
+                  onClick={() => setSelectedCalendarDay(cell.day)}
+                >
+                  <span>{cell.day}</span>
+                  {cell.reservations.length > 0 ? (
+                    <span className="admin-calendar-count">{cell.reservations.length}</span>
+                  ) : null}
+                </button>
+              ) : (
+                <div key={`empty-${index}`} className="admin-calendar-empty" />
+              ),
+            )}
+          </div>
+
+          <div style={{ marginTop: "0.9rem", display: "grid", gap: "0.6rem" }}>
+            {selectedCalendarDay === null ? (
+              <p className="footer-note" style={{ marginTop: 0 }}>
+                Select a day to view confirmed reservations.
+              </p>
+            ) : selectedDayReservations.length === 0 ? (
+              <p className="footer-note" style={{ marginTop: 0 }}>
+                No confirmed reservations for day {selectedCalendarDay}.
+              </p>
+            ) : (
+              selectedDayReservations.map((reservation) => (
+                <article className="card" key={`confirmed-${reservation.id}`}>
+                  <p className="footer-note" style={{ marginTop: 0, marginBottom: "0.35rem" }}>
+                    Reservation #{reservation.id.slice(0, 8)}
+                  </p>
+                  <strong>
+                    {reservation.firstName} {reservation.lastName}
+                  </strong>
+                  <p>
+                    {formatEuropeanDate(reservation.date)} at {reservation.time} · Guests:{" "}
+                    {reservation.guests}
+                  </p>
+                  <p>
+                    <a
+                      href={toWhatsAppUrl(reservation.phone, reservation, messageTemplates)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {reservation.phone}
+                    </a>
+                  </p>
+                  <p>
+                    <a href={toEmailUrl(reservation.email, reservation, messageTemplates)}>
+                      {reservation.email}
+                    </a>
+                  </p>
+                  <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.4rem", flexWrap: "wrap" }}>
+                    <button
+                      className="btn btn-secondary"
+                      type="button"
+                      disabled={actionKey !== null}
+                      onClick={() => changeReservationStatus(reservation.id, "new")}
+                    >
+                      {actionKey === `reservation-${reservation.id}-new` ? "Updating..." : "New"}
+                    </button>
+                    <button
+                      className="btn btn-secondary"
+                      type="button"
+                      disabled={actionKey !== null}
+                      onClick={() => changeReservationStatus(reservation.id, "cancelled")}
+                    >
+                      {actionKey === `reservation-${reservation.id}-cancelled`
+                        ? "Updating..."
+                        : "Cancelled"}
+                    </button>
+                  </div>
+                </article>
+              ))
+            )}
+          </div>
+        </section>
       ) : null}
 
       {activeTab === "menu" ? (
@@ -1020,42 +1498,132 @@ export default function AdminBackOffice() {
       ) : null}
 
       {activeTab === "security" ? (
-        <section className="card">
-          <h3 style={{ marginBottom: "0.7rem" }}>Change Admin Password</h3>
-          <form onSubmit={onPasswordSubmit} className="form-grid">
-            <input
-              placeholder="Username"
-              value={passwordForm.username}
-              onChange={(event) =>
-                setPasswordForm((prev) => ({ ...prev, username: event.target.value }))
-              }
-              required
-            />
-            <input
-              placeholder="Current password"
-              type="password"
-              value={passwordForm.currentPassword}
-              onChange={(event) =>
-                setPasswordForm((prev) => ({ ...prev, currentPassword: event.target.value }))
-              }
-              required
-            />
-            <input
-              placeholder="New password"
-              type="password"
-              minLength={6}
-              value={passwordForm.nextPassword}
-              onChange={(event) =>
-                setPasswordForm((prev) => ({ ...prev, nextPassword: event.target.value }))
-              }
-              required
-            />
-            <button className="btn btn-primary" type="submit" disabled={actionKey !== null}>
-              {actionKey === "update-password" ? "Updating..." : "Update password"}
-            </button>
-          </form>
-          <p className="footer-note">Admin credentials are now stored in Prisma.</p>
-        </section>
+        <div style={{ display: "grid", gap: "1rem" }}>
+          <section className="card">
+            <h3 style={{ marginBottom: "0.7rem" }}>Change Admin Password</h3>
+            <form onSubmit={onPasswordSubmit} className="form-grid">
+              <input
+                placeholder="Username"
+                value={passwordForm.username}
+                onChange={(event) =>
+                  setPasswordForm((prev) => ({ ...prev, username: event.target.value }))
+                }
+                required
+              />
+              <input
+                placeholder="Current password"
+                type="password"
+                value={passwordForm.currentPassword}
+                onChange={(event) =>
+                  setPasswordForm((prev) => ({ ...prev, currentPassword: event.target.value }))
+                }
+                required
+              />
+              <input
+                placeholder="New password"
+                type="password"
+                minLength={6}
+                value={passwordForm.nextPassword}
+                onChange={(event) =>
+                  setPasswordForm((prev) => ({ ...prev, nextPassword: event.target.value }))
+                }
+                required
+              />
+              <button className="btn btn-primary" type="submit" disabled={actionKey !== null}>
+                {actionKey === "update-password" ? "Updating..." : "Update password"}
+              </button>
+            </form>
+            <p className="footer-note">Admin credentials are now stored in Prisma.</p>
+          </section>
+
+          <section className="card">
+            <h3 style={{ marginBottom: "0.7rem" }}>Message Templates</h3>
+            <p className="footer-note" style={{ marginTop: 0 }}>
+              Variables you can use: {"{firstName}"}, {"{lastName}"}, {"{fullName}"}, {"{date}"},{" "}
+              {"{time}"}, {"{guests}"}, {"{phone}"}, {"{email}"}, {"{occasion}"}, {"{notes}"}.
+            </p>
+            <div style={{ display: "grid", gap: "1rem", marginTop: "0.8rem" }}>
+              {messageTemplates.map((template) => (
+                <article
+                  key={template.key}
+                  style={{ borderTop: "1px solid var(--line)", paddingTop: "0.8rem" }}
+                >
+                  <h4 style={{ marginBottom: "0.55rem" }}>
+                    {template.key === "reservation_new"
+                      ? "Pending / Request Received"
+                      : template.key === "reservation_confirmed"
+                        ? "Confirmed"
+                        : "Could Not Confirm (Apology)"}
+                  </h4>
+                  <div className="form-grid">
+                    <input
+                      placeholder="Subject EN"
+                      value={template.subjectEn}
+                      onChange={(event) =>
+                        setMessageTemplates((prev) =>
+                          prev.map((candidate) =>
+                            candidate.key === template.key
+                              ? { ...candidate, subjectEn: event.target.value }
+                              : candidate,
+                          ),
+                        )
+                      }
+                    />
+                    <input
+                      placeholder="Subject PT"
+                      value={template.subjectPt}
+                      onChange={(event) =>
+                        setMessageTemplates((prev) =>
+                          prev.map((candidate) =>
+                            candidate.key === template.key
+                              ? { ...candidate, subjectPt: event.target.value }
+                              : candidate,
+                          ),
+                        )
+                      }
+                    />
+                    <textarea
+                      placeholder="Body EN"
+                      value={template.bodyEn}
+                      onChange={(event) =>
+                        setMessageTemplates((prev) =>
+                          prev.map((candidate) =>
+                            candidate.key === template.key
+                              ? { ...candidate, bodyEn: event.target.value }
+                              : candidate,
+                          ),
+                        )
+                      }
+                    />
+                    <textarea
+                      placeholder="Body PT"
+                      value={template.bodyPt}
+                      onChange={(event) =>
+                        setMessageTemplates((prev) =>
+                          prev.map((candidate) =>
+                            candidate.key === template.key
+                              ? { ...candidate, bodyPt: event.target.value }
+                              : candidate,
+                          ),
+                        )
+                      }
+                    />
+                  </div>
+                </article>
+              ))}
+            </div>
+            <div style={{ marginTop: "0.9rem" }}>
+              <button
+                className="btn btn-primary"
+                type="button"
+                onClick={saveMessageTemplatesConfiguration}
+                disabled={actionKey !== null}
+              >
+                {actionKey === "save-message-templates" ? "Saving..." : "Save templates"}
+              </button>
+            </div>
+          </section>
+        </div>
       ) : null}
 
       {activeTab === "hours" ? (
@@ -1251,63 +1819,51 @@ export default function AdminBackOffice() {
         </section>
       ) : null}
 
-      <AnimatePresence>
-        {deleteReservationModal ? (
-          <>
-            <motion.button
-              className="confirm-modal-backdrop"
-              type="button"
-              aria-label="Close delete confirmation"
-              onClick={() => setDeleteReservationModal(null)}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.18, ease: "easeOut" }}
-            />
-            <div
-              className="confirm-modal-wrap"
-              onClick={() => setDeleteReservationModal(null)}
+      {deleteReservationModal ? (
+        <>
+          <button
+            className="confirm-modal-backdrop"
+            type="button"
+            aria-label="Close delete confirmation"
+            onClick={() => setDeleteReservationModal(null)}
+          />
+          <div className="confirm-modal-wrap" onClick={() => setDeleteReservationModal(null)}>
+            <section
+              className="confirm-modal-card"
+              role="dialog"
+              aria-modal="true"
+              onClick={(event) => event.stopPropagation()}
             >
-              <motion.section
-                className="confirm-modal-card"
-                role="dialog"
-                aria-modal="true"
-                onClick={(event) => event.stopPropagation()}
-                initial={{ opacity: 0, y: 8, scale: 0.97 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 8, scale: 0.97 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
-              >
-                <h3>Delete reservation?</h3>
-                <p className="footer-note" style={{ marginTop: "0.6rem" }}>
-                  This will permanently remove reservation for{" "}
-                  <strong>{deleteReservationModal.guestName}</strong>.
-                </p>
-                <div className="confirm-modal-actions">
-                  <button
-                    className="btn btn-secondary"
-                    type="button"
-                    onClick={() => setDeleteReservationModal(null)}
-                    disabled={actionKey !== null}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    className="btn btn-primary"
-                    type="button"
-                    onClick={confirmDeleteReservation}
-                    disabled={actionKey !== null}
-                  >
-                    {actionKey === `delete-reservation-${deleteReservationModal.id}`
-                      ? "Deleting..."
-                      : "Delete"}
-                  </button>
-                </div>
-              </motion.section>
-            </div>
-          </>
-        ) : null}
-      </AnimatePresence>
+              <h3>Delete reservation?</h3>
+              <p className="footer-note" style={{ marginTop: "0.6rem" }}>
+                This will permanently remove reservation for{" "}
+                <strong>{deleteReservationModal.guestName}</strong>.
+              </p>
+              <div className="confirm-modal-actions">
+                <button
+                  className="btn btn-secondary"
+                  type="button"
+                  onClick={() => setDeleteReservationModal(null)}
+                  disabled={actionKey !== null}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="btn btn-primary"
+                  type="button"
+                  onClick={confirmDeleteReservation}
+                  disabled={actionKey !== null}
+                >
+                  {actionKey === `delete-reservation-${deleteReservationModal.id}`
+                    ? "Deleting..."
+                    : "Delete"}
+                </button>
+              </div>
+            </section>
+          </div>
+        </>
+      ) : null}
+
     </div>
   );
 }

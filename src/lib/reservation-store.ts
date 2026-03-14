@@ -23,6 +23,7 @@ const toReservationRecord = (reservation: Reservation): ReservationRecord => {
     guests: reservation.guests,
     occasion: reservation.occasion ?? undefined,
     notes: reservation.notes ?? undefined,
+    isRead: reservation.isRead,
     status: reservation.status,
     createdAt: reservation.createdAt.toISOString(),
   };
@@ -63,7 +64,16 @@ export const updateReservationStatus = async (
 ): Promise<ReservationRecord> => {
   const reservation = await getPrisma().reservation.update({
     where: { id },
-    data: { status },
+    data: { status, isRead: status === "new" ? false : undefined },
+  });
+
+  return toReservationRecord(reservation);
+};
+
+export const markReservationAsRead = async (id: string): Promise<ReservationRecord> => {
+  const reservation = await getPrisma().reservation.update({
+    where: { id },
+    data: { isRead: true },
   });
 
   return toReservationRecord(reservation);

@@ -56,6 +56,6 @@
     "confirmError": "Nao foi possivel confirmar a reserva neste momento.",
     "successModalTitle": "Reserva Enviada",
     "successModalClose": "Fechar",
-    "success": "Pedido de reserva enviado. Recebera confirmacao por email e WhatsApp se as credenciais estiverem configuradas."
+    "success": "Pedido de reserva enviado. Vamos entrar em contacto por WhatsApp ou email."
   }
 }

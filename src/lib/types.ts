@@ -34,6 +34,7 @@ export type ReservationPayload = {
 
 export type ReservationRecord = ReservationPayload & {
   id: string;
+  isRead: boolean;
   status: "new" | "confirmed" | "cancelled";
   createdAt: string;
 };

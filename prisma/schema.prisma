@@ -29,11 +29,13 @@ model Reservation {
   guests    String
   occasion  String?
   notes     String?
+  isRead    Boolean           @default(false)
   status    ReservationStatus @default(new)
   createdAt DateTime          @default(now())
 
   @@index([createdAt(sort: Desc)])
   @@index([date, time])
+  @@index([isRead, status, createdAt(sort: Desc)])
 }
 
 model AdminUser {
@@ -88,4 +90,15 @@ model WorkingHours {
   updatedAt   DateTime @updatedAt
 
   @@index([weekday])
+}
+
+model MessageTemplate {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  subjectEn String
+  subjectPt String
+  bodyEn    String
+  bodyPt    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

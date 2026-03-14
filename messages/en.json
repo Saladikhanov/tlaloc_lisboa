@@ -56,6 +56,6 @@
     "confirmError": "Could not confirm reservation right now.",
     "successModalTitle": "Reservation Sent",
     "successModalClose": "Close",
-    "success": "Reservation request sent. You will get email and WhatsApp confirmation if credentials are configured."
+    "success": "Reservation request sent. We will contact you via WhatsApp or email."
   }
 }

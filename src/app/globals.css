@@ -814,10 +814,27 @@ a {
   background: rgba(232, 53, 26, 0.2);
 }
 
-.reservation-delete-corner-btn {
+.reservation-card-actions {
   position: absolute;
   top: 0.65rem;
   right: 0.65rem;
+  display: inline-flex;
+  gap: 0.4rem;
+}
+
+.reservation-delete-corner-btn {
+  position: relative;
+}
+
+.read-icon-btn {
+  border-color: rgba(45, 123, 79, 0.8);
+  color: #9ff0c5;
+  background: rgba(45, 123, 79, 0.26);
+}
+
+.read-icon-btn:disabled {
+  opacity: 1;
+  cursor: default;
 }
 
 .confirm-modal-backdrop {
@@ -864,6 +881,62 @@ a {
 .reservation-list-loader {
   display: grid;
   gap: 0.6rem;
+}
+
+.admin-calendar-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+}
+
+.admin-calendar-grid {
+  margin-top: 0.8rem;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.admin-calendar-weekday {
+  font-size: 0.78rem;
+  color: var(--muted);
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.admin-calendar-day,
+.admin-calendar-empty {
+  min-height: 62px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.admin-calendar-empty {
+  opacity: 0.45;
+}
+
+.admin-calendar-day {
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 0.45rem;
+}
+
+.admin-calendar-day.active {
+  border-color: var(--accent);
+  background: rgba(245, 166, 35, 0.14);
+}
+
+.admin-calendar-count {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--accent);
 }
 
 .reservation-skeleton-card {
