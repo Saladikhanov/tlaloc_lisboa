@@ -1,36 +1,66 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Tláloc Cantina Platform
 
-## Getting Started
+Single project architecture for:
 
-First, run the development server:
+1. QR menu for in-restaurant customers.
+2. Reservation system (customer form + back office list).
+3. SEO-friendly landing website.
+
+## Run locally
 
 ```bash
+npm install
+cp .env.example .env.local
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Implemented now (MVP)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `src/app/[locale]/menu/page.tsx`: mobile-friendly QR menu.
+- `src/app/[locale]/reserve/page.tsx`: reservation form with API submission.
+- `src/app/api/reservations/route.ts`: reservation GET/POST endpoints.
+- `src/app/admin/page.tsx`: back-office reservations list.
+- `src/app/[locale]/page.tsx`: SEO landing page entry.
+- `src/app/sitemap.ts` and `src/app/robots.ts`: SEO basics.
+- `src/lib/menu-data.ts`: structured menu data source for CMS migration.
+- Full i18n via `next-intl` with locale routes (`/en`, `/pt`) and dictionary files (`messages/en.json`, `messages/pt.json`).
+- PostgreSQL persistence via Prisma (`prisma/schema.prisma`, `src/lib/prisma.ts`).
+- Reservation notification channels:
+  - Email to guest + restaurant (SMTP).
+  - WhatsApp to guest + restaurant (Twilio API).
 
-## Learn More
+## Environment setup
 
-To learn more about Next.js, take a look at the following resources:
+Copy `.env.example` to `.env.local` and add real credentials.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Database: `DATABASE_URL`
+- SMTP keys: `SMTP_*` and `RESERVATION_NOTIFY_EMAIL`
+- Twilio keys: `TWILIO_*` and `WHATSAPP_NOTIFY_TO`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+If keys are missing, reservations are still stored, but notification channels
+return as skipped in API response.
 
-## Deploy on Vercel
+## Database setup (Prisma + PostgreSQL)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+After setting `DATABASE_URL`, run:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run prisma:generate
+npm run prisma:migrate -- --name init
+```
+
+Optional:
+
+```bash
+npm run prisma:studio
+```
+
+## Expansion plan
+
+- Add database (PostgreSQL + Prisma).
+- Add auth for admin routes.
+- Add reservation states, availability rules, and notifications.
+- Add CMS forms for menu/category/item management.
+- Add multilingual fields (`en`, `pt`) in DB schema and UI.

@@ -1,0 +1,53 @@
+{
+  "Nav": {
+    "menu": "Menu QR",
+    "reserve": "Reservas",
+    "admin": "Back Office"
+  },
+  "Home": {
+    "title": "Um projeto: menu QR, reservas e website SEO.",
+    "body": "Esta arquitetura comeca pelo menu QR e cresce para gestao de reservas e CMS interno. As paginas publicas sao otimizadas para SEO e o back office fica isolado nas rotas admin.",
+    "openMenu": "Abrir Menu QR",
+    "reserve": "Reservar Mesa",
+    "orderDelivery": "Pedir Entrega",
+    "qrTitle": "1) Menu QR",
+    "qrBody": "Pagina mobile para clientes via QR nas mesas, com atualizacao simples de conteudos.",
+    "reservationTitle": "2) Sistema de Reservas",
+    "reservationBody": "Formulario online ligado a API, pronto para regras de disponibilidade, base de dados e notificacoes.",
+    "seoTitle": "3) Landing SEO",
+    "seoBody": "Paginas server-rendered para Google, reaproveitando o mesmo modelo de dados do menu."
+  },
+  "MenuPage": {
+    "headerTitle": "Menu",
+    "title": "Menu QR",
+    "subtitle": "Pagina otimizada para telemovel e leitura por QR nas mesas.",
+    "quickFind": "Pesquisa rapida",
+    "jumpFood": "Comida",
+    "jumpDrinks": "Bebidas",
+    "foodSection": "Comida",
+    "drinksSection": "Bebidas",
+    "footnote": "Informe a equipa sobre alergias. Precos e pratos podem mudar sazonalmente."
+  },
+  "ReservePage": {
+    "title": "Pedido de Reserva",
+    "subtitle": "Formulario ligado a API. Suporta fluxo de confirmacao por email e WhatsApp.",
+    "firstName": "Nome *",
+    "lastName": "Apelido *",
+    "phone": "Telefone / WhatsApp *",
+    "email": "Email *",
+    "date": "Data *",
+    "time": "Hora *",
+    "guests": "Convidados *",
+    "guestsPlaceholder": "Selecionar convidados",
+    "occasion": "Ocasiao",
+    "occasionPlaceholder": "Aniversario, jantar especial...",
+    "notes": "Pedidos especiais",
+    "submitting": "A enviar...",
+    "submit": "Confirmar reserva",
+    "error": "Nao foi possivel enviar a reserva.",
+    "confirmSuccess": "Reserva confirmada com sucesso.",
+    "confirmInvalid": "Link de confirmacao invalido ou expirado.",
+    "confirmError": "Nao foi possivel confirmar a reserva neste momento.",
+    "success": "Pedido de reserva enviado. Recebera confirmacao por email e WhatsApp se as credenciais estiverem configuradas."
+  }
+}

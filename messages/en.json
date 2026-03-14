@@ -1,0 +1,53 @@
+{
+  "Nav": {
+    "menu": "QR Menu",
+    "reserve": "Reserve",
+    "admin": "Back Office"
+  },
+  "Home": {
+    "title": "One project: QR menu, reservations, and SEO website.",
+    "body": "This architecture starts with the customer QR menu and is ready to expand into reservation management and full back-office CMS. Public pages stay SEO friendly while staff tools are isolated in admin routes.",
+    "openMenu": "Open QR Menu",
+    "reserve": "Book a Table",
+    "orderDelivery": "Order Delivery",
+    "qrTitle": "1) QR Menu",
+    "qrBody": "Customer-facing mobile menu route, ideal for table QR codes and quick updates.",
+    "reservationTitle": "2) Reservation System",
+    "reservationBody": "Online booking form connected to API endpoints, ready for database and notifications.",
+    "seoTitle": "3) SEO Landing",
+    "seoBody": "Server-rendered pages for Google discovery while reusing the same content model."
+  },
+  "MenuPage": {
+    "headerTitle": "Menu",
+    "title": "QR Menu",
+    "subtitle": "This page is optimized for phone scanning from table QR codes.",
+    "quickFind": "Quick find",
+    "jumpFood": "Food",
+    "jumpDrinks": "Drinks",
+    "foodSection": "Food",
+    "drinksSection": "Drinks",
+    "footnote": "Please inform staff about allergies. Prices and dishes can change seasonally."
+  },
+  "ReservePage": {
+    "title": "Reservation Request",
+    "subtitle": "Form is connected to API and supports email + WhatsApp confirmation workflow.",
+    "firstName": "First name *",
+    "lastName": "Last name *",
+    "phone": "Phone / WhatsApp *",
+    "email": "Email *",
+    "date": "Date *",
+    "time": "Time *",
+    "guests": "Guests *",
+    "guestsPlaceholder": "Select guests",
+    "occasion": "Occasion",
+    "occasionPlaceholder": "Birthday, date night...",
+    "notes": "Special requests",
+    "submitting": "Sending...",
+    "submit": "Confirm reservation",
+    "error": "Could not submit reservation.",
+    "confirmSuccess": "Reservation confirmed successfully.",
+    "confirmInvalid": "Confirmation link is invalid or expired.",
+    "confirmError": "Could not confirm reservation right now.",
+    "success": "Reservation request sent. You will get email and WhatsApp confirmation if credentials are configured."
+  }
+}
