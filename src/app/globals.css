@@ -272,6 +272,22 @@ a {
   margin-top: 0;
 }
 
+.sync-overlay-badge {
+  position: fixed;
+  top: calc(var(--header-h) + 0.65rem);
+  right: 0.9rem;
+  z-index: 88;
+  padding: 0.42rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(245, 166, 35, 0.45);
+  background: rgba(19, 8, 0, 0.92);
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 700;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(6px);
+}
+
 .hero {
   padding: 1rem 0 2.5rem;
 }

@@ -426,6 +426,11 @@ export default function AdminBackOffice() {
   }
 
   async function changeReservationStatus(id: string, status: ReservationRecord["status"]) {
+    const current = reservations.find((reservation) => reservation.id === id);
+    if (current?.status === status) {
+      return;
+    }
+
     await runAction(`reservation-${id}-${status}`, async () => {
       const response = await fetch(`/api/admin/reservations/${id}/status`, {
         method: "PATCH",
@@ -748,7 +753,7 @@ export default function AdminBackOffice() {
 
       {statusMessage ? <p className="footer-note">{statusMessage}</p> : null}
       {isLoading ? <p className="footer-note db-loader">Loading data...</p> : null}
-      {isRefreshing ? <p className="footer-note db-loader">Syncing with database...</p> : null}
+      {isRefreshing ? <div className="sync-overlay-badge">Syncing with database...</div> : null}
 
       {activeTab === "reservations" ? (
         <div style={{ display: "grid", gap: "0.6rem" }}>
@@ -765,7 +770,7 @@ export default function AdminBackOffice() {
             <span className="ios-switch" aria-hidden="true" />
             <span>Show read reservations</span>
           </label>
-          {isLoading || isRefreshing ? (
+          {isLoading ? (
             <div className="reservation-list-loader" aria-live="polite" aria-busy="true">
               <article className="card reservation-skeleton-card">
                 <div className="skeleton-line w-35" />
