@@ -10,18 +10,33 @@ type QuickFindCategory = {
 
 type Props = {
   quickFindLabel: string;
-  jumpFoodLabel: string;
-  jumpDrinksLabel: string;
   categories: QuickFindCategory[];
 };
 
 export default function MenuQuickFind({
   quickFindLabel,
-  jumpFoodLabel,
-  jumpDrinksLabel,
   categories,
 }: Props) {
   const [isOpen, setIsOpen] = useState(false);
+
+  const categoryEmoji = (id: string): string => {
+    switch (id) {
+      case "starters":
+        return "🥑";
+      case "tacos":
+        return "🌮";
+      case "burritos":
+        return "🌯";
+      case "signature":
+        return "⭐";
+      case "desserts":
+        return "🍰";
+      case "drinks":
+        return "🍹";
+      default:
+        return "🍽️";
+    }
+  };
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -50,7 +65,7 @@ export default function MenuQuickFind({
         aria-expanded={isOpen}
         onClick={() => setIsOpen((prev) => !prev)}
       >
-        {quickFindLabel}
+        {isOpen ? "✕" : quickFindLabel}
       </button>
 
       <section
@@ -59,12 +74,6 @@ export default function MenuQuickFind({
         aria-hidden={!isOpen}
       >
         <strong>{quickFindLabel}</strong>
-        <a className="quick-chip" href="#food-section" onClick={() => setIsOpen(false)}>
-          {jumpFoodLabel}
-        </a>
-        <a className="quick-chip" href="#drinks-section" onClick={() => setIsOpen(false)}>
-          {jumpDrinksLabel}
-        </a>
         {categories.map((category) => (
           <a
             className="quick-chip category-chip"
@@ -72,7 +81,7 @@ export default function MenuQuickFind({
             key={`jump-${category.id}`}
             onClick={() => setIsOpen(false)}
           >
-            {category.label}
+            {categoryEmoji(category.id)} {category.label}
           </a>
         ))}
       </section>

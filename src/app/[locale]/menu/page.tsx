@@ -36,8 +36,6 @@ export default async function MenuPage({ params }: Props) {
 
         <MenuQuickFind
           quickFindLabel={t("quickFind")}
-          jumpFoodLabel={t("jumpFood")}
-          jumpDrinksLabel={t("jumpDrinks")}
           categories={menuData.map((category) => ({
             id: category.id,
             label: category.title[locale],
