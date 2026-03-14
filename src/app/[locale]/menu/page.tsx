@@ -23,9 +23,6 @@ export default async function MenuPage({ params }: Props) {
     namespace: "MenuPage",
   });
   const menuData = await getMenuData();
-  const drinkCategoryIds = new Set(["drinks"]);
-  const foodCategories = menuData.filter((category) => !drinkCategoryIds.has(category.id));
-  const drinkCategories = menuData.filter((category) => drinkCategoryIds.has(category.id));
 
   return (
     <>
@@ -42,45 +39,11 @@ export default async function MenuPage({ params }: Props) {
           }))}
         />
 
-        <section id="food-section" className="menu-block">
-          <h2 className="menu-block-title">{t("foodSection")}</h2>
-          {foodCategories.map((category) => (
+        <section className="menu-block">
+          {menuData.map((category) => (
             <section className="menu-section" id={category.id} key={category.id}>
               <h2>{category.title[locale]}</h2>
-              {category.subtitle ? (
-                <p className="footer-note">{category.subtitle[locale]}</p>
-              ) : null}
-              <div className="items-grid" style={{ marginTop: "0.7rem" }}>
-                {category.items.map((item) => (
-                  <article className="item" key={`${category.id}-${item.name.en}`}>
-                    <div className="item-top">
-                      <h3>
-                        {item.name[locale]}
-                        {item.vegetarian ? (
-                          <span className="title-veg" aria-label="Vegetarian">
-                            {" "}
-                            🌱
-                          </span>
-                        ) : null}
-                      </h3>
-                      <span className="item-price">{item.price}</span>
-                    </div>
-                    <p>{item.description[locale]}</p>
-                  </article>
-                ))}
-              </div>
-            </section>
-          ))}
-        </section>
-
-        <section id="drinks-section" className="menu-block">
-          <h2 className="menu-block-title">{t("drinksSection")}</h2>
-          {drinkCategories.map((category) => (
-            <section className="menu-section" id={category.id} key={category.id}>
-              {category.id !== "drinks" ? <h2>{category.title[locale]}</h2> : null}
-              {category.subtitle ? (
-                <p className="footer-note">{category.subtitle[locale]}</p>
-              ) : null}
+              {category.subtitle ? <p className="footer-note">{category.subtitle[locale]}</p> : null}
               <div className="items-grid" style={{ marginTop: "0.7rem" }}>
                 {category.items.map((item) => (
                   <article className="item" key={`${category.id}-${item.name.en}`}>

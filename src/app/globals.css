@@ -484,7 +484,7 @@ a {
   position: fixed;
   right: 4.5rem;
   bottom: var(--float-controls-bottom);
-  z-index: 62;
+  z-index: 77;
   height: var(--quick-filter-btn-h);
   border-radius: 999px;
   border: 1px solid var(--line);
@@ -504,11 +504,11 @@ a {
 
 .quick-filter-backdrop {
   position: fixed;
-  top: var(--header-h);
+  top: 0;
   right: 0;
   bottom: 0;
   left: 0;
-  z-index: 59;
+  z-index: 75;
   border: 0;
   background: rgba(0, 0, 0, 0.36);
   backdrop-filter: blur(2px);
@@ -528,7 +528,7 @@ a {
   position: fixed;
   right: 1rem;
   bottom: calc(var(--float-controls-bottom) + var(--quick-filter-btn-h) + 0.75rem);
-  z-index: 61;
+  z-index: 76;
   width: min(330px, calc(100% - 2rem));
   border: 1px solid var(--line);
   border-radius: 12px;

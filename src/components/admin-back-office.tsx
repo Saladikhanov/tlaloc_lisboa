@@ -31,6 +31,7 @@ type TabId = "reservations" | "menu" | "security";
 export default function AdminBackOffice() {
   const [activeTab, setActiveTab] = useState<TabId>("reservations");
   const [isMenuEditMode, setIsMenuEditMode] = useState(false);
+  const [expandedSectionId, setExpandedSectionId] = useState<string | null>(null);
   const [reservations, setReservations] = useState<ReservationRecord[]>([]);
   const [menuSections, setMenuSections] = useState<AdminMenuSection[]>([]);
   const [statusMessage, setStatusMessage] = useState("");
@@ -503,7 +504,33 @@ export default function AdminBackOffice() {
 
               {sortedSections.map((section) => (
                 <section className="card" key={section.id}>
-                  <h3 style={{ marginBottom: "0.7rem" }}>Section: {section.titleEn}</h3>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      gap: "0.7rem",
+                      marginBottom: "0.7rem",
+                    }}
+                  >
+                    <h3 style={{ marginBottom: 0 }}>Section: {section.titleEn}</h3>
+                    <button
+                      className="btn btn-secondary"
+                      type="button"
+                      onClick={() =>
+                        setExpandedSectionId((prev) => (prev === section.id ? null : section.id))
+                      }
+                    >
+                      {expandedSectionId === section.id ? "Collapse" : "Edit"}
+                    </button>
+                  </div>
+
+                  {expandedSectionId !== section.id ? (
+                    <p className="footer-note" style={{ marginTop: 0 }}>
+                      Collapsed. Tap Edit to open this section.
+                    </p>
+                  ) : (
+                    <>
                   <div className="form-grid" style={{ marginBottom: "0.7rem" }}>
                 <input
                   value={section.slug}
@@ -568,6 +595,7 @@ export default function AdminBackOffice() {
                 <input
                   type="number"
                   value={section.order}
+                  onWheel={(event) => (event.currentTarget as HTMLInputElement).blur()}
                   onChange={(event) =>
                     setMenuSections((prev) =>
                       prev.map((candidate) =>
@@ -700,6 +728,7 @@ export default function AdminBackOffice() {
                       <input
                         type="number"
                         value={item.order}
+                        onWheel={(event) => (event.currentTarget as HTMLInputElement).blur()}
                         onChange={(event) =>
                           setMenuSections((prev) =>
                             prev.map((candidate) =>
@@ -764,6 +793,8 @@ export default function AdminBackOffice() {
                       </article>
                     ))}
                   </div>
+                    </>
+                  )}
                 </section>
               ))}
             </>
