@@ -483,15 +483,17 @@ export default function AdminBackOffice() {
                 }
                 required
               />
-              <label>
+              <label className="ios-switch-field">
                 <input
+                  className="ios-switch-input"
                   type="checkbox"
                   checked={newItem.vegetarian}
                   onChange={(event) =>
                     setNewItem((prev) => ({ ...prev, vegetarian: event.target.checked }))
                   }
-                />{" "}
-                Vegetarian
+                />
+                <span className="ios-switch" aria-hidden="true" />
+                <span>Vegetarian</span>
               </label>
                   <button className="btn btn-primary" type="submit" disabled={actionKey !== null}>
                     {actionKey === "create-item" ? "Saving..." : "Add item"}
@@ -715,8 +717,9 @@ export default function AdminBackOffice() {
                           )
                         }
                       />
-                      <label>
+                      <label className="ios-switch-field">
                         <input
+                          className="ios-switch-input"
                           type="checkbox"
                           checked={item.vegetarian}
                           onChange={(event) =>
@@ -735,8 +738,9 @@ export default function AdminBackOffice() {
                               ),
                             )
                           }
-                        />{" "}
-                        Vegetarian
+                        />
+                        <span className="ios-switch" aria-hidden="true" />
+                        <span>Vegetarian</span>
                       </label>
                         </div>
                         <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.6rem" }}>

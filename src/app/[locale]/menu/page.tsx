@@ -5,6 +5,8 @@ import MenuQuickFind from "@/components/menu-quick-find";
 import { routing } from "@/i18n/routing";
 import { getMenuData } from "@/lib/menu-store";
 
+export const dynamic = "force-dynamic";
+
 type Props = {
   params: Promise<{ locale: string }>;
 };
