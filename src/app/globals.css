@@ -883,6 +883,43 @@ a {
   gap: 0.6rem;
 }
 
+.reservation-extra-details {
+  margin-top: 0.45rem;
+  margin-bottom: 0.3rem;
+}
+
+.reservation-extra-details summary {
+  color: var(--accent);
+  font-size: 0.86rem;
+  cursor: pointer;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.4rem;
+  border-radius: 8px;
+  background: rgba(245, 166, 35, 0.08);
+  min-height: 36px;
+}
+
+.reservation-extra-details summary:hover {
+  background: rgba(245, 166, 35, 0.14);
+}
+
+.reservation-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-right: 86px;
+  min-height: 30px;
+}
+
+.reservation-locale-chip {
+  min-width: 40px;
+  justify-content: center;
+  font-weight: 800;
+}
+
 .admin-calendar-head {
   display: flex;
   justify-content: space-between;

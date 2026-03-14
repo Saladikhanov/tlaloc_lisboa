@@ -223,6 +223,12 @@ const toEmailUrl = (
   return `mailto:${normalized}?${params.toString()}`;
 };
 
+const getMessageLanguageLabel = (reservation: ReservationRecord): "EN" | "PT" =>
+  reservation.locale === "pt" ? "PT" : "EN";
+
+const hasReservationExtraDetails = (reservation: ReservationRecord): boolean =>
+  Boolean(reservation.occasion?.trim() || reservation.notes?.trim());
+
 export default function AdminBackOffice() {
   const [activeTab, setActiveTab] = useState<TabId>("reservations");
   const [isMenuEditMode, setIsMenuEditMode] = useState(false);
@@ -824,9 +830,14 @@ export default function AdminBackOffice() {
                     </svg>
                   </button>
                 </div>
-                <p className="footer-note" style={{ marginTop: 0, marginBottom: "0.35rem" }}>
-                  Reservation #{reservation.id.slice(0, 8)}
-                </p>
+                <div className="reservation-meta-row">
+                  <p className="footer-note" style={{ marginTop: 0, marginBottom: "0.35rem" }}>
+                    Reservation #{reservation.id.slice(0, 8)}
+                  </p>
+                  <span className="pill reservation-locale-chip">
+                    {getMessageLanguageLabel(reservation)}
+                  </span>
+                </div>
                 {reservation.isRead ? (
                   <p className="footer-note" style={{ marginTop: 0, marginBottom: "0.35rem" }}>
                     Read
@@ -853,6 +864,18 @@ export default function AdminBackOffice() {
                     {reservation.email}
                   </a>
                 </p>
+                {hasReservationExtraDetails(reservation) ? (
+                  <details className="reservation-extra-details">
+                    <summary>More details</summary>
+                    <p className="footer-note" style={{ marginTop: "0.45rem" }}>
+                      <strong>Occasion:</strong> {reservation.occasion?.trim() ? reservation.occasion : "-"}
+                    </p>
+                    <p className="footer-note" style={{ marginTop: "0.25rem" }}>
+                      <strong>Special requests:</strong>{" "}
+                      {reservation.notes?.trim() ? reservation.notes : "-"}
+                    </p>
+                  </details>
+                ) : null}
                 <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.4rem", flexWrap: "wrap" }}>
                   <button
                     className="btn btn-secondary"
@@ -975,9 +998,14 @@ export default function AdminBackOffice() {
             ) : (
               selectedDayReservations.map((reservation) => (
                 <article className="card" key={`confirmed-${reservation.id}`}>
-                  <p className="footer-note" style={{ marginTop: 0, marginBottom: "0.35rem" }}>
-                    Reservation #{reservation.id.slice(0, 8)}
-                  </p>
+                  <div className="reservation-meta-row">
+                    <p className="footer-note" style={{ marginTop: 0, marginBottom: "0.35rem" }}>
+                      Reservation #{reservation.id.slice(0, 8)}
+                    </p>
+                    <span className="pill reservation-locale-chip">
+                      {getMessageLanguageLabel(reservation)}
+                    </span>
+                  </div>
                   <strong>
                     {reservation.firstName} {reservation.lastName}
                   </strong>
@@ -999,6 +1027,19 @@ export default function AdminBackOffice() {
                       {reservation.email}
                     </a>
                   </p>
+                  {hasReservationExtraDetails(reservation) ? (
+                    <details className="reservation-extra-details">
+                      <summary>More details</summary>
+                      <p className="footer-note" style={{ marginTop: "0.45rem" }}>
+                        <strong>Occasion:</strong>{" "}
+                        {reservation.occasion?.trim() ? reservation.occasion : "-"}
+                      </p>
+                      <p className="footer-note" style={{ marginTop: "0.25rem" }}>
+                        <strong>Special requests:</strong>{" "}
+                        {reservation.notes?.trim() ? reservation.notes : "-"}
+                      </p>
+                    </details>
+                  ) : null}
                   <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.4rem", flexWrap: "wrap" }}>
                     <button
                       className="btn btn-secondary"
@@ -1539,6 +1580,9 @@ export default function AdminBackOffice() {
           <section className="card">
             <h3 style={{ marginBottom: "0.7rem" }}>Message Templates</h3>
             <p className="footer-note" style={{ marginTop: 0 }}>
+              Message language is selected automatically from each reservation locale (EN/PT).
+            </p>
+            <p className="footer-note" style={{ marginTop: "0.35rem" }}>
               Variables you can use: {"{firstName}"}, {"{lastName}"}, {"{fullName}"}, {"{date}"},{" "}
               {"{time}"}, {"{guests}"}, {"{phone}"}, {"{email}"}, {"{occasion}"}, {"{notes}"}.
             </p>
