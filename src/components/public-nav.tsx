@@ -89,20 +89,23 @@ export default function PublicNav({ headerTitle }: PublicNavProps) {
           {t("admin")}
         </NextLink>
       ) : null}
-      <div className="lang-switch" role="group" aria-label="Language switch">
-        {routing.locales.map((item) => (
-          <NextLink
-            key={item}
-            className={`lang-btn ${item === locale ? "active" : ""}`}
-            aria-current={item === locale ? "page" : undefined}
-            href={getLocaleHref(item)}
-            onClick={closeOnClick ? () => setIsMenuOpen(false) : undefined}
-          >
-            {item.toUpperCase()}
-          </NextLink>
-        ))}
-      </div>
     </>
+  );
+
+  const renderLanguageSwitch = (closeOnClick: boolean, className = "lang-switch") => (
+    <div className={className} role="group" aria-label="Language switch">
+      {routing.locales.map((item) => (
+        <NextLink
+          key={item}
+          className={`lang-btn ${item === locale ? "active" : ""}`}
+          aria-current={item === locale ? "page" : undefined}
+          href={getLocaleHref(item)}
+          onClick={closeOnClick ? () => setIsMenuOpen(false) : undefined}
+        >
+          {item.toUpperCase()}
+        </NextLink>
+      ))}
+    </div>
   );
 
   return (
@@ -119,27 +122,35 @@ export default function PublicNav({ headerTitle }: PublicNavProps) {
           />
         </Link>
         {headerTitle ? <div className="header-page-title">{headerTitle}</div> : null}
-        <button
-          type="button"
-          className="nav-toggle"
-          aria-expanded={isMenuOpen}
-          aria-label="Toggle navigation menu"
-          onClick={() => setIsMenuOpen((prev) => !prev)}
-        >
-          <motion.span
-            animate={isMenuOpen ? { rotate: 45, y: 7 } : { rotate: 0, y: 0 }}
-            transition={{ duration: 0.2 }}
-          />
-          <motion.span
-            animate={isMenuOpen ? { opacity: 0 } : { opacity: 1 }}
-            transition={{ duration: 0.18 }}
-          />
-          <motion.span
-            animate={isMenuOpen ? { rotate: -45, y: -7 } : { rotate: 0, y: 0 }}
-            transition={{ duration: 0.2 }}
-          />
-        </button>
-        <div className="nav-links desktop-nav-links">{renderLinks(false)}</div>
+        <div className="mobile-nav-controls">
+          <div className="mobile-lang-switch-wrap">
+            {renderLanguageSwitch(false, "lang-switch mobile-lang-switch")}
+          </div>
+          <button
+            type="button"
+            className="nav-toggle"
+            aria-expanded={isMenuOpen}
+            aria-label="Toggle navigation menu"
+            onClick={() => setIsMenuOpen((prev) => !prev)}
+          >
+            <motion.span
+              animate={isMenuOpen ? { rotate: 45, y: 7 } : { rotate: 0, y: 0 }}
+              transition={{ duration: 0.2 }}
+            />
+            <motion.span
+              animate={isMenuOpen ? { opacity: 0 } : { opacity: 1 }}
+              transition={{ duration: 0.18 }}
+            />
+            <motion.span
+              animate={isMenuOpen ? { rotate: -45, y: -7 } : { rotate: 0, y: 0 }}
+              transition={{ duration: 0.2 }}
+            />
+          </button>
+        </div>
+        <div className="nav-links desktop-nav-links">
+          {renderLinks(false)}
+          {renderLanguageSwitch(false, "lang-switch desktop-lang-switch")}
+        </div>
 
         <AnimatePresence>
           {isMenuOpen ? (

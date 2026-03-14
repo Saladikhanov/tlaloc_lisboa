@@ -88,6 +88,7 @@ a {
   transition: transform 0.2s ease;
   display: inline-flex;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .site-nav.compact .brand {
@@ -100,6 +101,7 @@ a {
   height: 50px;
   max-width: min(58vw, 320px);
   object-fit: contain;
+  border-radius: 4px;
 }
 
 .header-page-title {
@@ -136,6 +138,14 @@ a {
   border: 1px solid var(--line);
   border-radius: 999px;
   overflow: hidden;
+}
+
+.mobile-lang-switch-wrap {
+  display: none;
+}
+
+.mobile-nav-controls {
+  display: contents;
 }
 
 .lang-btn {
@@ -263,7 +273,7 @@ a {
 }
 
 .hero {
-  padding: 3.5rem 0 2.5rem;
+  padding: 1rem 0 2.5rem;
 }
 
 .home-hero-content {
@@ -327,6 +337,134 @@ a {
   flex-wrap: wrap;
   gap: 0.75rem;
   justify-content: center;
+}
+
+.home-hours-card {
+  margin: 0.75rem auto 2.2rem;
+  max-width: 920px;
+  padding: 1.15rem 1.1rem;
+  background:
+    radial-gradient(circle at top right, rgba(245, 166, 35, 0.1), transparent 42%),
+    linear-gradient(180deg, rgba(52, 28, 10, 0.62) 0%, rgba(36, 18, 6, 0.52) 100%);
+  border-color: rgba(245, 166, 35, 0.22);
+  backdrop-filter: blur(2px);
+}
+
+.home-open-status {
+  margin-top: 0.35rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.2rem 0.62rem;
+  border-radius: 999px;
+  font-size: 0.83rem;
+  font-weight: 700;
+  border: 1px solid transparent;
+}
+
+.home-open-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0.92;
+}
+
+.home-open-status.open {
+  color: #96ffc2;
+  background: rgba(20, 124, 70, 0.28);
+  border-color: rgba(82, 238, 157, 0.5);
+}
+
+.home-open-status.closed {
+  color: #ffd1b5;
+  background: rgba(145, 49, 24, 0.22);
+  border-color: rgba(232, 100, 66, 0.5);
+}
+
+.home-hours-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.home-section-kicker {
+  margin: 0 0 0.45rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.home-hours-list {
+  margin-top: 0.7rem;
+  display: grid;
+  gap: 0.38rem;
+}
+
+.home-hours-summary {
+  margin-top: 0.75rem;
+  display: grid;
+  gap: 0.42rem;
+}
+
+.home-hours-line {
+  margin: 0;
+  display: grid;
+  grid-template-columns: minmax(95px, 130px) 1fr;
+  gap: 0.6rem;
+  align-items: baseline;
+  color: var(--muted);
+}
+
+.home-hours-line strong {
+  color: var(--text);
+}
+
+.home-hours-row {
+  display: grid;
+  grid-template-columns: minmax(105px, 145px) 1fr;
+  gap: 0.6rem;
+  padding: 0.3rem 0;
+  border-bottom: 1px dashed rgba(245, 166, 35, 0.16);
+}
+
+.home-hours-row:last-child {
+  border-bottom: 0;
+}
+
+.home-hours-day {
+  font-weight: 700;
+  color: var(--text);
+}
+
+.home-hours-value {
+  color: var(--muted);
+}
+
+.home-contact-card {
+  margin: 0 auto 2.4rem;
+  max-width: 920px;
+  background:
+    radial-gradient(circle at top right, rgba(245, 166, 35, 0.08), transparent 44%),
+    linear-gradient(180deg, rgba(52, 28, 10, 0.58) 0%, rgba(34, 17, 6, 0.48) 100%);
+  border-color: rgba(245, 166, 35, 0.22);
+  backdrop-filter: blur(2px);
+}
+
+.home-contact-card p {
+  margin-top: 0;
+}
+
+.home-contact-card a {
+  color: var(--accent);
+}
+
+.home-contact-card a:hover {
+  text-decoration: underline;
 }
 
 .cards {
@@ -789,6 +927,19 @@ a {
   letter-spacing: 0.02em;
 }
 
+.reserve-submit-row {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.7rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.reserve-submit-btn {
+  width: auto;
+  flex: 0 0 auto;
+}
+
 .form-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -964,17 +1115,69 @@ textarea {
     display: none;
   }
 
+  .mobile-lang-switch-wrap {
+    display: block;
+  }
+
+  .mobile-nav-controls {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-shrink: 0;
+  }
+
+  .mobile-lang-switch {
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    overflow: hidden;
+    background: rgba(19, 8, 0, 0.95);
+  }
+
+  .mobile-lang-switch .lang-btn {
+    padding: 0.38rem 0.58rem;
+    font-size: 0.86rem;
+    border: 0;
+  }
+
   .brand-image {
     height: 42px;
-    max-width: min(58vw, 240px);
+    max-width: min(42vw, 170px);
   }
 
   .home-hero-image {
     width: 80%;
   }
 
+  .home-hours-card {
+    padding: 1rem 0.9rem;
+  }
+
+  .home-hours-row {
+    grid-template-columns: minmax(82px, 110px) 1fr;
+    gap: 0.45rem;
+  }
+
+  .home-hours-line {
+    grid-template-columns: minmax(82px, 108px) 1fr;
+    gap: 0.45rem;
+    font-size: 0.92rem;
+  }
+
+  .hero h1 {
+    font-size: clamp(1rem, 5.6vw, 1.35rem);
+    white-space: nowrap;
+    line-height: 1.04;
+    letter-spacing: -0.01em;
+  }
+
   .header-page-title {
+    flex: 1 1 auto;
+    min-width: 0;
     font-size: 1.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .nav-links {
@@ -1060,7 +1263,7 @@ textarea {
     justify-content: flex-start;
   }
 
-  .lang-switch {
+  .nav-links .lang-switch {
     justify-content: stretch;
     width: 100%;
     border: 0;
@@ -1068,7 +1271,7 @@ textarea {
     overflow: visible;
   }
 
-  .lang-btn {
+  .nav-links .lang-btn {
     flex: 1 1 0;
     text-align: center;
     padding: 0.6rem 0.2rem;
@@ -1108,6 +1311,11 @@ textarea {
     font-size: 0.96rem;
     padding: 0.62rem 0.9rem;
     border-width: 1.5px;
+  }
+
+  .reserve-submit-btn {
+    width: auto;
+    min-width: 0;
   }
 }
 

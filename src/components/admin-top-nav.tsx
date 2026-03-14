@@ -15,7 +15,7 @@ export default function AdminTopNav() {
         </Link>
 
         <div className="admin-nav-links desktop-admin-links">
-          <Link href="/menu">QR Menu</Link>
+          <Link href="/menu">Menu</Link>
           <Link href="/reserve">Reserve</Link>
           <Link href="/admin">Back Office</Link>
           <AdminLogoutButton />
@@ -35,7 +35,7 @@ export default function AdminTopNav() {
 
         <div className={`admin-mobile-menu ${isOpen ? "open" : ""}`}>
           <Link href="/menu" onClick={() => setIsOpen(false)}>
-            QR Menu
+            Menu
           </Link>
           <Link href="/reserve" onClick={() => setIsOpen(false)}>
             Reserve

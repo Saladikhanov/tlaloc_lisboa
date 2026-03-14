@@ -1,16 +1,22 @@
 {
   "Nav": {
-    "menu": "Menu QR",
+    "menu": "Menu",
     "reserve": "Reservas",
     "admin": "Back Office"
   },
   "Home": {
     "title": "Um projeto: menu QR, reservas e website SEO.",
     "body": "Esta arquitetura comeca pelo menu QR e cresce para gestao de reservas e CMS interno. As paginas publicas sao otimizadas para SEO e o back office fica isolado nas rotas admin.",
-    "openMenu": "Abrir Menu QR",
+    "openMenu": "Abrir Menu",
     "reserve": "Reservar Mesa",
     "orderDelivery": "Pedir Entrega",
-    "qrTitle": "1) Menu QR",
+    "heroDescription": "Um autentico recanto mexicano no coracao de Alcantara, Lisboa — receitas caseiras, margaritas artesanais e uma hospitalidade calorosa que faz querer voltar.",
+    "workingHoursTitle": "Horario de Funcionamento",
+    "currentlyOpen": "Estamos abertos agora",
+    "currentlyClosed": "Estamos fechados agora",
+    "closedLabel": "Fechado",
+    "pricingInfo": "Cartoes aceites · €€ · media ~14€/pessoa",
+    "qrTitle": "1) Menu",
     "qrBody": "Pagina mobile para clientes via QR nas mesas, com atualizacao simples de conteudos.",
     "reservationTitle": "2) Sistema de Reservas",
     "reservationBody": "Formulario online ligado a API, pronto para regras de disponibilidade, base de dados e notificacoes.",
@@ -19,7 +25,7 @@
   },
   "MenuPage": {
     "headerTitle": "Menu",
-    "title": "Menu QR",
+    "title": "Menu",
     "subtitle": "Pagina otimizada para telemovel e leitura por QR nas mesas.",
     "quickFind": "Pesquisa rapida",
     "jumpFood": "Comida",

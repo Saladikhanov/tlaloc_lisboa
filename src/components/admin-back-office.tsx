@@ -27,11 +27,24 @@ type AdminMenuSection = {
   items: AdminMenuItem[];
 };
 
-type TabId = "reservations" | "menu" | "security";
+type AdminWorkingHours = {
+  id: string;
+  weekday: number;
+  isClosed: boolean;
+  lunchOpen: string | null;
+  lunchClose: string | null;
+  dinnerOpen: string | null;
+  dinnerClose: string | null;
+};
+
+type TabId = "reservations" | "menu" | "hours" | "security";
 type DeleteReservationModalState = {
   id: string;
   guestName: string;
 } | null;
+
+const weekdayLabels = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const mondayFirstOrder: number[] = [1, 2, 3, 4, 5, 6, 0];
 
 const toWhatsAppUrl = (phone: string): string => {
   const raw = phone.trim();
@@ -53,6 +66,14 @@ export default function AdminBackOffice() {
   const [expandedSectionId, setExpandedSectionId] = useState<string | null>(null);
   const [reservations, setReservations] = useState<ReservationRecord[]>([]);
   const [menuSections, setMenuSections] = useState<AdminMenuSection[]>([]);
+  const [workingHours, setWorkingHours] = useState<AdminWorkingHours[]>([]);
+  const [selectedBulkWeekdays, setSelectedBulkWeekdays] = useState<number[]>([1, 2, 3, 4]);
+  const [bulkHours, setBulkHours] = useState({
+    lunchOpen: "12:00",
+    lunchClose: "15:00",
+    dinnerOpen: "18:00",
+    dinnerClose: "22:00",
+  });
   const [statusMessage, setStatusMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -88,6 +109,11 @@ export default function AdminBackOffice() {
     () => [...menuSections].sort((a, b) => a.order - b.order),
     [menuSections],
   );
+  const workingHoursMondayFirst = useMemo(() => {
+    return [...workingHours].sort(
+      (a, b) => mondayFirstOrder.indexOf(a.weekday) - mondayFirstOrder.indexOf(b.weekday),
+    );
+  }, [workingHours]);
 
   const loadAll = useCallback(async (showFullLoader = false) => {
     if (showFullLoader) {
@@ -97,16 +123,21 @@ export default function AdminBackOffice() {
     }
     setStatusMessage("");
     try {
-      const [reservationResponse, menuResponse] = await Promise.all([
+      const [reservationResponse, menuResponse, workingHoursResponse] = await Promise.all([
         fetch("/api/reservations", { cache: "no-store" }),
         fetch("/api/admin/menu", { cache: "no-store" }),
+        fetch("/api/admin/working-hours", { cache: "no-store" }),
       ]);
 
       const reservationJson = (await reservationResponse.json()) as { data?: ReservationRecord[] };
       const menuJson = (await menuResponse.json()) as { data?: AdminMenuSection[] };
+      const workingHoursJson = (await workingHoursResponse.json()) as {
+        data?: AdminWorkingHours[];
+      };
 
       setReservations(reservationJson.data ?? []);
       setMenuSections(menuJson.data ?? []);
+      setWorkingHours(workingHoursJson.data ?? []);
       setNewItem((prev) =>
         prev.sectionId || !menuJson.data?.[0]?.id
           ? prev
@@ -271,6 +302,86 @@ export default function AdminBackOffice() {
     });
   }
 
+  async function saveWorkingHoursConfiguration() {
+    await runAction("save-working-hours", async () => {
+      const response = await fetch("/api/admin/working-hours", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          data: workingHours.map((row) => ({
+            weekday: row.weekday,
+            isClosed: row.isClosed,
+            lunchOpen: row.lunchOpen,
+            lunchClose: row.lunchClose,
+            dinnerOpen: row.dinnerOpen,
+            dinnerClose: row.dinnerClose,
+          })),
+        }),
+      });
+
+      const json = (await response.json().catch(() => ({}))) as { error?: string };
+      if (!response.ok) {
+        setStatusMessage(json.error ?? "Could not save working hours.");
+        return;
+      }
+
+      setStatusMessage("Working hours updated.");
+      await loadAll();
+    });
+  }
+
+  function toggleBulkDay(day: number) {
+    setSelectedBulkWeekdays((prev) =>
+      prev.includes(day) ? prev.filter((candidate) => candidate !== day) : [...prev, day],
+    );
+  }
+
+  function applyBulkHoursToSelectedDays() {
+    if (selectedBulkWeekdays.length === 0) {
+      setStatusMessage("Select at least one day for bulk update.");
+      return;
+    }
+
+    setWorkingHours((prev) =>
+      prev.map((row) =>
+        selectedBulkWeekdays.includes(row.weekday)
+          ? {
+              ...row,
+              isClosed: false,
+              lunchOpen: bulkHours.lunchOpen || null,
+              lunchClose: bulkHours.lunchClose || null,
+              dinnerOpen: bulkHours.dinnerOpen || null,
+              dinnerClose: bulkHours.dinnerClose || null,
+            }
+          : row,
+      ),
+    );
+    setStatusMessage("Bulk hours applied. Click Save working hours to persist.");
+  }
+
+  function markSelectedDaysClosed() {
+    if (selectedBulkWeekdays.length === 0) {
+      setStatusMessage("Select at least one day for bulk update.");
+      return;
+    }
+
+    setWorkingHours((prev) =>
+      prev.map((row) =>
+        selectedBulkWeekdays.includes(row.weekday)
+          ? {
+              ...row,
+              isClosed: true,
+              lunchOpen: null,
+              lunchClose: null,
+              dinnerOpen: null,
+              dinnerClose: null,
+            }
+          : row,
+      ),
+    );
+    setStatusMessage("Selected days marked as closed. Click Save working hours to persist.");
+  }
+
   async function confirmDeleteReservation() {
     if (!deleteReservationModal) {
       return;
@@ -315,6 +426,13 @@ export default function AdminBackOffice() {
           type="button"
         >
           Security
+        </button>
+        <button
+          className={`btn ${activeTab === "hours" ? "btn-primary" : "btn-secondary"}`}
+          onClick={() => setActiveTab("hours")}
+          type="button"
+        >
+          Working Hours
         </button>
       </div>
 
@@ -937,6 +1055,199 @@ export default function AdminBackOffice() {
             </button>
           </form>
           <p className="footer-note">Admin credentials are now stored in Prisma.</p>
+        </section>
+      ) : null}
+
+      {activeTab === "hours" ? (
+        <section className="card">
+          <h3 style={{ marginBottom: "0.7rem" }}>Working Hours</h3>
+          <p className="footer-note" style={{ marginTop: 0, marginBottom: "0.9rem" }}>
+            Week starts on Sunday. Reservations outside configured days/hours are automatically
+            rejected.
+          </p>
+          <section className="card" style={{ padding: "0.8rem", marginBottom: "0.8rem" }}>
+            <h4 style={{ marginBottom: "0.55rem" }}>Bulk update</h4>
+            <p className="footer-note" style={{ marginTop: 0, marginBottom: "0.6rem" }}>
+              Select days, set shared hours, then apply.
+            </p>
+            <div style={{ display: "flex", gap: "0.45rem", flexWrap: "wrap", marginBottom: "0.7rem" }}>
+              {mondayFirstOrder.map((day) => (
+                <button
+                  key={day}
+                  className={`btn ${selectedBulkWeekdays.includes(day) ? "btn-primary" : "btn-secondary"}`}
+                  type="button"
+                  onClick={() => toggleBulkDay(day)}
+                >
+                  {weekdayLabels[day].slice(0, 3)}
+                </button>
+              ))}
+            </div>
+            <div className="form-grid">
+              <div>
+                <label>Lunch start</label>
+                <input
+                  type="time"
+                  value={bulkHours.lunchOpen}
+                  onChange={(event) =>
+                    setBulkHours((prev) => ({ ...prev, lunchOpen: event.target.value }))
+                  }
+                />
+              </div>
+              <div>
+                <label>Lunch end</label>
+                <input
+                  type="time"
+                  value={bulkHours.lunchClose}
+                  onChange={(event) =>
+                    setBulkHours((prev) => ({ ...prev, lunchClose: event.target.value }))
+                  }
+                />
+              </div>
+              <div>
+                <label>Dinner start</label>
+                <input
+                  type="time"
+                  value={bulkHours.dinnerOpen}
+                  onChange={(event) =>
+                    setBulkHours((prev) => ({ ...prev, dinnerOpen: event.target.value }))
+                  }
+                />
+              </div>
+              <div>
+                <label>Dinner end</label>
+                <input
+                  type="time"
+                  value={bulkHours.dinnerClose}
+                  onChange={(event) =>
+                    setBulkHours((prev) => ({ ...prev, dinnerClose: event.target.value }))
+                  }
+                />
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: "0.55rem", flexWrap: "wrap", marginTop: "0.7rem" }}>
+              <button className="btn btn-primary" type="button" onClick={applyBulkHoursToSelectedDays}>
+                Apply hours to selected days
+              </button>
+              <button className="btn btn-secondary" type="button" onClick={markSelectedDaysClosed}>
+                Mark selected days closed
+              </button>
+            </div>
+          </section>
+          <div style={{ display: "grid", gap: "0.7rem" }}>
+            {workingHoursMondayFirst.map((row) => (
+                <article key={row.id} className="card" style={{ padding: "0.75rem" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      gap: "0.8rem",
+                      marginBottom: "0.65rem",
+                    }}
+                  >
+                    <strong>{weekdayLabels[row.weekday] ?? `Day ${row.weekday}`}</strong>
+                    <label className="ios-switch-field" style={{ marginBottom: 0 }}>
+                      <input
+                        className="ios-switch-input"
+                        type="checkbox"
+                        checked={row.isClosed}
+                        onChange={(event) =>
+                          setWorkingHours((prev) =>
+                            prev.map((candidate) =>
+                              candidate.weekday === row.weekday
+                                ? { ...candidate, isClosed: event.target.checked }
+                                : candidate,
+                            ),
+                          )
+                        }
+                      />
+                      <span className="ios-switch" aria-hidden="true" />
+                      <span>{row.isClosed ? "Closed" : "Open"}</span>
+                    </label>
+                  </div>
+                  <div className="form-grid">
+                    <div>
+                      <label>Lunch start</label>
+                      <input
+                        type="time"
+                        value={row.lunchOpen ?? ""}
+                        onChange={(event) =>
+                          setWorkingHours((prev) =>
+                            prev.map((candidate) =>
+                              candidate.weekday === row.weekday
+                                ? { ...candidate, lunchOpen: event.target.value || null }
+                                : candidate,
+                            ),
+                          )
+                        }
+                        disabled={row.isClosed}
+                      />
+                    </div>
+                    <div>
+                      <label>Lunch end</label>
+                      <input
+                        type="time"
+                        value={row.lunchClose ?? ""}
+                        onChange={(event) =>
+                          setWorkingHours((prev) =>
+                            prev.map((candidate) =>
+                              candidate.weekday === row.weekday
+                                ? { ...candidate, lunchClose: event.target.value || null }
+                                : candidate,
+                            ),
+                          )
+                        }
+                        disabled={row.isClosed}
+                      />
+                    </div>
+                    <div>
+                      <label>Dinner start</label>
+                      <input
+                        type="time"
+                        value={row.dinnerOpen ?? ""}
+                        onChange={(event) =>
+                          setWorkingHours((prev) =>
+                            prev.map((candidate) =>
+                              candidate.weekday === row.weekday
+                                ? { ...candidate, dinnerOpen: event.target.value || null }
+                                : candidate,
+                            ),
+                          )
+                        }
+                        disabled={row.isClosed}
+                      />
+                    </div>
+                    <div>
+                      <label>Dinner end</label>
+                      <input
+                        type="time"
+                        value={row.dinnerClose ?? ""}
+                        onChange={(event) =>
+                          setWorkingHours((prev) =>
+                            prev.map((candidate) =>
+                              candidate.weekday === row.weekday
+                                ? { ...candidate, dinnerClose: event.target.value || null }
+                                : candidate,
+                            ),
+                          )
+                        }
+                        disabled={row.isClosed}
+                      />
+                    </div>
+                  </div>
+                </article>
+            ))}
+          </div>
+          <div style={{ marginTop: "0.9rem" }}>
+            <button
+              className="btn btn-primary"
+              type="button"
+              onClick={saveWorkingHoursConfiguration}
+              disabled={actionKey !== null}
+            >
+              {actionKey === "save-working-hours" ? "Saving..." : "Save working hours"}
+            </button>
+          </div>
         </section>
       ) : null}
 

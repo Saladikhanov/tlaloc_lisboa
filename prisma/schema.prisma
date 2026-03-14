@@ -75,3 +75,17 @@ model MenuItem {
 
   @@index([sectionId, order])
 }
+
+model WorkingHours {
+  id          String   @id @default(cuid())
+  weekday     Int      @unique
+  isClosed    Boolean  @default(false)
+  lunchOpen   String?
+  lunchClose  String?
+  dinnerOpen  String?
+  dinnerClose String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([weekday])
+}

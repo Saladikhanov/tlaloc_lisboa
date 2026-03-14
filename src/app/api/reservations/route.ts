@@ -6,6 +6,7 @@ import {
 } from "@/lib/notifications";
 import type { ReservationPayload } from "@/lib/types";
 import { isAdminRequestAuthenticated } from "@/lib/admin-request";
+import { isReservationWithinWorkingHours } from "@/lib/working-hours-store";
 
 const requiredFields: (keyof ReservationPayload)[] = [
   "locale",
@@ -48,6 +49,21 @@ export async function POST(request: Request) {
   if (payload.locale !== "en" && payload.locale !== "pt") {
     return NextResponse.json(
       { error: "locale must be 'en' or 'pt'" },
+      { status: 400 },
+    );
+  }
+
+  const withinWorkingHours = await isReservationWithinWorkingHours(
+    payload.date as string,
+    payload.time as string,
+  );
+  if (!withinWorkingHours) {
+    const errorMessage =
+      payload.locale === "pt"
+        ? "Reservas disponiveis apenas durante os dias e horarios de funcionamento."
+        : "Reservations are available only during working days and hours.";
+    return NextResponse.json(
+      { error: errorMessage, code: "outside_working_hours" },
       { status: 400 },
     );
   }
