@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, Suspense, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import PublicNav from "@/components/public-nav";
@@ -8,7 +8,7 @@ import type { Locale } from "@/lib/types";
 
 type Status = "idle" | "loading" | "success" | "error";
 
-export default function ReservePage() {
+function ReservePageContent() {
   const locale = useLocale() as Locale;
   const searchParams = useSearchParams();
   const t = useTranslations("ReservePage");
@@ -74,88 +74,95 @@ export default function ReservePage() {
   }
 
   return (
+    <main className="site-shell form-shell">
+      <h1>{t("title")}</h1>
+      <p className="footer-note">{t("subtitle")}</p>
+
+      <form onSubmit={onSubmit}>
+        <div className="form-grid" style={{ marginTop: "1rem" }}>
+          <div>
+            <label htmlFor="firstName">{t("firstName")}</label>
+            <input id="firstName" name="firstName" required />
+          </div>
+          <div>
+            <label htmlFor="lastName">{t("lastName")}</label>
+            <input id="lastName" name="lastName" required />
+          </div>
+        </div>
+
+        <div className="form-grid" style={{ marginTop: "0.8rem" }}>
+          <div>
+            <label htmlFor="phone">{t("phone")}</label>
+            <input id="phone" name="phone" required />
+          </div>
+          <div>
+            <label htmlFor="email">{t("email")}</label>
+            <input id="email" name="email" type="email" required />
+          </div>
+        </div>
+
+        <div className="form-grid" style={{ marginTop: "0.8rem" }}>
+          <div>
+            <label htmlFor="date">{t("date")}</label>
+            <input id="date" name="date" type="date" required />
+          </div>
+          <div>
+            <label htmlFor="time">{t("time")}</label>
+            <input id="time" name="time" type="time" required />
+          </div>
+        </div>
+
+        <div className="form-grid" style={{ marginTop: "0.8rem" }}>
+          <div>
+            <label htmlFor="guests">{t("guests")}</label>
+            <select id="guests" name="guests" required defaultValue="">
+              <option value="" disabled>
+                {t("guestsPlaceholder")}
+              </option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6+">6+</option>
+            </select>
+          </div>
+          <div>
+            <label htmlFor="occasion">{t("occasion")}</label>
+            <input id="occasion" name="occasion" placeholder={t("occasionPlaceholder")} />
+          </div>
+        </div>
+
+        <div style={{ marginTop: "0.8rem" }}>
+          <label htmlFor="notes">{t("notes")}</label>
+          <textarea id="notes" name="notes" />
+        </div>
+
+        <div
+          style={{
+            marginTop: "1rem",
+            display: "flex",
+            gap: "0.7rem",
+            alignItems: "center",
+          }}
+        >
+          <button className="btn btn-primary" disabled={status === "loading"}>
+            {status === "loading" ? t("submitting") : t("submit")}
+          </button>
+          {effectiveMessage ? <span className="footer-note">{effectiveMessage}</span> : null}
+        </div>
+      </form>
+    </main>
+  );
+}
+
+export default function ReservePage() {
+  return (
     <>
       <PublicNav />
-
-      <main className="site-shell form-shell">
-        <h1>{t("title")}</h1>
-        <p className="footer-note">{t("subtitle")}</p>
-
-        <form onSubmit={onSubmit}>
-          <div className="form-grid" style={{ marginTop: "1rem" }}>
-            <div>
-              <label htmlFor="firstName">{t("firstName")}</label>
-              <input id="firstName" name="firstName" required />
-            </div>
-            <div>
-              <label htmlFor="lastName">{t("lastName")}</label>
-              <input id="lastName" name="lastName" required />
-            </div>
-          </div>
-
-          <div className="form-grid" style={{ marginTop: "0.8rem" }}>
-            <div>
-              <label htmlFor="phone">{t("phone")}</label>
-              <input id="phone" name="phone" required />
-            </div>
-            <div>
-              <label htmlFor="email">{t("email")}</label>
-              <input id="email" name="email" type="email" required />
-            </div>
-          </div>
-
-          <div className="form-grid" style={{ marginTop: "0.8rem" }}>
-            <div>
-              <label htmlFor="date">{t("date")}</label>
-              <input id="date" name="date" type="date" required />
-            </div>
-            <div>
-              <label htmlFor="time">{t("time")}</label>
-              <input id="time" name="time" type="time" required />
-            </div>
-          </div>
-
-          <div className="form-grid" style={{ marginTop: "0.8rem" }}>
-            <div>
-              <label htmlFor="guests">{t("guests")}</label>
-              <select id="guests" name="guests" required defaultValue="">
-                <option value="" disabled>
-                  {t("guestsPlaceholder")}
-                </option>
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5</option>
-                <option value="6+">6+</option>
-              </select>
-            </div>
-            <div>
-              <label htmlFor="occasion">{t("occasion")}</label>
-              <input id="occasion" name="occasion" placeholder={t("occasionPlaceholder")} />
-            </div>
-          </div>
-
-          <div style={{ marginTop: "0.8rem" }}>
-            <label htmlFor="notes">{t("notes")}</label>
-            <textarea id="notes" name="notes" />
-          </div>
-
-          <div
-            style={{
-              marginTop: "1rem",
-              display: "flex",
-              gap: "0.7rem",
-              alignItems: "center",
-            }}
-          >
-            <button className="btn btn-primary" disabled={status === "loading"}>
-              {status === "loading" ? t("submitting") : t("submit")}
-            </button>
-            {effectiveMessage ? <span className="footer-note">{effectiveMessage}</span> : null}
-          </div>
-        </form>
-      </main>
+      <Suspense fallback={<main className="site-shell form-shell" />}>
+        <ReservePageContent />
+      </Suspense>
     </>
   );
 }

@@ -86,17 +86,22 @@ export async function getMenuData(): Promise<MenuCategory[]> {
     return fallbackMenuData;
   }
 
-  await ensureMenuSeeded();
-  const sections = await prisma.menuSection.findMany({
-    orderBy: [{ order: "asc" }, { createdAt: "asc" }],
-    include: {
-      items: {
-        orderBy: [{ order: "asc" }, { createdAt: "asc" }],
+  try {
+    await ensureMenuSeeded();
+    const sections = await prisma.menuSection.findMany({
+      orderBy: [{ order: "asc" }, { createdAt: "asc" }],
+      include: {
+        items: {
+          orderBy: [{ order: "asc" }, { createdAt: "asc" }],
+        },
       },
-    },
-  });
+    });
 
-  return sections.map(toCategory);
+    return sections.map(toCategory);
+  } catch {
+    // Keep public menu available even if DB is temporarily unreachable at build/runtime.
+    return fallbackMenuData;
+  }
 }
 
 export async function getAdminMenuData() {
