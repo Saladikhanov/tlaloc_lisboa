@@ -1085,7 +1085,19 @@ export default function AdminBackOffice() {
 
       {statusMessage ? <p className="footer-note">{statusMessage}</p> : null}
       {isLoading ? <p className="footer-note db-loader">Loading data...</p> : null}
-      {isRefreshing ? <div className="sync-overlay-badge">Syncing with database...</div> : null}
+      <AnimatePresence>
+        {isRefreshing ? (
+          <motion.div
+            className="sync-overlay-badge"
+            initial={{ opacity: 0, y: -8, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.98 }}
+            transition={{ duration: 0.24, ease: "easeOut" }}
+          >
+            Syncing with database...
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
       <AnimatePresence>
         {isTutorialMode ? (
           <motion.div
