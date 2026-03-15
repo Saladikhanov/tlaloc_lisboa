@@ -1,6 +1,7 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { FormEvent, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import type { ReservationRecord } from "@/lib/types";
 
 type AdminMenuItem = {
@@ -45,11 +46,24 @@ type AdminMessageTemplate = {
   bodyPt: string;
 };
 
+type AdminTutorialSettings = {
+  id: string;
+  businessPhone: string;
+  businessEmail: string;
+};
+
 type TabId = "reservations" | "calendar" | "menu" | "hours" | "security";
 type DeleteReservationModalState = {
   id: string;
   guestName: string;
 } | null;
+
+type AnchorHintPosition = {
+  top: number;
+  left: number;
+};
+
+type ReservationTutorialHintMode = "contact" | "status" | "clean";
 
 const weekdayLabels = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const mondayFirstOrder: number[] = [1, 2, 3, 4, 5, 6, 0];
@@ -229,6 +243,134 @@ const getMessageLanguageLabel = (reservation: ReservationRecord): "EN" | "PT" =>
 const hasReservationExtraDetails = (reservation: ReservationRecord): boolean =>
   Boolean(reservation.occasion?.trim() || reservation.notes?.trim());
 
+function ReservationAnchorHints({
+  reservationId,
+  mode,
+}: {
+  reservationId: string;
+  mode: ReservationTutorialHintMode;
+}) {
+  const [positions, setPositions] = useState<Record<string, AnchorHintPosition>>({});
+
+  useEffect(() => {
+    const cardId = `reservation-card-${reservationId}`;
+    const readBtnId = `reservation-read-btn-${reservationId}`;
+    const deleteBtnId = `reservation-delete-btn-${reservationId}`;
+    const phoneId = `reservation-phone-link-${reservationId}`;
+    const emailId = `reservation-email-link-${reservationId}`;
+    const statusId = `reservation-status-actions-${reservationId}`;
+
+    const update = () => {
+      const card = document.getElementById(cardId);
+      if (!card) {
+        return;
+      }
+      const cardRect = card.getBoundingClientRect();
+      const next: Record<string, AnchorHintPosition> = {};
+
+      const anchor = (
+        key: string,
+        targetId: string,
+        mode:
+          | "above-left"
+          | "above-right"
+          | "above-center"
+          | "right-center"
+          | "left-center"
+          | "below-center"
+          | "above-inline-left",
+        offsetX: number,
+        offsetY: number,
+      ) => {
+        const el = document.getElementById(targetId);
+        if (!el) {
+          return;
+        }
+        const rect = el.getBoundingClientRect();
+        let left = rect.left - cardRect.left + offsetX;
+        let top = rect.top - cardRect.top + offsetY;
+
+        if (mode === "above-right") {
+          left = rect.right - cardRect.left + offsetX;
+          top = rect.top - cardRect.top + offsetY;
+        }
+
+        if (mode === "right-center") {
+          left = rect.right - cardRect.left + offsetX;
+          top = rect.top - cardRect.top + rect.height / 2 + offsetY;
+        }
+
+        if (mode === "left-center") {
+          left = rect.left - cardRect.left + offsetX;
+          top = rect.top - cardRect.top + rect.height / 2 + offsetY;
+        }
+
+        if (mode === "above-center") {
+          left = rect.left - cardRect.left + rect.width / 2 + offsetX;
+          top = rect.top - cardRect.top + offsetY;
+        }
+
+        if (mode === "below-center") {
+          left = rect.left - cardRect.left + rect.width / 2 + offsetX;
+          top = rect.bottom - cardRect.top + offsetY;
+        }
+
+        if (mode === "above-inline-left") {
+          left = rect.left - cardRect.left + offsetX;
+          top = rect.top - cardRect.top + offsetY;
+        }
+
+        next[key] = {
+          left,
+          top,
+        };
+      };
+
+      anchor("read", readBtnId, "above-center", -2, -4);
+      anchor("delete", deleteBtnId, "below-center", 0, 4);
+      anchor("phone", phoneId, "right-center", 12, -1);
+      anchor("email", emailId, "right-center", 12, -1);
+      anchor("status", statusId, "right-center", 8, 0);
+      setPositions(next);
+    };
+
+    update();
+    const frame = window.requestAnimationFrame(update);
+    window.addEventListener("resize", update);
+    window.addEventListener("scroll", update, true);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener("resize", update);
+      window.removeEventListener("scroll", update, true);
+    };
+  }, [mode, reservationId]);
+
+  const renderHint = (
+    key: string,
+    text: ReactNode,
+    className: string,
+  ) => {
+    const point = positions[key];
+    if (!point) {
+      return null;
+    }
+    return (
+      <span className={`reservation-anchor-hint ${className}`} style={{ left: point.left, top: point.top }}>
+        {text}
+      </span>
+    );
+  };
+
+  return (
+    <div className="reservation-anchor-layer" aria-hidden="true">
+      {mode === "clean" ? renderHint("read", <>mark as read</>, "reservation-anchor-hint-read") : null}
+      {mode === "contact" ? renderHint("phone", <>&larr; open WhatsApp</>, "reservation-anchor-hint-phone") : null}
+      {mode === "contact" ? renderHint("email", <>&larr; open email app</>, "reservation-anchor-hint-email") : null}
+      {mode === "status" ? renderHint("status", <>&larr; update status</>, "reservation-anchor-hint-status") : null}
+    </div>
+  );
+}
+
 export default function AdminBackOffice() {
   const [activeTab, setActiveTab] = useState<TabId>("reservations");
   const [isMenuEditMode, setIsMenuEditMode] = useState(false);
@@ -237,6 +379,11 @@ export default function AdminBackOffice() {
   const [menuSections, setMenuSections] = useState<AdminMenuSection[]>([]);
   const [workingHours, setWorkingHours] = useState<AdminWorkingHours[]>([]);
   const [messageTemplates, setMessageTemplates] = useState<AdminMessageTemplate[]>([]);
+  const [tutorialSettings, setTutorialSettings] = useState<AdminTutorialSettings>({
+    id: "default",
+    businessPhone: "+351 933 357 555",
+    businessEmail: "reservas@tlaloc.local",
+  });
   const [calendarMonth, setCalendarMonth] = useState(getTodayMonthKey);
   const [selectedCalendarDay, setSelectedCalendarDay] = useState<number | null>(null);
   const [selectedBulkWeekdays, setSelectedBulkWeekdays] = useState<number[]>([1, 2, 3, 4]);
@@ -249,10 +396,17 @@ export default function AdminBackOffice() {
   const [statusMessage, setStatusMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isTutorialMode, setIsTutorialMode] = useState(false);
+  const [isTutorialInProgress, setIsTutorialInProgress] = useState(false);
+  const [tutorialStepIndex, setTutorialStepIndex] = useState(0);
+  const [tutorialDemoStatus, setTutorialDemoStatus] =
+    useState<ReservationRecord["status"]>("new");
+  const [tutorialDemoIsRead, setTutorialDemoIsRead] = useState(false);
   const [showReadInPending, setShowReadInPending] = useState(false);
   const [actionKey, setActionKey] = useState<string | null>(null);
   const [deleteReservationModal, setDeleteReservationModal] =
     useState<DeleteReservationModalState>(null);
+  const tutorialStepRefs = useRef<Array<HTMLElement | null>>([]);
 
   const [newSection, setNewSection] = useState({
     slug: "",
@@ -296,6 +450,61 @@ export default function AdminBackOffice() {
     () => reservations.filter((reservation) => reservation.status === "confirmed"),
     [reservations],
   );
+  const isTutorialReservationMode = isTutorialInProgress && activeTab === "reservations";
+  const isTutorialCalendarMode = isTutorialInProgress && activeTab === "calendar";
+  const reservationTutorialHintMode: ReservationTutorialHintMode | null = useMemo(() => {
+    if (!isTutorialInProgress || isTutorialMode || activeTab !== "reservations") {
+      return null;
+    }
+    const hintStepIndex = Math.max(0, tutorialStepIndex - 1);
+
+    if (hintStepIndex === 1) {
+      return "contact";
+    }
+
+    if (hintStepIndex === 2) {
+      return "status";
+    }
+
+    if (hintStepIndex === 3) {
+      return "clean";
+    }
+
+    return null;
+  }, [activeTab, isTutorialInProgress, isTutorialMode, tutorialStepIndex]);
+  const tutorialDemoReservation = useMemo<ReservationRecord>(
+    () => ({
+      id: "tutorial-demo-reservation",
+      locale: "en",
+      firstName: "Alex",
+      lastName: "Demo",
+      phone: tutorialSettings.businessPhone,
+      email: tutorialSettings.businessEmail,
+      date: "2026-03-20",
+      time: "20:00",
+      guests: "2",
+      occasion: "Birthday",
+      notes: "Table by the window if possible.",
+      status: tutorialDemoStatus,
+      isRead: tutorialDemoIsRead,
+      createdAt: "2026-03-14T12:00:00.000Z",
+    }),
+    [tutorialDemoIsRead, tutorialDemoStatus, tutorialSettings.businessEmail, tutorialSettings.businessPhone],
+  );
+  const reservationsToRender = useMemo(
+    () => {
+      if (!isTutorialReservationMode) {
+        return activeReservations;
+      }
+
+      if (tutorialDemoReservation.isRead && !showReadInPending) {
+        return [];
+      }
+
+      return [tutorialDemoReservation];
+    },
+    [activeReservations, isTutorialReservationMode, showReadInPending, tutorialDemoReservation],
+  );
   const calendarMonthDate = useMemo(() => {
     const match = /^(\d{4})-(\d{2})$/.exec(calendarMonth);
     if (!match) {
@@ -303,6 +512,30 @@ export default function AdminBackOffice() {
     }
     return new Date(Number(match[1]), Number(match[2]) - 1, 1);
   }, [calendarMonth]);
+  const tutorialCalendarReservation = useMemo<ReservationRecord>(() => {
+    const year = calendarMonthDate.getFullYear();
+    const month = String(calendarMonthDate.getMonth() + 1).padStart(2, "0");
+    return {
+      id: "tutorial-demo-calendar",
+      locale: "en",
+      firstName: "Alex",
+      lastName: "Demo",
+      phone: tutorialSettings.businessPhone,
+      email: tutorialSettings.businessEmail,
+      date: `${year}-${month}-15`,
+      time: "20:00",
+      guests: "2",
+      occasion: "Birthday",
+      notes: "Table by the window if possible.",
+      status: "confirmed",
+      isRead: false,
+      createdAt: "2026-03-14T12:00:00.000Z",
+    };
+  }, [calendarMonthDate, tutorialSettings.businessEmail, tutorialSettings.businessPhone]);
+  const confirmedReservationsToRender = useMemo(
+    () => (isTutorialCalendarMode ? [tutorialCalendarReservation] : confirmedReservations),
+    [confirmedReservations, isTutorialCalendarMode, tutorialCalendarReservation],
+  );
   const monthLabel = useMemo(
     () =>
       calendarMonthDate.toLocaleDateString("en-GB", {
@@ -319,7 +552,7 @@ export default function AdminBackOffice() {
     const daysInMonth = new Date(Date.UTC(year, monthIndex + 1, 0, 12, 0, 0)).getUTCDate();
 
     const reservationsByDay = new Map<number, ReservationRecord[]>();
-    for (const reservation of confirmedReservations) {
+    for (const reservation of confirmedReservationsToRender) {
       const parsed = parseIsoDate(reservation.date);
       if (!parsed || parsed.year !== year || parsed.month !== monthIndex + 1) {
         continue;
@@ -346,7 +579,7 @@ export default function AdminBackOffice() {
     }
 
     return cells;
-  }, [calendarMonthDate, confirmedReservations]);
+  }, [calendarMonthDate, confirmedReservationsToRender]);
   const selectedDayReservations = useMemo(() => {
     if (selectedCalendarDay === null) {
       return [];
@@ -368,12 +601,18 @@ export default function AdminBackOffice() {
     }
     setStatusMessage("");
     try {
-      const [reservationResponse, menuResponse, workingHoursResponse, messageTemplatesResponse] =
-        await Promise.all([
+      const [
+        reservationResponse,
+        menuResponse,
+        workingHoursResponse,
+        messageTemplatesResponse,
+        tutorialSettingsResponse,
+      ] = await Promise.all([
         fetch("/api/reservations", { cache: "no-store" }),
         fetch("/api/admin/menu", { cache: "no-store" }),
         fetch("/api/admin/working-hours", { cache: "no-store" }),
         fetch("/api/admin/message-templates", { cache: "no-store" }),
+        fetch("/api/admin/tutorial-settings", { cache: "no-store" }),
       ]);
 
       const reservationJson = (await reservationResponse.json()) as { data?: ReservationRecord[] };
@@ -384,11 +623,21 @@ export default function AdminBackOffice() {
       const messageTemplatesJson = (await messageTemplatesResponse.json()) as {
         data?: AdminMessageTemplate[];
       };
+      const tutorialSettingsJson = (await tutorialSettingsResponse.json()) as {
+        data?: AdminTutorialSettings;
+      };
 
       setReservations(reservationJson.data ?? []);
       setMenuSections(menuJson.data ?? []);
       setWorkingHours(workingHoursJson.data ?? []);
       setMessageTemplates(messageTemplatesJson.data ?? []);
+      setTutorialSettings(
+        tutorialSettingsJson.data ?? {
+          id: "default",
+          businessPhone: "+351 933 357 555",
+          businessEmail: "reservas@tlaloc.local",
+        },
+      );
       setNewItem((prev) =>
         prev.sectionId || !menuJson.data?.[0]?.id
           ? prev
@@ -415,6 +664,60 @@ export default function AdminBackOffice() {
       setSelectedCalendarDay(null);
     }
   }, [calendarCells, selectedCalendarDay]);
+
+  useEffect(() => {
+    if (!isTutorialCalendarMode) {
+      return;
+    }
+    const tutorialDay = calendarCells.find((cell) =>
+      cell.reservations.some((reservation) => reservation.id === "tutorial-demo-calendar"),
+    )?.day;
+    if (tutorialDay === null || tutorialDay === undefined) {
+      return;
+    }
+    if (selectedCalendarDay !== tutorialDay) {
+      setSelectedCalendarDay(tutorialDay);
+    }
+  }, [calendarCells, isTutorialCalendarMode, selectedCalendarDay]);
+
+  useEffect(() => {
+    if (!isTutorialMode) {
+      return;
+    }
+    const stepCard = tutorialStepRefs.current[tutorialStepIndex];
+    if (!stepCard) {
+      return;
+    }
+    stepCard.scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
+  }, [isTutorialMode, tutorialStepIndex]);
+
+  const handleTutorialGoTo = useCallback((tab: TabId, stepIndex: number) => {
+    setTutorialStepIndex(stepIndex);
+    setActiveTab(tab);
+    setIsTutorialInProgress(true);
+    setIsTutorialMode(false);
+  }, []);
+
+  const handleHideTutorial = useCallback(() => {
+    setIsTutorialMode(false);
+  }, []);
+
+  const handleCloseTutorial = useCallback(() => {
+    setIsTutorialMode(false);
+    setIsTutorialInProgress(false);
+    setTutorialStepIndex(0);
+    setTutorialDemoStatus("new");
+    setTutorialDemoIsRead(false);
+  }, []);
+
+  const handleToggleTutorial = useCallback(() => {
+    if (isTutorialMode) {
+      handleCloseTutorial();
+      return;
+    }
+    setIsTutorialInProgress(true);
+    setIsTutorialMode(true);
+  }, [handleCloseTutorial, isTutorialMode]);
 
   async function runAction(key: string, action: () => Promise<void>) {
     setActionKey(key);
@@ -623,6 +926,28 @@ export default function AdminBackOffice() {
     });
   }
 
+  async function saveTutorialSettingsConfiguration() {
+    await runAction("save-tutorial-settings", async () => {
+      const response = await fetch("/api/admin/tutorial-settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          businessPhone: tutorialSettings.businessPhone,
+          businessEmail: tutorialSettings.businessEmail,
+        }),
+      });
+
+      const json = (await response.json().catch(() => ({}))) as { error?: string };
+      if (!response.ok) {
+        setStatusMessage(json.error ?? "Could not save tutorial settings.");
+        return;
+      }
+
+      setStatusMessage("Tutorial demo contact updated.");
+      await loadAll();
+    });
+  }
+
   function toggleBulkDay(day: number) {
     setSelectedBulkWeekdays((prev) =>
       prev.includes(day) ? prev.filter((candidate) => candidate !== day) : [...prev, day],
@@ -740,7 +1065,7 @@ export default function AdminBackOffice() {
           onClick={() => setActiveTab("security")}
           type="button"
         >
-          Security
+          Settings
         </button>
         <button
           className={`btn ${activeTab === "hours" ? "btn-primary" : "btn-secondary"}`}
@@ -749,11 +1074,243 @@ export default function AdminBackOffice() {
         >
           Working Hours
         </button>
+        <button
+          className={`btn ${isTutorialMode || isTutorialInProgress ? "btn-primary" : "btn-secondary"}`}
+          type="button"
+          onClick={handleToggleTutorial}
+        >
+          {isTutorialMode ? "Exit tutorial mode" : "Tutorial mode"}
+        </button>
       </div>
 
       {statusMessage ? <p className="footer-note">{statusMessage}</p> : null}
       {isLoading ? <p className="footer-note db-loader">Loading data...</p> : null}
       {isRefreshing ? <div className="sync-overlay-badge">Syncing with database...</div> : null}
+      <AnimatePresence>
+        {isTutorialMode ? (
+          <motion.div
+            className="tutorial-overlay"
+            role="dialog"
+            aria-modal="false"
+            aria-label="Back Office Tutorial"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+          >
+            <motion.section
+              className="card tutorial-mode-card tutorial-overlay-panel"
+              initial={{ y: 26, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 26, opacity: 0 }}
+              transition={{ duration: 0.24, ease: "easeOut" }}
+            >
+            <div className="tutorial-overlay-head">
+              <h3>Back Office Tutorial</h3>
+              <button className="btn btn-secondary" type="button" onClick={handleHideTutorial}>
+                Hide
+              </button>
+            </div>
+            <p className="footer-note" style={{ marginTop: "0.45rem" }}>
+              Recommended workflow: inbox first, communicate with guest, update status, and mark as
+              read when done.
+            </p>
+            <div className="tutorial-steps">
+              <article
+                className="tutorial-step"
+                ref={(element) => {
+                  tutorialStepRefs.current[0] = element;
+                }}
+              >
+                <strong>1) Pending Inbox</strong>
+                <p className="footer-note">
+                  Open <em>Reservations</em>. New requests appear here in chronological order. Use
+                  EN/PT badge to know message language.
+                </p>
+                <button
+                  className="btn btn-secondary"
+                  type="button"
+                  onClick={() => handleTutorialGoTo("reservations", 1)}
+                >
+                  Go to Reservations
+                </button>
+                <p className="footer-note tutorial-action-note">
+                  Opens Reservations tab and closes tutorial until you continue.
+                </p>
+              </article>
+              <article
+                className="tutorial-step"
+                ref={(element) => {
+                  tutorialStepRefs.current[1] = element;
+                }}
+              >
+                <strong>2) Contact the Guest</strong>
+                <p className="footer-note">
+                  Click phone (WhatsApp) or email. Message is prefilled from templates with
+                  reservation variables.
+                </p>
+                <button
+                  className="btn btn-secondary"
+                  type="button"
+                  onClick={() => {
+                    setActiveTab("reservations");
+                    setTutorialStepIndex(2);
+                    handleHideTutorial();
+                  }}
+                >
+                  Try it
+                </button>
+                <p className="footer-note tutorial-action-note">
+                  Hides tutorial module so you can test phone/email actions on the card.
+                </p>
+              </article>
+              <article
+                className="tutorial-step"
+                ref={(element) => {
+                  tutorialStepRefs.current[2] = element;
+                }}
+              >
+                <strong>3) Update Status</strong>
+                <p className="footer-note">
+                  Use New / Confirmed / Cancelled. Confirmed reservations also appear in calendar.
+                </p>
+                <button
+                  className="btn btn-secondary"
+                  type="button"
+                  onClick={() => {
+                    setActiveTab("reservations");
+                    setTutorialStepIndex(3);
+                    handleHideTutorial();
+                  }}
+                >
+                  Try it
+                </button>
+                <p className="footer-note tutorial-action-note">
+                  Hides tutorial module so you can test New/Confirmed/Cancelled actions on a card.
+                </p>
+              </article>
+              <article
+                className="tutorial-step"
+                ref={(element) => {
+                  tutorialStepRefs.current[3] = element;
+                }}
+              >
+                <strong>4) Clean Inbox</strong>
+                <p className="footer-note">
+                  Click the check icon to mark as read. Use <em>Show read reservations</em> if you
+                  need to revisit cleaned items.
+                </p>
+                <button
+                  className="btn btn-secondary"
+                  type="button"
+                  onClick={() => {
+                    setActiveTab("reservations");
+                    setTutorialStepIndex(4);
+                    handleHideTutorial();
+                  }}
+                >
+                  Try it
+                </button>
+                <p className="footer-note tutorial-action-note">
+                  Hides tutorial so you can mark the card as read; continuing goes to calendar.
+                </p>
+              </article>
+              <article
+                className="tutorial-step"
+                ref={(element) => {
+                  tutorialStepRefs.current[4] = element;
+                }}
+              >
+                <strong>5) Confirmed Calendar</strong>
+                <p className="footer-note">
+                  Review confirmed bookings by date and quickly navigate across months.
+                </p>
+                <button
+                  className="btn btn-secondary"
+                  type="button"
+                  onClick={() => handleTutorialGoTo("calendar", 5)}
+                >
+                  Go to Confirmed Calendar
+                </button>
+                <p className="footer-note tutorial-action-note">
+                  Opens Confirmed Calendar and keeps tutorial step remembered.
+                </p>
+              </article>
+              <article
+                className="tutorial-step"
+                ref={(element) => {
+                  tutorialStepRefs.current[5] = element;
+                }}
+              >
+                <strong>6) Configure Messages (Optional)</strong>
+                <p className="footer-note">
+                  FYI: in <em>Settings → Message Templates</em>, you can edit EN/PT templates and
+                  variables like{" "}
+                  {"{firstName}"}, {"{date}"}, {"{time}"}, {"{guests}"}.
+                </p>
+                <button
+                  className="btn btn-secondary"
+                  type="button"
+                  onClick={() => handleTutorialGoTo("security", 6)}
+                >
+                  Open Settings (Optional)
+                </button>
+                <p className="footer-note tutorial-action-note">
+                  Optional step. Opens Settings and advances tutorial.
+                </p>
+              </article>
+              <article
+                className="tutorial-step"
+                ref={(element) => {
+                  tutorialStepRefs.current[6] = element;
+                }}
+              >
+                <strong>7) Manage Working Hours (Optional)</strong>
+                <p className="footer-note">
+                  FYI: set opening hours and bulk updates. Reservation form enforces these slots.
+                </p>
+                <button
+                  className="btn btn-secondary"
+                  type="button"
+                  onClick={() => handleTutorialGoTo("hours", 7)}
+                >
+                  Open Working Hours (Optional)
+                </button>
+                <p className="footer-note tutorial-action-note">
+                  Optional step. Opens Working Hours and advances tutorial.
+                </p>
+              </article>
+              <article
+                className="tutorial-step"
+                ref={(element) => {
+                  tutorialStepRefs.current[7] = element;
+                }}
+              >
+                <strong>8) Finish Tutorial</strong>
+                <p className="footer-note">
+                  End tutorial mode and clear all tutorial hints and progress state.
+                </p>
+                <button className="btn btn-secondary" type="button" onClick={handleCloseTutorial}>
+                  Finish tutorial
+                </button>
+                <p className="footer-note tutorial-action-note">
+                  Exits tutorial mode completely and hides the continue button.
+                </p>
+              </article>
+            </div>
+            </motion.section>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+      {isTutorialInProgress && !isTutorialMode ? (
+        <button
+          className="btn btn-primary tutorial-continue-btn"
+          type="button"
+          onClick={() => setIsTutorialMode(true)}
+        >
+          Continue tutorial
+        </button>
+      ) : null}
 
       {activeTab === "reservations" ? (
         <div style={{ display: "grid", gap: "0.6rem" }}>
@@ -770,7 +1327,7 @@ export default function AdminBackOffice() {
             <span className="ios-switch" aria-hidden="true" />
             <span>Show read reservations</span>
           </label>
-          {isLoading ? (
+          {isLoading && !isTutorialReservationMode ? (
             <div className="reservation-list-loader" aria-live="polite" aria-busy="true">
               <article className="card reservation-skeleton-card">
                 <div className="skeleton-line w-35" />
@@ -785,19 +1342,30 @@ export default function AdminBackOffice() {
                 <div className="skeleton-line w-50" />
               </article>
             </div>
-          ) : activeReservations.length === 0 ? (
+          ) : reservationsToRender.length === 0 ? (
             <div className="card">No reservations in inbox.</div>
           ) : (
-            activeReservations.map((reservation) => (
-              <article className="card" key={reservation.id}>
+            reservationsToRender.map((reservation) => (
+              <article className="card reservation-anchor-card" key={reservation.id} id={`reservation-card-${reservation.id}`}>
                 <div className="reservation-card-actions">
                   <button
                     className={`icon-btn reservation-delete-corner-btn ${reservation.isRead ? "read-icon-btn" : ""}`}
                     type="button"
+                    id={`reservation-read-btn-${reservation.id}`}
                     aria-label={`${reservation.isRead ? "Already read" : "Mark as read"} for ${reservation.firstName} ${reservation.lastName}`}
                     title={reservation.isRead ? "Already read" : "Mark as read"}
-                    onClick={() => markReservationRead(reservation.id)}
-                    disabled={actionKey !== null || reservation.isRead}
+                    onClick={() => {
+                      if (reservation.id === "tutorial-demo-reservation") {
+                        setTutorialDemoIsRead(true);
+                        return;
+                      }
+                      void markReservationRead(reservation.id);
+                    }}
+                    disabled={
+                      reservation.id === "tutorial-demo-reservation"
+                        ? tutorialDemoIsRead
+                        : actionKey !== null || reservation.isRead
+                    }
                   >
                     <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
                       <path
@@ -813,15 +1381,19 @@ export default function AdminBackOffice() {
                   <button
                     className="icon-btn danger-icon-btn reservation-delete-corner-btn"
                     type="button"
+                    id={`reservation-delete-btn-${reservation.id}`}
                     aria-label={`Delete reservation for ${reservation.firstName} ${reservation.lastName}`}
                     title="Delete reservation"
-                    onClick={() =>
+                    onClick={() => {
+                      if (reservation.id === "tutorial-demo-reservation") {
+                        return;
+                      }
                       setDeleteReservationModal({
                         id: reservation.id,
                         guestName: `${reservation.firstName} ${reservation.lastName}`,
-                      })
-                    }
-                    disabled={actionKey !== null}
+                      });
+                    }}
+                    disabled={reservation.id === "tutorial-demo-reservation" || actionKey !== null}
                   >
                     <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
                       <path
@@ -835,6 +1407,12 @@ export default function AdminBackOffice() {
                     </svg>
                   </button>
                 </div>
+                {reservationTutorialHintMode ? (
+                  <ReservationAnchorHints
+                    reservationId={reservation.id}
+                    mode={reservationTutorialHintMode}
+                  />
+                ) : null}
                 <div className="reservation-meta-row">
                   <p className="footer-note" style={{ marginTop: 0, marginBottom: "0.35rem" }}>
                     Reservation #{reservation.id.slice(0, 8)}
@@ -857,6 +1435,7 @@ export default function AdminBackOffice() {
                 </p>
                 <p>
                   <a
+                    id={`reservation-phone-link-${reservation.id}`}
                     href={toWhatsAppUrl(reservation.phone, reservation, messageTemplates)}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -865,7 +1444,10 @@ export default function AdminBackOffice() {
                   </a>
                 </p>
                 <p>
-                  <a href={toEmailUrl(reservation.email, reservation, messageTemplates)}>
+                  <a
+                    id={`reservation-email-link-${reservation.id}`}
+                    href={toEmailUrl(reservation.email, reservation, messageTemplates)}
+                  >
                     {reservation.email}
                   </a>
                 </p>
@@ -881,32 +1463,55 @@ export default function AdminBackOffice() {
                     </p>
                   </details>
                 ) : null}
-                <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.4rem", flexWrap: "wrap" }}>
+                <div
+                  id={`reservation-status-actions-${reservation.id}`}
+                  style={{ display: "flex", gap: "0.5rem", marginTop: "0.4rem", flexWrap: "wrap" }}
+                >
                   <button
                     className="btn btn-secondary"
                     type="button"
-                    disabled={actionKey !== null}
-                    onClick={() => changeReservationStatus(reservation.id, "new")}
+                    disabled={reservation.id === "tutorial-demo-reservation" ? false : actionKey !== null}
+                    onClick={() => {
+                      if (reservation.id === "tutorial-demo-reservation") {
+                        setTutorialDemoStatus("new");
+                        return;
+                      }
+                      void changeReservationStatus(reservation.id, "new");
+                    }}
                   >
-                    {actionKey === `reservation-${reservation.id}-new` ? "Updating..." : "New"}
+                    {reservation.id !== "tutorial-demo-reservation" && actionKey === `reservation-${reservation.id}-new`
+                      ? "Updating..."
+                      : "New"}
                   </button>
                   <button
                     className="btn btn-secondary"
                     type="button"
-                    disabled={actionKey !== null}
-                    onClick={() => changeReservationStatus(reservation.id, "confirmed")}
+                    disabled={reservation.id === "tutorial-demo-reservation" ? false : actionKey !== null}
+                    onClick={() => {
+                      if (reservation.id === "tutorial-demo-reservation") {
+                        setTutorialDemoStatus("confirmed");
+                        return;
+                      }
+                      void changeReservationStatus(reservation.id, "confirmed");
+                    }}
                   >
-                    {actionKey === `reservation-${reservation.id}-confirmed`
+                    {reservation.id !== "tutorial-demo-reservation" && actionKey === `reservation-${reservation.id}-confirmed`
                       ? "Updating..."
                       : "Confirmed"}
                   </button>
                   <button
                     className="btn btn-secondary"
                     type="button"
-                    disabled={actionKey !== null}
-                    onClick={() => changeReservationStatus(reservation.id, "cancelled")}
+                    disabled={reservation.id === "tutorial-demo-reservation" ? false : actionKey !== null}
+                    onClick={() => {
+                      if (reservation.id === "tutorial-demo-reservation") {
+                        setTutorialDemoStatus("cancelled");
+                        return;
+                      }
+                      void changeReservationStatus(reservation.id, "cancelled");
+                    }}
                   >
-                    {actionKey === `reservation-${reservation.id}-cancelled`
+                    {reservation.id !== "tutorial-demo-reservation" && actionKey === `reservation-${reservation.id}-cancelled`
                       ? "Updating..."
                       : "Cancelled"}
                   </button>
@@ -1545,6 +2150,38 @@ export default function AdminBackOffice() {
 
       {activeTab === "security" ? (
         <div style={{ display: "grid", gap: "1rem" }}>
+          <section className="card">
+            <h3 style={{ marginBottom: "0.7rem" }}>Tutorial Demo Contact</h3>
+            <p className="footer-note" style={{ marginTop: 0 }}>
+              Used by tutorial dummy card for WhatsApp and email actions.
+            </p>
+            <div className="form-grid" style={{ marginTop: "0.7rem" }}>
+              <input
+                placeholder="Business WhatsApp number"
+                value={tutorialSettings.businessPhone}
+                onChange={(event) =>
+                  setTutorialSettings((prev) => ({ ...prev, businessPhone: event.target.value }))
+                }
+              />
+              <input
+                placeholder="Business email"
+                type="email"
+                value={tutorialSettings.businessEmail}
+                onChange={(event) =>
+                  setTutorialSettings((prev) => ({ ...prev, businessEmail: event.target.value }))
+                }
+              />
+              <button
+                className="btn btn-primary"
+                type="button"
+                disabled={actionKey !== null}
+                onClick={saveTutorialSettingsConfiguration}
+              >
+                {actionKey === "save-tutorial-settings" ? "Saving..." : "Save tutorial contact"}
+              </button>
+            </div>
+          </section>
+
           <section className="card">
             <h3 style={{ marginBottom: "0.7rem" }}>Change Admin Password</h3>
             <form onSubmit={onPasswordSubmit} className="form-grid">

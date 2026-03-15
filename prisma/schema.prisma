@@ -102,3 +102,11 @@ model MessageTemplate {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model TutorialSettings {
+  id            String   @id @default("default")
+  businessPhone String
+  businessEmail String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
