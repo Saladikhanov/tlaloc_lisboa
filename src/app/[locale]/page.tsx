@@ -144,6 +144,17 @@ export default async function HomePage({ params }: Props) {
           </div>
         </section>
 
+        <section className="home-discount-banner" aria-label={t("discountBannerHeadline")}>
+          <div className="offer-block">
+            <div className="offer-pct">20%</div>
+            <div className="offer-label">{t("discountBannerHeadline")}</div>
+            <div className="offer-desc">{t("discountBannerBody")}</div>
+            <Link className="btn btn-primary home-discount-banner-cta" href="/reserve">
+              {t("discountBannerCta")}
+            </Link>
+          </div>
+        </section>
+
         <section className="card home-hours-card">
           <p className="home-section-kicker">🕐 {isPortuguese ? "HORARIO" : "OPENING HOURS"}</p>
           <div className="home-hours-head">

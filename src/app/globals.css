@@ -490,6 +490,67 @@ a {
   box-shadow: 0 8px 18px rgba(148, 163, 184, 0.28);
 }
 
+.home-discount-banner {
+  margin: 0 auto 1.25rem;
+  max-width: 920px;
+  padding: 1rem 1.1rem;
+}
+
+.home-discount-banner-cta {
+  margin-top: 1rem;
+}
+
+.offer-block {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, #5a0010, #7a1a00, #922800);
+      border: 2px solid rgba(232, 53, 26, 0.5);
+      border-radius: 26px;
+      padding: 36px;
+      text-align: center;
+      margin-bottom: 40px;
+      box-shadow: 0 12px 60px rgba(232, 53, 26, 0.3);
+    }
+
+    .offer-block::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: url("data:image/svg+xml,%3Csvg width='30' height='30' viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpolygon points='15,3 17,10 24,10 18,15 21,22 15,17 9,22 12,15 6,10 13,10' fill='%23FFFFFF08'/%3E%3C/svg%3E") repeat;
+    }
+
+    .offer-pct {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 6.5rem;
+      line-height: 1;
+      color: white;
+      letter-spacing: 2px;
+      position: relative;
+      text-shadow: 0 0 40px rgba(255, 140, 0, 0.7), 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .offer-label {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.5rem;
+      letter-spacing: 3px;
+      color: var(--gold);
+      position: relative;
+      margin-top: -6px;
+    }
+
+    .offer-desc {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: .92rem;
+      font-weight: 700;
+      margin-top: 10px;
+      position: relative;
+    }
+
+    .offer-desc span {
+      color: var(--gold);
+    }
+
 .hero {
   padding: 1rem 0 2.5rem;
 }
