@@ -4,7 +4,10 @@ import { Link } from "@/i18n/navigation";
 import PublicNav from "@/components/public-nav";
 import DeliveryButton from "@/components/delivery-button";
 import { routing } from "@/i18n/routing";
-import { listWorkingHours, type WorkingHoursRecord } from "@/lib/working-hours-store";
+import HomeGallery from "@/components/home-gallery";
+import HomeOpenStatus from "@/components/home-open-status";
+import { computeIsOpenNow } from "@/lib/working-hours-open-now";
+import { listWorkingHours } from "@/lib/working-hours-store";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -13,73 +16,6 @@ type Props = {
 export const revalidate = 60;
 
 const mapsUrl = "https://maps.google.com/?q=R.+do+Cruzeiro+1+Lisboa";
-
-const toMinutes = (timeValue: string | null): number | null => {
-  if (!timeValue) {
-    return null;
-  }
-
-  const [hoursString, minutesString] = timeValue.split(":");
-  const hours = Number(hoursString);
-  const minutes = Number(minutesString);
-  if (!Number.isFinite(hours) || !Number.isFinite(minutes)) {
-    return null;
-  }
-
-  return hours * 60 + minutes;
-};
-
-const isOpenNowForDay = (dayHours: WorkingHoursRecord, currentMinutes: number): boolean => {
-  if (dayHours.isClosed) {
-    return false;
-  }
-
-  const isInsideShift = (open: string | null, close: string | null) => {
-    const openMinutes = toMinutes(open);
-    const closeMinutes = toMinutes(close);
-    if (openMinutes === null || closeMinutes === null || openMinutes >= closeMinutes) {
-      return false;
-    }
-    return currentMinutes >= openMinutes && currentMinutes <= closeMinutes;
-  };
-
-  return (
-    isInsideShift(dayHours.lunchOpen, dayHours.lunchClose) ||
-    isInsideShift(dayHours.dinnerOpen, dayHours.dinnerClose)
-  );
-};
-
-const getLisbonNow = (): { weekday: number; minutes: number } => {
-  const weekdayShort = new Intl.DateTimeFormat("en-US", {
-    weekday: "short",
-    timeZone: "Europe/Lisbon",
-  }).format(new Date());
-
-  const timeValue = new Intl.DateTimeFormat("en-GB", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hourCycle: "h23",
-    timeZone: "Europe/Lisbon",
-  }).format(new Date());
-
-  const weekdayMap: Record<string, number> = {
-    Sun: 0,
-    Mon: 1,
-    Tue: 2,
-    Wed: 3,
-    Thu: 4,
-    Fri: 5,
-    Sat: 6,
-  };
-
-  const [hoursString, minutesString] = timeValue.split(":");
-  const hours = Number(hoursString) || 0;
-  const minutes = Number(minutesString) || 0;
-  return {
-    weekday: weekdayMap[weekdayShort] ?? 0,
-    minutes: hours * 60 + minutes,
-  };
-};
 
 export default async function HomePage({ params }: Props) {
   const { locale } = await params;
@@ -92,9 +28,7 @@ export default async function HomePage({ params }: Props) {
     namespace: "Home",
   });
   const schedule = await listWorkingHours();
-  const lisbonNow = getLisbonNow();
-  const todayHours = schedule.find((entry) => entry.weekday === lisbonNow.weekday);
-  const isOpenNow = todayHours ? isOpenNowForDay(todayHours, lisbonNow.minutes) : false;
+  const isOpenNow = computeIsOpenNow(schedule);
   const getDayHours = (weekday: number) => schedule.find((entry) => entry.weekday === weekday);
   const mon = getDayHours(1);
   const thu = getDayHours(4);
@@ -118,31 +52,64 @@ export default async function HomePage({ params }: Props) {
       <main className="site-shell">
         <div className="menu-top-zigzag" aria-hidden="true" />
 
-        <section className="hero">
-          <div className="home-hero-content">
-            <Image
-              className="home-hero-image"
-              src="/op_image.webp"
-              alt="Tláloc Cantina"
-              width={1200}
-              height={630}
-              priority
-            />
+        <div className="hero-fullbleed">
+          <section className="hero">
+            <div className="hero-bg-layer" aria-hidden="true">
+              <Image
+                className="hero-bg-image hero-bg-image--base"
+                src="/backgroundTlaloc.webp"
+                alt=""
+                fill
+                loading="lazy"
+                quality={100}
+                sizes="100vw"
+              />
+              <Image
+                className="hero-bg-image hero-bg-image--blur-top"
+                src="/backgroundTlaloc.webp"
+                alt=""
+                fill
+                loading="lazy"
+                quality={100}
+                sizes="100vw"
+              />
+              <Image
+                className="hero-bg-image hero-bg-image--blur-band"
+                src="/backgroundTlaloc.webp"
+                alt=""
+                fill
+                loading="lazy"
+                quality={100}
+                sizes="100vw"
+              />
+            </div>
+            <div className="hero-scrim" aria-hidden="true" />
 
-            <h1>Tacos · Margaritas · Boas Vibrações</h1>
-            <p>{t("heroDescription")}</p>
-          </div>
+            <div className="home-hero-content">
+              <Image
+                className="home-hero-image"
+                src="/op_image.webp"
+                alt="Tláloc Cantina"
+                width={1200}
+                height={630}
+                priority
+              />
 
-          <div className="hero-ctas">
-            <Link className="btn btn-primary" href="/menu">
-              {t("openMenu")}
-            </Link>
-            <Link className="btn btn-secondary" href="/reserve">
-              {t("reserve")}
-            </Link>
-            <DeliveryButton label={t("orderDelivery")} />
-          </div>
-        </section>
+              <h1>Tacos · Margaritas · Boas Vibrações</h1>
+              <p>{t("heroDescription")}</p>
+            </div>
+
+            <div className="hero-ctas">
+              <Link className="btn btn-primary" href="/menu">
+                {t("openMenu")}
+              </Link>
+              <Link className="btn btn-secondary" href="/reserve">
+                {t("reserve")}
+              </Link>
+              <DeliveryButton label={t("orderDelivery")} />
+            </div>
+          </section>
+        </div>
 
         <section className="home-discount-banner" aria-label={t("discountBannerHeadline")}>
           <div className="offer-block">
@@ -150,7 +117,7 @@ export default async function HomePage({ params }: Props) {
             <div className="offer-label">{t("discountBannerHeadline")}</div>
             <div className="offer-desc">{t("discountBannerBody")}</div>
             <Link className="btn btn-primary home-discount-banner-cta" href="/reserve">
-              {t("discountBannerCta")}
+              <span className="btn-cta-shine-label">{t("discountBannerCta")}</span>
             </Link>
           </div>
         </section>
@@ -159,10 +126,11 @@ export default async function HomePage({ params }: Props) {
           <p className="home-section-kicker">🕐 {isPortuguese ? "HORARIO" : "OPENING HOURS"}</p>
           <div className="home-hours-head">
             <h3>{t("workingHoursTitle")}</h3>
-            <p className={`home-open-status ${isOpenNow ? "open" : "closed"}`}>
-              <span className="home-open-status-dot" />
-              {isOpenNow ? t("currentlyOpen") : t("currentlyClosed")}
-            </p>
+            <HomeOpenStatus
+              initialOpen={isOpenNow}
+              openLabel={t("currentlyOpen")}
+              closedLabel={t("currentlyClosed")}
+            />
           </div>
           <div className="home-hours-summary">
             <p className="home-hours-line">
@@ -179,6 +147,8 @@ export default async function HomePage({ params }: Props) {
             </p>
           </div>
         </section>
+
+        <HomeGallery />
 
         <section className="card home-contact-card">
           <p className="home-section-kicker">📍 LOCATION & CONTACT</p>

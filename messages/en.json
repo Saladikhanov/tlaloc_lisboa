@@ -24,7 +24,13 @@
     "reservationTitle": "2) Reservation System",
     "reservationBody": "Online booking form connected to API endpoints, ready for database and notifications.",
     "seoTitle": "3) SEO Landing",
-    "seoBody": "Server-rendered pages for Google discovery while reusing the same content model."
+    "seoBody": "Server-rendered pages for Google discovery while reusing the same content model.",
+    "galleryTitle": "Gallery",
+    "galleryPrev": "Previous photo",
+    "galleryNext": "Next photo",
+    "galleryNextTap": "Show next photo",
+    "galleryPhotoAlt": "Tláloc Cantina — photo {n}",
+    "galleryGoTo": "Go to photo {n}"
   },
   "MenuPage": {
     "headerTitle": "Menu",

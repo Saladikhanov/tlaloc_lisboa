@@ -65,7 +65,7 @@ export default function MenuQuickFind({
         aria-expanded={isOpen}
         onClick={() => setIsOpen((prev) => !prev)}
       >
-        {isOpen ? "✕" : quickFindLabel}
+        <span className="btn-cta-shine-label">{isOpen ? "✕" : quickFindLabel}</span>
       </button>
 
       <section

@@ -24,7 +24,13 @@
     "reservationTitle": "2) Sistema de Reservas",
     "reservationBody": "Formulario online ligado a API, pronto para regras de disponibilidade, base de dados e notificacoes.",
     "seoTitle": "3) Landing SEO",
-    "seoBody": "Paginas server-rendered para Google, reaproveitando o mesmo modelo de dados do menu."
+    "seoBody": "Paginas server-rendered para Google, reaproveitando o mesmo modelo de dados do menu.",
+    "galleryTitle": "Galeria",
+    "galleryPrev": "Fotografia anterior",
+    "galleryNext": "Fotografia seguinte",
+    "galleryNextTap": "Ver fotografia seguinte",
+    "galleryPhotoAlt": "Tláloc Cantina — fotografia {n}",
+    "galleryGoTo": "Ir para fotografia {n}"
   },
   "MenuPage": {
     "headerTitle": "Menu",
