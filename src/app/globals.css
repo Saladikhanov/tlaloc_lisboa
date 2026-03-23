@@ -491,9 +491,10 @@ a {
 }
 
 .home-discount-banner {
-  margin: 0 auto 1.25rem;
+  margin: -3px auto 0.65rem;
   max-width: 920px;
-  padding: 1rem 1.1rem;
+  padding: 0.75rem 1.1rem 0.45rem;
+  background-color: #130800;
 }
 
 .home-discount-banner-cta {
@@ -549,7 +550,7 @@ a {
       border-radius: 26px;
       padding: 36px;
       text-align: center;
-      margin-bottom: 40px;
+      margin-bottom: 0;
       box-shadow: 0 12px 60px rgba(232, 53, 26, 0.3);
     }
 
@@ -594,15 +595,18 @@ a {
 
 .hero-fullbleed {
   position: relative;
-  left: 50%;
-  transform: translateX(-50%);
   width: 100vw;
+  max-width: none;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  background-color: #130800;
+  overflow: hidden;
 }
 
 .hero {
   position: relative;
-  isolation: isolate;
   overflow: hidden;
+  background-color: #130800;
   padding: 1.25rem 1rem 2.75rem;
   min-height: min(78vh, 820px);
   display: flex;
@@ -614,7 +618,8 @@ a {
 
 .hero-bg-layer {
   position: absolute;
-  inset: -28px;
+  /* Extra bleed: avoids 1px seams where blur/cover meet the hero clip */
+  inset: -42px;
   z-index: 0;
   pointer-events: none;
 }
@@ -622,17 +627,21 @@ a {
 .hero-bg-image {
   object-fit: cover;
   object-position: center;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 .hero-bg-image--base {
   z-index: 0;
+  transform: scale(1.045);
+  transform-origin: center center;
 }
 
 /* Top ~5%: blurred duplicate masked */
 .hero-bg-image--blur-top {
   z-index: 1;
   filter: blur(14px);
-  transform: scale(1.07);
+  transform: scale(1.12);
   transform-origin: center center;
   -webkit-mask-image: linear-gradient(
     to bottom,
@@ -656,7 +665,8 @@ a {
 .hero-bg-image--blur-band {
   z-index: 1;
   filter: blur(14px);
-  transform: scale(1.07);
+  transform: scale(1.12);
+  transform-origin: center center;
   -webkit-mask-image: linear-gradient(
     to bottom,
     transparent 0%,
@@ -1089,11 +1099,12 @@ a {
 
 .menu-top-zigzag {
   position: relative;
-  left: 50%;
-  transform: translateX(-50%);
   width: 100vw;
+  max-width: none;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
   height: 30px;
-  margin-bottom: 1rem;
+  margin-bottom: 0;
   background: repeating-linear-gradient(
     90deg,
     var(--fire) 0 17px,
@@ -1859,15 +1870,23 @@ textarea {
     width: 80%;
   }
 
-  /* Avoid 100vw vs shell rounding gaps + iOS subpixel stripes at hero edges */
+  .hero {
+    min-height: 0;
+    justify-content: flex-start;
+    padding: 0.85rem 1rem 1.35rem;
+  }
+
+  /* Avoid 100vw rounding gaps; margin centers the slightly wider strip */
   .menu-top-zigzag,
   .hero-fullbleed {
     width: calc(100vw + 4px);
     max-width: none;
+    margin-left: calc(50% - 50vw - 2px);
+    margin-right: calc(50% - 50vw - 2px);
   }
 
   .hero-bg-layer {
-    inset: -32px -36px;
+    inset: -48px;
   }
 
   .home-hero-content {
