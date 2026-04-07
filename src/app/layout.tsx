@@ -35,10 +35,11 @@ export const metadata: Metadata = {
   metadataBase: new URL(appBaseUrl),
   manifest: "/manifest.webmanifest",
   icons: {
-    icon: "/favicon.webp",
-    shortcut: "/favicon.webp",
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
     apple: "/apple-touch-icon.png",
     other: [
+      { rel: "icon", url: "/favicon.webp", type: "image/webp" },
       { rel: "icon", url: "/favicon.ico" },
       { rel: "icon", url: "/icon-192.png", type: "image/png", sizes: "192x192" },
       { rel: "icon", url: "/icon-512.png", type: "image/png", sizes: "512x512" },
@@ -80,7 +81,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <meta property="og:logo" content={`${appBaseUrl}/favicon.webp`} />
+        <meta property="og:logo" content={`${appBaseUrl}/favicon.ico`} />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${bebasNeue.variable} ${pacifico.variable}`}
