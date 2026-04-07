@@ -119,27 +119,27 @@ const defaultMessageTemplates: Omit<AdminMessageTemplate, "id">[] = [
     subjectEn: "We received your reservation request",
     subjectPt: "Recebemos o seu pedido de reserva",
     bodyEn:
-      "Hi {firstName},\nWe received your reservation request.\nDate: {date}\nTime: {time}\nGuests: {guests}\nWe will confirm shortly.\nTlaloc Cantina",
+      "Hi {firstName},\nWe received your reservation request.\nDate: {date}\nTime: {time}\nGuests: {guests}\nWe will confirm shortly.\nTlaloc Restaurant",
     bodyPt:
-      "Ola {firstName},\nRecebemos o seu pedido de reserva.\nData: {date}\nHora: {time}\nPessoas: {guests}\nVamos confirmar em breve.\nTlaloc Cantina",
+      "Ola {firstName},\nRecebemos o seu pedido de reserva.\nData: {date}\nHora: {time}\nPessoas: {guests}\nVamos confirmar em breve.\nTlaloc Restaurant",
   },
   {
     key: "reservation_confirmed",
-    subjectEn: "Reservation confirmed - Tlaloc Cantina",
-    subjectPt: "Reserva confirmada - Tlaloc Cantina",
+    subjectEn: "Reservation confirmed - Tlaloc Restaurant",
+    subjectPt: "Reserva confirmada - Tlaloc Restaurant",
     bodyEn:
-      "Hi {firstName},\nYour reservation is confirmed.\nDate: {date}\nTime: {time}\nGuests: {guests}\nSee you soon!\nTlaloc Cantina",
+      "Hi {firstName},\nYour reservation is confirmed.\nDate: {date}\nTime: {time}\nGuests: {guests}\nSee you soon!\nTlaloc Restaurant",
     bodyPt:
-      "Ola {firstName},\nA sua reserva foi confirmada.\nData: {date}\nHora: {time}\nPessoas: {guests}\nAte breve!\nTlaloc Cantina",
+      "Ola {firstName},\nA sua reserva foi confirmada.\nData: {date}\nHora: {time}\nPessoas: {guests}\nAte breve!\nTlaloc Restaurant",
   },
   {
     key: "reservation_cancelled",
     subjectEn: "We could not confirm your reservation",
     subjectPt: "Nao conseguimos confirmar a reserva",
     bodyEn:
-      "Hi {firstName},\nWe are sorry, but we could not confirm your reservation.\nDate: {date}\nTime: {time}\nGuests: {guests}\nPlease share another date/time and we will gladly assist.\nTlaloc Cantina",
+      "Hi {firstName},\nWe are sorry, but we could not confirm your reservation.\nDate: {date}\nTime: {time}\nGuests: {guests}\nPlease share another date/time and we will gladly assist.\nTlaloc Restaurant",
     bodyPt:
-      "Ola {firstName},\nPedimos desculpa, mas nao conseguimos confirmar a sua reserva.\nData: {date}\nHora: {time}\nPessoas: {guests}\nSe quiser, envie-nos outra data/hora.\nTlaloc Cantina",
+      "Ola {firstName},\nPedimos desculpa, mas nao conseguimos confirmar a sua reserva.\nData: {date}\nHora: {time}\nPessoas: {guests}\nSe quiser, envie-nos outra data/hora.\nTlaloc Restaurant",
   },
 ];
 
@@ -964,13 +964,13 @@ export default function AdminBackOffice() {
       prev.map((row) =>
         selectedBulkWeekdays.includes(row.weekday)
           ? {
-              ...row,
-              isClosed: false,
-              lunchOpen: bulkHours.lunchOpen || null,
-              lunchClose: bulkHours.lunchClose || null,
-              dinnerOpen: bulkHours.dinnerOpen || null,
-              dinnerClose: bulkHours.dinnerClose || null,
-            }
+            ...row,
+            isClosed: false,
+            lunchOpen: bulkHours.lunchOpen || null,
+            lunchClose: bulkHours.lunchClose || null,
+            dinnerOpen: bulkHours.dinnerOpen || null,
+            dinnerClose: bulkHours.dinnerClose || null,
+          }
           : row,
       ),
     );
@@ -987,13 +987,13 @@ export default function AdminBackOffice() {
       prev.map((row) =>
         selectedBulkWeekdays.includes(row.weekday)
           ? {
-              ...row,
-              isClosed: true,
-              lunchOpen: null,
-              lunchClose: null,
-              dinnerOpen: null,
-              dinnerClose: null,
-            }
+            ...row,
+            isClosed: true,
+            lunchOpen: null,
+            lunchClose: null,
+            dinnerOpen: null,
+            dinnerClose: null,
+          }
           : row,
       ),
     );
@@ -1117,199 +1117,199 @@ export default function AdminBackOffice() {
               exit={{ y: 26, opacity: 0 }}
               transition={{ duration: 0.24, ease: "easeOut" }}
             >
-            <div className="tutorial-overlay-head">
-              <h3>Back Office Tutorial</h3>
-              <button className="btn btn-secondary" type="button" onClick={handleHideTutorial}>
-                Hide
-              </button>
-            </div>
-            <p className="footer-note" style={{ marginTop: "0.45rem" }}>
-              Recommended workflow: inbox first, communicate with guest, update status, and mark as
-              read when done.
-            </p>
-            <div className="tutorial-steps">
-              <article
-                className="tutorial-step"
-                ref={(element) => {
-                  tutorialStepRefs.current[0] = element;
-                }}
-              >
-                <strong>1) Pending Inbox</strong>
-                <p className="footer-note">
-                  Open <em>Reservations</em>. New requests appear here in chronological order. Use
-                  EN/PT badge to know message language.
-                </p>
-                <button
-                  className="btn btn-secondary"
-                  type="button"
-                  onClick={() => handleTutorialGoTo("reservations", 1)}
-                >
-                  Go to Reservations
+              <div className="tutorial-overlay-head">
+                <h3>Back Office Tutorial</h3>
+                <button className="btn btn-secondary" type="button" onClick={handleHideTutorial}>
+                  Hide
                 </button>
-                <p className="footer-note tutorial-action-note">
-                  Opens Reservations tab and closes tutorial until you continue.
-                </p>
-              </article>
-              <article
-                className="tutorial-step"
-                ref={(element) => {
-                  tutorialStepRefs.current[1] = element;
-                }}
-              >
-                <strong>2) Contact the Guest</strong>
-                <p className="footer-note">
-                  Click phone (WhatsApp) or email. Message is prefilled from templates with
-                  reservation variables.
-                </p>
-                <button
-                  className="btn btn-secondary"
-                  type="button"
-                  onClick={() => {
-                    setActiveTab("reservations");
-                    setTutorialStepIndex(2);
-                    handleHideTutorial();
+              </div>
+              <p className="footer-note" style={{ marginTop: "0.45rem" }}>
+                Recommended workflow: inbox first, communicate with guest, update status, and mark as
+                read when done.
+              </p>
+              <div className="tutorial-steps">
+                <article
+                  className="tutorial-step"
+                  ref={(element) => {
+                    tutorialStepRefs.current[0] = element;
                   }}
                 >
-                  Try it
-                </button>
-                <p className="footer-note tutorial-action-note">
-                  Hides tutorial module so you can test phone/email actions on the card.
-                </p>
-              </article>
-              <article
-                className="tutorial-step"
-                ref={(element) => {
-                  tutorialStepRefs.current[2] = element;
-                }}
-              >
-                <strong>3) Update Status</strong>
-                <p className="footer-note">
-                  Use New / Confirmed / Cancelled. Confirmed reservations also appear in calendar.
-                </p>
-                <button
-                  className="btn btn-secondary"
-                  type="button"
-                  onClick={() => {
-                    setActiveTab("reservations");
-                    setTutorialStepIndex(3);
-                    handleHideTutorial();
+                  <strong>1) Pending Inbox</strong>
+                  <p className="footer-note">
+                    Open <em>Reservations</em>. New requests appear here in chronological order. Use
+                    EN/PT badge to know message language.
+                  </p>
+                  <button
+                    className="btn btn-secondary"
+                    type="button"
+                    onClick={() => handleTutorialGoTo("reservations", 1)}
+                  >
+                    Go to Reservations
+                  </button>
+                  <p className="footer-note tutorial-action-note">
+                    Opens Reservations tab and closes tutorial until you continue.
+                  </p>
+                </article>
+                <article
+                  className="tutorial-step"
+                  ref={(element) => {
+                    tutorialStepRefs.current[1] = element;
                   }}
                 >
-                  Try it
-                </button>
-                <p className="footer-note tutorial-action-note">
-                  Hides tutorial module so you can test New/Confirmed/Cancelled actions on a card.
-                </p>
-              </article>
-              <article
-                className="tutorial-step"
-                ref={(element) => {
-                  tutorialStepRefs.current[3] = element;
-                }}
-              >
-                <strong>4) Clean Inbox</strong>
-                <p className="footer-note">
-                  Click the check icon to mark as read. Use <em>Show read reservations</em> if you
-                  need to revisit cleaned items.
-                </p>
-                <button
-                  className="btn btn-secondary"
-                  type="button"
-                  onClick={() => {
-                    setActiveTab("reservations");
-                    setTutorialStepIndex(4);
-                    handleHideTutorial();
+                  <strong>2) Contact the Guest</strong>
+                  <p className="footer-note">
+                    Click phone (WhatsApp) or email. Message is prefilled from templates with
+                    reservation variables.
+                  </p>
+                  <button
+                    className="btn btn-secondary"
+                    type="button"
+                    onClick={() => {
+                      setActiveTab("reservations");
+                      setTutorialStepIndex(2);
+                      handleHideTutorial();
+                    }}
+                  >
+                    Try it
+                  </button>
+                  <p className="footer-note tutorial-action-note">
+                    Hides tutorial module so you can test phone/email actions on the card.
+                  </p>
+                </article>
+                <article
+                  className="tutorial-step"
+                  ref={(element) => {
+                    tutorialStepRefs.current[2] = element;
                   }}
                 >
-                  Try it
-                </button>
-                <p className="footer-note tutorial-action-note">
-                  Hides tutorial so you can mark the card as read; continuing goes to calendar.
-                </p>
-              </article>
-              <article
-                className="tutorial-step"
-                ref={(element) => {
-                  tutorialStepRefs.current[4] = element;
-                }}
-              >
-                <strong>5) Confirmed Calendar</strong>
-                <p className="footer-note">
-                  Review confirmed bookings by date and quickly navigate across months.
-                </p>
-                <button
-                  className="btn btn-secondary"
-                  type="button"
-                  onClick={() => handleTutorialGoTo("calendar", 5)}
+                  <strong>3) Update Status</strong>
+                  <p className="footer-note">
+                    Use New / Confirmed / Cancelled. Confirmed reservations also appear in calendar.
+                  </p>
+                  <button
+                    className="btn btn-secondary"
+                    type="button"
+                    onClick={() => {
+                      setActiveTab("reservations");
+                      setTutorialStepIndex(3);
+                      handleHideTutorial();
+                    }}
+                  >
+                    Try it
+                  </button>
+                  <p className="footer-note tutorial-action-note">
+                    Hides tutorial module so you can test New/Confirmed/Cancelled actions on a card.
+                  </p>
+                </article>
+                <article
+                  className="tutorial-step"
+                  ref={(element) => {
+                    tutorialStepRefs.current[3] = element;
+                  }}
                 >
-                  Go to Confirmed Calendar
-                </button>
-                <p className="footer-note tutorial-action-note">
-                  Opens Confirmed Calendar and keeps tutorial step remembered.
-                </p>
-              </article>
-              <article
-                className="tutorial-step"
-                ref={(element) => {
-                  tutorialStepRefs.current[5] = element;
-                }}
-              >
-                <strong>6) Configure Messages (Optional)</strong>
-                <p className="footer-note">
-                  FYI: in <em>Settings → Message Templates</em>, you can edit EN/PT templates and
-                  variables like{" "}
-                  {"{firstName}"}, {"{date}"}, {"{time}"}, {"{guests}"}.
-                </p>
-                <button
-                  className="btn btn-secondary"
-                  type="button"
-                  onClick={() => handleTutorialGoTo("security", 6)}
+                  <strong>4) Clean Inbox</strong>
+                  <p className="footer-note">
+                    Click the check icon to mark as read. Use <em>Show read reservations</em> if you
+                    need to revisit cleaned items.
+                  </p>
+                  <button
+                    className="btn btn-secondary"
+                    type="button"
+                    onClick={() => {
+                      setActiveTab("reservations");
+                      setTutorialStepIndex(4);
+                      handleHideTutorial();
+                    }}
+                  >
+                    Try it
+                  </button>
+                  <p className="footer-note tutorial-action-note">
+                    Hides tutorial so you can mark the card as read; continuing goes to calendar.
+                  </p>
+                </article>
+                <article
+                  className="tutorial-step"
+                  ref={(element) => {
+                    tutorialStepRefs.current[4] = element;
+                  }}
                 >
-                  Open Settings (Optional)
-                </button>
-                <p className="footer-note tutorial-action-note">
-                  Optional step. Opens Settings and advances tutorial.
-                </p>
-              </article>
-              <article
-                className="tutorial-step"
-                ref={(element) => {
-                  tutorialStepRefs.current[6] = element;
-                }}
-              >
-                <strong>7) Manage Working Hours (Optional)</strong>
-                <p className="footer-note">
-                  FYI: set opening hours and bulk updates. Reservation form enforces these slots.
-                </p>
-                <button
-                  className="btn btn-secondary"
-                  type="button"
-                  onClick={() => handleTutorialGoTo("hours", 7)}
+                  <strong>5) Confirmed Calendar</strong>
+                  <p className="footer-note">
+                    Review confirmed bookings by date and quickly navigate across months.
+                  </p>
+                  <button
+                    className="btn btn-secondary"
+                    type="button"
+                    onClick={() => handleTutorialGoTo("calendar", 5)}
+                  >
+                    Go to Confirmed Calendar
+                  </button>
+                  <p className="footer-note tutorial-action-note">
+                    Opens Confirmed Calendar and keeps tutorial step remembered.
+                  </p>
+                </article>
+                <article
+                  className="tutorial-step"
+                  ref={(element) => {
+                    tutorialStepRefs.current[5] = element;
+                  }}
                 >
-                  Open Working Hours (Optional)
-                </button>
-                <p className="footer-note tutorial-action-note">
-                  Optional step. Opens Working Hours and advances tutorial.
-                </p>
-              </article>
-              <article
-                className="tutorial-step"
-                ref={(element) => {
-                  tutorialStepRefs.current[7] = element;
-                }}
-              >
-                <strong>8) Finish Tutorial</strong>
-                <p className="footer-note">
-                  End tutorial mode and clear all tutorial hints and progress state.
-                </p>
-                <button className="btn btn-secondary" type="button" onClick={handleCloseTutorial}>
-                  Finish tutorial
-                </button>
-                <p className="footer-note tutorial-action-note">
-                  Exits tutorial mode completely and hides the continue button.
-                </p>
-              </article>
-            </div>
+                  <strong>6) Configure Messages (Optional)</strong>
+                  <p className="footer-note">
+                    FYI: in <em>Settings → Message Templates</em>, you can edit EN/PT templates and
+                    variables like{" "}
+                    {"{firstName}"}, {"{date}"}, {"{time}"}, {"{guests}"}.
+                  </p>
+                  <button
+                    className="btn btn-secondary"
+                    type="button"
+                    onClick={() => handleTutorialGoTo("security", 6)}
+                  >
+                    Open Settings (Optional)
+                  </button>
+                  <p className="footer-note tutorial-action-note">
+                    Optional step. Opens Settings and advances tutorial.
+                  </p>
+                </article>
+                <article
+                  className="tutorial-step"
+                  ref={(element) => {
+                    tutorialStepRefs.current[6] = element;
+                  }}
+                >
+                  <strong>7) Manage Working Hours (Optional)</strong>
+                  <p className="footer-note">
+                    FYI: set opening hours and bulk updates. Reservation form enforces these slots.
+                  </p>
+                  <button
+                    className="btn btn-secondary"
+                    type="button"
+                    onClick={() => handleTutorialGoTo("hours", 7)}
+                  >
+                    Open Working Hours (Optional)
+                  </button>
+                  <p className="footer-note tutorial-action-note">
+                    Optional step. Opens Working Hours and advances tutorial.
+                  </p>
+                </article>
+                <article
+                  className="tutorial-step"
+                  ref={(element) => {
+                    tutorialStepRefs.current[7] = element;
+                  }}
+                >
+                  <strong>8) Finish Tutorial</strong>
+                  <p className="footer-note">
+                    End tutorial mode and clear all tutorial hints and progress state.
+                  </p>
+                  <button className="btn btn-secondary" type="button" onClick={handleCloseTutorial}>
+                    Finish tutorial
+                  </button>
+                  <p className="footer-note tutorial-action-note">
+                    Exits tutorial mode completely and hides the continue button.
+                  </p>
+                </article>
+              </div>
             </motion.section>
           </motion.div>
         ) : null}
@@ -1751,109 +1751,109 @@ export default function AdminBackOffice() {
           {isMenuEditMode ? (
             <>
               <section className="card">
-            <h3 style={{ marginBottom: "0.7rem" }}>Add Section</h3>
-            <form onSubmit={createSection} className="form-grid">
-              <input
-                placeholder="Slug (example: specials)"
-                value={newSection.slug}
-                onChange={(event) => setNewSection((prev) => ({ ...prev, slug: event.target.value }))}
-                required
-              />
-              <input
-                placeholder="Title EN"
-                value={newSection.titleEn}
-                onChange={(event) => setNewSection((prev) => ({ ...prev, titleEn: event.target.value }))}
-                required
-              />
-              <input
-                placeholder="Title PT"
-                value={newSection.titlePt}
-                onChange={(event) => setNewSection((prev) => ({ ...prev, titlePt: event.target.value }))}
-                required
-              />
-              <input
-                placeholder="Subtitle EN (optional)"
-                value={newSection.subtitleEn}
-                onChange={(event) =>
-                  setNewSection((prev) => ({ ...prev, subtitleEn: event.target.value }))
-                }
-              />
-              <input
-                placeholder="Subtitle PT (optional)"
-                value={newSection.subtitlePt}
-                onChange={(event) =>
-                  setNewSection((prev) => ({ ...prev, subtitlePt: event.target.value }))
-                }
-              />
-              <button className="btn btn-primary" type="submit" disabled={actionKey !== null}>
-                {actionKey === "create-section" ? "Saving..." : "Add section"}
-              </button>
-            </form>
+                <h3 style={{ marginBottom: "0.7rem" }}>Add Section</h3>
+                <form onSubmit={createSection} className="form-grid">
+                  <input
+                    placeholder="Slug (example: specials)"
+                    value={newSection.slug}
+                    onChange={(event) => setNewSection((prev) => ({ ...prev, slug: event.target.value }))}
+                    required
+                  />
+                  <input
+                    placeholder="Title EN"
+                    value={newSection.titleEn}
+                    onChange={(event) => setNewSection((prev) => ({ ...prev, titleEn: event.target.value }))}
+                    required
+                  />
+                  <input
+                    placeholder="Title PT"
+                    value={newSection.titlePt}
+                    onChange={(event) => setNewSection((prev) => ({ ...prev, titlePt: event.target.value }))}
+                    required
+                  />
+                  <input
+                    placeholder="Subtitle EN (optional)"
+                    value={newSection.subtitleEn}
+                    onChange={(event) =>
+                      setNewSection((prev) => ({ ...prev, subtitleEn: event.target.value }))
+                    }
+                  />
+                  <input
+                    placeholder="Subtitle PT (optional)"
+                    value={newSection.subtitlePt}
+                    onChange={(event) =>
+                      setNewSection((prev) => ({ ...prev, subtitlePt: event.target.value }))
+                    }
+                  />
+                  <button className="btn btn-primary" type="submit" disabled={actionKey !== null}>
+                    {actionKey === "create-section" ? "Saving..." : "Add section"}
+                  </button>
+                </form>
               </section>
 
               <section className="card">
                 <h3 style={{ marginBottom: "0.7rem" }}>Add Item</h3>
                 <form onSubmit={createItem} className="form-grid">
-              <select
-                value={newItem.sectionId}
-                onChange={(event) => setNewItem((prev) => ({ ...prev, sectionId: event.target.value }))}
-                required
-              >
-                <option value="" disabled>
-                  Select section
-                </option>
-                {sortedSections.map((section) => (
-                  <option key={section.id} value={section.id}>
-                    {section.titleEn}
-                  </option>
-                ))}
-              </select>
-              <input
-                placeholder="Item name EN"
-                value={newItem.nameEn}
-                onChange={(event) => setNewItem((prev) => ({ ...prev, nameEn: event.target.value }))}
-                required
-              />
-              <input
-                placeholder="Item name PT"
-                value={newItem.namePt}
-                onChange={(event) => setNewItem((prev) => ({ ...prev, namePt: event.target.value }))}
-                required
-              />
-              <input
-                placeholder="Price"
-                value={newItem.price}
-                onChange={(event) => setNewItem((prev) => ({ ...prev, price: event.target.value }))}
-                required
-              />
-              <input
-                placeholder="Description EN"
-                value={newItem.descriptionEn}
-                onChange={(event) =>
-                  setNewItem((prev) => ({ ...prev, descriptionEn: event.target.value }))
-                }
-                required
-              />
-              <input
-                placeholder="Description PT"
-                value={newItem.descriptionPt}
-                onChange={(event) =>
-                  setNewItem((prev) => ({ ...prev, descriptionPt: event.target.value }))
-                }
-                required
-              />
-              <label className="ios-switch-field">
-                <input
-                  className="ios-switch-input"
-                  type="checkbox"
-                  checked={newItem.vegetarian}
-                  onChange={(event) =>
-                    setNewItem((prev) => ({ ...prev, vegetarian: event.target.checked }))
-                  }
-                />
-                <span className="ios-switch" aria-hidden="true" />
-                <span>Vegetarian</span>
-              </label>
+                  <select
+                    value={newItem.sectionId}
+                    onChange={(event) => setNewItem((prev) => ({ ...prev, sectionId: event.target.value }))}
+                    required
+                  >
+                    <option value="" disabled>
+                      Select section
+                    </option>
+                    {sortedSections.map((section) => (
+                      <option key={section.id} value={section.id}>
+                        {section.titleEn}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    placeholder="Item name EN"
+                    value={newItem.nameEn}
+                    onChange={(event) => setNewItem((prev) => ({ ...prev, nameEn: event.target.value }))}
+                    required
+                  />
+                  <input
+                    placeholder="Item name PT"
+                    value={newItem.namePt}
+                    onChange={(event) => setNewItem((prev) => ({ ...prev, namePt: event.target.value }))}
+                    required
+                  />
+                  <input
+                    placeholder="Price"
+                    value={newItem.price}
+                    onChange={(event) => setNewItem((prev) => ({ ...prev, price: event.target.value }))}
+                    required
+                  />
+                  <input
+                    placeholder="Description EN"
+                    value={newItem.descriptionEn}
+                    onChange={(event) =>
+                      setNewItem((prev) => ({ ...prev, descriptionEn: event.target.value }))
+                    }
+                    required
+                  />
+                  <input
+                    placeholder="Description PT"
+                    value={newItem.descriptionPt}
+                    onChange={(event) =>
+                      setNewItem((prev) => ({ ...prev, descriptionPt: event.target.value }))
+                    }
+                    required
+                  />
+                  <label className="ios-switch-field">
+                    <input
+                      className="ios-switch-input"
+                      type="checkbox"
+                      checked={newItem.vegetarian}
+                      onChange={(event) =>
+                        setNewItem((prev) => ({ ...prev, vegetarian: event.target.checked }))
+                      }
+                    />
+                    <span className="ios-switch" aria-hidden="true" />
+                    <span>Vegetarian</span>
+                  </label>
                   <button className="btn btn-primary" type="submit" disabled={actionKey !== null}>
                     {actionKey === "create-item" ? "Saving..." : "Add item"}
                   </button>
@@ -1889,268 +1889,268 @@ export default function AdminBackOffice() {
                     </p>
                   ) : (
                     <>
-                  <div className="form-grid" style={{ marginBottom: "0.7rem" }}>
-                <input
-                  value={section.slug}
-                  onChange={(event) =>
-                    setMenuSections((prev) =>
-                      prev.map((candidate) =>
-                        candidate.id === section.id
-                          ? { ...candidate, slug: event.target.value }
-                          : candidate,
-                      ),
-                    )
-                  }
-                />
-                <input
-                  value={section.titleEn}
-                  onChange={(event) =>
-                    setMenuSections((prev) =>
-                      prev.map((candidate) =>
-                        candidate.id === section.id
-                          ? { ...candidate, titleEn: event.target.value }
-                          : candidate,
-                      ),
-                    )
-                  }
-                />
-                <input
-                  value={section.titlePt}
-                  onChange={(event) =>
-                    setMenuSections((prev) =>
-                      prev.map((candidate) =>
-                        candidate.id === section.id
-                          ? { ...candidate, titlePt: event.target.value }
-                          : candidate,
-                      ),
-                    )
-                  }
-                />
-                <input
-                  value={section.subtitleEn ?? ""}
-                  onChange={(event) =>
-                    setMenuSections((prev) =>
-                      prev.map((candidate) =>
-                        candidate.id === section.id
-                          ? { ...candidate, subtitleEn: event.target.value }
-                          : candidate,
-                      ),
-                    )
-                  }
-                />
-                <input
-                  value={section.subtitlePt ?? ""}
-                  onChange={(event) =>
-                    setMenuSections((prev) =>
-                      prev.map((candidate) =>
-                        candidate.id === section.id
-                          ? { ...candidate, subtitlePt: event.target.value }
-                          : candidate,
-                      ),
-                    )
-                  }
-                />
-                <input
-                  type="number"
-                  value={section.order}
-                  onWheel={(event) => (event.currentTarget as HTMLInputElement).blur()}
-                  onChange={(event) =>
-                    setMenuSections((prev) =>
-                      prev.map((candidate) =>
-                        candidate.id === section.id
-                          ? { ...candidate, order: Number(event.target.value) || 0 }
-                          : candidate,
-                      ),
-                    )
-                  }
-                />
-                  </div>
-                  <div style={{ display: "flex", gap: "0.5rem", marginBottom: "0.8rem" }}>
-                    <button
-                      className="btn btn-primary"
-                      type="button"
-                      onClick={() => saveSection(section)}
-                      disabled={actionKey !== null}
-                    >
-                      {actionKey === `save-section-${section.id}` ? "Saving..." : "Save section"}
-                    </button>
-                    <button
-                      className="btn btn-secondary"
-                      type="button"
-                      onClick={() => deleteSection(section.id)}
-                      disabled={actionKey !== null}
-                    >
-                      {actionKey === `delete-section-${section.id}` ? "Deleting..." : "Delete section"}
-                    </button>
-                  </div>
-
-                  <div style={{ display: "grid", gap: "0.8rem" }}>
-                    {section.items.map((item) => (
-                      <article key={item.id} style={{ borderTop: "1px solid var(--line)", paddingTop: "0.8rem" }}>
-                        <div className="form-grid">
-                      <input
-                        value={item.nameEn}
-                        onChange={(event) =>
-                          setMenuSections((prev) =>
-                            prev.map((candidate) =>
-                              candidate.id === section.id
-                                ? {
-                                    ...candidate,
-                                    items: candidate.items.map((itemCandidate) =>
-                                      itemCandidate.id === item.id
-                                        ? { ...itemCandidate, nameEn: event.target.value }
-                                        : itemCandidate,
-                                    ),
-                                  }
-                                : candidate,
-                            ),
-                          )
-                        }
-                      />
-                      <input
-                        value={item.namePt}
-                        onChange={(event) =>
-                          setMenuSections((prev) =>
-                            prev.map((candidate) =>
-                              candidate.id === section.id
-                                ? {
-                                    ...candidate,
-                                    items: candidate.items.map((itemCandidate) =>
-                                      itemCandidate.id === item.id
-                                        ? { ...itemCandidate, namePt: event.target.value }
-                                        : itemCandidate,
-                                    ),
-                                  }
-                                : candidate,
-                            ),
-                          )
-                        }
-                      />
-                      <input
-                        value={item.price}
-                        onChange={(event) =>
-                          setMenuSections((prev) =>
-                            prev.map((candidate) =>
-                              candidate.id === section.id
-                                ? {
-                                    ...candidate,
-                                    items: candidate.items.map((itemCandidate) =>
-                                      itemCandidate.id === item.id
-                                        ? { ...itemCandidate, price: event.target.value }
-                                        : itemCandidate,
-                                    ),
-                                  }
-                                : candidate,
-                            ),
-                          )
-                        }
-                      />
-                      <input
-                        value={item.descriptionEn}
-                        onChange={(event) =>
-                          setMenuSections((prev) =>
-                            prev.map((candidate) =>
-                              candidate.id === section.id
-                                ? {
-                                    ...candidate,
-                                    items: candidate.items.map((itemCandidate) =>
-                                      itemCandidate.id === item.id
-                                        ? { ...itemCandidate, descriptionEn: event.target.value }
-                                        : itemCandidate,
-                                    ),
-                                  }
-                                : candidate,
-                            ),
-                          )
-                        }
-                      />
-                      <input
-                        value={item.descriptionPt}
-                        onChange={(event) =>
-                          setMenuSections((prev) =>
-                            prev.map((candidate) =>
-                              candidate.id === section.id
-                                ? {
-                                    ...candidate,
-                                    items: candidate.items.map((itemCandidate) =>
-                                      itemCandidate.id === item.id
-                                        ? { ...itemCandidate, descriptionPt: event.target.value }
-                                        : itemCandidate,
-                                    ),
-                                  }
-                                : candidate,
-                            ),
-                          )
-                        }
-                      />
-                      <input
-                        type="number"
-                        value={item.order}
-                        onWheel={(event) => (event.currentTarget as HTMLInputElement).blur()}
-                        onChange={(event) =>
-                          setMenuSections((prev) =>
-                            prev.map((candidate) =>
-                              candidate.id === section.id
-                                ? {
-                                    ...candidate,
-                                    items: candidate.items.map((itemCandidate) =>
-                                      itemCandidate.id === item.id
-                                        ? { ...itemCandidate, order: Number(event.target.value) || 0 }
-                                        : itemCandidate,
-                                    ),
-                                  }
-                                : candidate,
-                            ),
-                          )
-                        }
-                      />
-                      <label className="ios-switch-field">
+                      <div className="form-grid" style={{ marginBottom: "0.7rem" }}>
                         <input
-                          className="ios-switch-input"
-                          type="checkbox"
-                          checked={item.vegetarian}
+                          value={section.slug}
                           onChange={(event) =>
                             setMenuSections((prev) =>
                               prev.map((candidate) =>
                                 candidate.id === section.id
-                                  ? {
-                                      ...candidate,
-                                      items: candidate.items.map((itemCandidate) =>
-                                        itemCandidate.id === item.id
-                                          ? { ...itemCandidate, vegetarian: event.target.checked }
-                                          : itemCandidate,
-                                      ),
-                                    }
+                                  ? { ...candidate, slug: event.target.value }
                                   : candidate,
                               ),
                             )
                           }
                         />
-                        <span className="ios-switch" aria-hidden="true" />
-                        <span>Vegetarian</span>
-                      </label>
-                        </div>
-                        <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.6rem" }}>
-                          <button
-                            className="btn btn-primary"
-                            type="button"
-                            onClick={() => saveItem(item)}
-                            disabled={actionKey !== null}
-                          >
-                            {actionKey === `save-item-${item.id}` ? "Saving..." : "Save item"}
-                          </button>
-                          <button
-                            className="btn btn-secondary"
-                            type="button"
-                            onClick={() => deleteItem(item.id)}
-                            disabled={actionKey !== null}
-                          >
-                            {actionKey === `delete-item-${item.id}` ? "Deleting..." : "Delete item"}
-                          </button>
-                        </div>
-                      </article>
-                    ))}
-                  </div>
+                        <input
+                          value={section.titleEn}
+                          onChange={(event) =>
+                            setMenuSections((prev) =>
+                              prev.map((candidate) =>
+                                candidate.id === section.id
+                                  ? { ...candidate, titleEn: event.target.value }
+                                  : candidate,
+                              ),
+                            )
+                          }
+                        />
+                        <input
+                          value={section.titlePt}
+                          onChange={(event) =>
+                            setMenuSections((prev) =>
+                              prev.map((candidate) =>
+                                candidate.id === section.id
+                                  ? { ...candidate, titlePt: event.target.value }
+                                  : candidate,
+                              ),
+                            )
+                          }
+                        />
+                        <input
+                          value={section.subtitleEn ?? ""}
+                          onChange={(event) =>
+                            setMenuSections((prev) =>
+                              prev.map((candidate) =>
+                                candidate.id === section.id
+                                  ? { ...candidate, subtitleEn: event.target.value }
+                                  : candidate,
+                              ),
+                            )
+                          }
+                        />
+                        <input
+                          value={section.subtitlePt ?? ""}
+                          onChange={(event) =>
+                            setMenuSections((prev) =>
+                              prev.map((candidate) =>
+                                candidate.id === section.id
+                                  ? { ...candidate, subtitlePt: event.target.value }
+                                  : candidate,
+                              ),
+                            )
+                          }
+                        />
+                        <input
+                          type="number"
+                          value={section.order}
+                          onWheel={(event) => (event.currentTarget as HTMLInputElement).blur()}
+                          onChange={(event) =>
+                            setMenuSections((prev) =>
+                              prev.map((candidate) =>
+                                candidate.id === section.id
+                                  ? { ...candidate, order: Number(event.target.value) || 0 }
+                                  : candidate,
+                              ),
+                            )
+                          }
+                        />
+                      </div>
+                      <div style={{ display: "flex", gap: "0.5rem", marginBottom: "0.8rem" }}>
+                        <button
+                          className="btn btn-primary"
+                          type="button"
+                          onClick={() => saveSection(section)}
+                          disabled={actionKey !== null}
+                        >
+                          {actionKey === `save-section-${section.id}` ? "Saving..." : "Save section"}
+                        </button>
+                        <button
+                          className="btn btn-secondary"
+                          type="button"
+                          onClick={() => deleteSection(section.id)}
+                          disabled={actionKey !== null}
+                        >
+                          {actionKey === `delete-section-${section.id}` ? "Deleting..." : "Delete section"}
+                        </button>
+                      </div>
+
+                      <div style={{ display: "grid", gap: "0.8rem" }}>
+                        {section.items.map((item) => (
+                          <article key={item.id} style={{ borderTop: "1px solid var(--line)", paddingTop: "0.8rem" }}>
+                            <div className="form-grid">
+                              <input
+                                value={item.nameEn}
+                                onChange={(event) =>
+                                  setMenuSections((prev) =>
+                                    prev.map((candidate) =>
+                                      candidate.id === section.id
+                                        ? {
+                                          ...candidate,
+                                          items: candidate.items.map((itemCandidate) =>
+                                            itemCandidate.id === item.id
+                                              ? { ...itemCandidate, nameEn: event.target.value }
+                                              : itemCandidate,
+                                          ),
+                                        }
+                                        : candidate,
+                                    ),
+                                  )
+                                }
+                              />
+                              <input
+                                value={item.namePt}
+                                onChange={(event) =>
+                                  setMenuSections((prev) =>
+                                    prev.map((candidate) =>
+                                      candidate.id === section.id
+                                        ? {
+                                          ...candidate,
+                                          items: candidate.items.map((itemCandidate) =>
+                                            itemCandidate.id === item.id
+                                              ? { ...itemCandidate, namePt: event.target.value }
+                                              : itemCandidate,
+                                          ),
+                                        }
+                                        : candidate,
+                                    ),
+                                  )
+                                }
+                              />
+                              <input
+                                value={item.price}
+                                onChange={(event) =>
+                                  setMenuSections((prev) =>
+                                    prev.map((candidate) =>
+                                      candidate.id === section.id
+                                        ? {
+                                          ...candidate,
+                                          items: candidate.items.map((itemCandidate) =>
+                                            itemCandidate.id === item.id
+                                              ? { ...itemCandidate, price: event.target.value }
+                                              : itemCandidate,
+                                          ),
+                                        }
+                                        : candidate,
+                                    ),
+                                  )
+                                }
+                              />
+                              <input
+                                value={item.descriptionEn}
+                                onChange={(event) =>
+                                  setMenuSections((prev) =>
+                                    prev.map((candidate) =>
+                                      candidate.id === section.id
+                                        ? {
+                                          ...candidate,
+                                          items: candidate.items.map((itemCandidate) =>
+                                            itemCandidate.id === item.id
+                                              ? { ...itemCandidate, descriptionEn: event.target.value }
+                                              : itemCandidate,
+                                          ),
+                                        }
+                                        : candidate,
+                                    ),
+                                  )
+                                }
+                              />
+                              <input
+                                value={item.descriptionPt}
+                                onChange={(event) =>
+                                  setMenuSections((prev) =>
+                                    prev.map((candidate) =>
+                                      candidate.id === section.id
+                                        ? {
+                                          ...candidate,
+                                          items: candidate.items.map((itemCandidate) =>
+                                            itemCandidate.id === item.id
+                                              ? { ...itemCandidate, descriptionPt: event.target.value }
+                                              : itemCandidate,
+                                          ),
+                                        }
+                                        : candidate,
+                                    ),
+                                  )
+                                }
+                              />
+                              <input
+                                type="number"
+                                value={item.order}
+                                onWheel={(event) => (event.currentTarget as HTMLInputElement).blur()}
+                                onChange={(event) =>
+                                  setMenuSections((prev) =>
+                                    prev.map((candidate) =>
+                                      candidate.id === section.id
+                                        ? {
+                                          ...candidate,
+                                          items: candidate.items.map((itemCandidate) =>
+                                            itemCandidate.id === item.id
+                                              ? { ...itemCandidate, order: Number(event.target.value) || 0 }
+                                              : itemCandidate,
+                                          ),
+                                        }
+                                        : candidate,
+                                    ),
+                                  )
+                                }
+                              />
+                              <label className="ios-switch-field">
+                                <input
+                                  className="ios-switch-input"
+                                  type="checkbox"
+                                  checked={item.vegetarian}
+                                  onChange={(event) =>
+                                    setMenuSections((prev) =>
+                                      prev.map((candidate) =>
+                                        candidate.id === section.id
+                                          ? {
+                                            ...candidate,
+                                            items: candidate.items.map((itemCandidate) =>
+                                              itemCandidate.id === item.id
+                                                ? { ...itemCandidate, vegetarian: event.target.checked }
+                                                : itemCandidate,
+                                            ),
+                                          }
+                                          : candidate,
+                                      ),
+                                    )
+                                  }
+                                />
+                                <span className="ios-switch" aria-hidden="true" />
+                                <span>Vegetarian</span>
+                              </label>
+                            </div>
+                            <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.6rem" }}>
+                              <button
+                                className="btn btn-primary"
+                                type="button"
+                                onClick={() => saveItem(item)}
+                                disabled={actionKey !== null}
+                              >
+                                {actionKey === `save-item-${item.id}` ? "Saving..." : "Save item"}
+                              </button>
+                              <button
+                                className="btn btn-secondary"
+                                type="button"
+                                onClick={() => deleteItem(item.id)}
+                                disabled={actionKey !== null}
+                              >
+                                {actionKey === `delete-item-${item.id}` ? "Deleting..." : "Delete item"}
+                              </button>
+                            </div>
+                          </article>
+                        ))}
+                      </div>
                     </>
                   )}
                 </section>
@@ -2401,107 +2401,107 @@ export default function AdminBackOffice() {
           </section>
           <div style={{ display: "grid", gap: "0.7rem" }}>
             {workingHoursMondayFirst.map((row) => (
-                <article key={row.id} className="card" style={{ padding: "0.75rem" }}>
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      gap: "0.8rem",
-                      marginBottom: "0.65rem",
-                    }}
-                  >
-                    <strong>{weekdayLabels[row.weekday] ?? `Day ${row.weekday}`}</strong>
-                    <label className="ios-switch-field" style={{ marginBottom: 0 }}>
-                      <input
-                        className="ios-switch-input"
-                        type="checkbox"
-                        checked={row.isClosed}
-                        onChange={(event) =>
-                          setWorkingHours((prev) =>
-                            prev.map((candidate) =>
-                              candidate.weekday === row.weekday
-                                ? { ...candidate, isClosed: event.target.checked }
-                                : candidate,
-                            ),
-                          )
-                        }
-                      />
-                      <span className="ios-switch" aria-hidden="true" />
-                      <span>{row.isClosed ? "Closed" : "Open"}</span>
-                    </label>
+              <article key={row.id} className="card" style={{ padding: "0.75rem" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: "0.8rem",
+                    marginBottom: "0.65rem",
+                  }}
+                >
+                  <strong>{weekdayLabels[row.weekday] ?? `Day ${row.weekday}`}</strong>
+                  <label className="ios-switch-field" style={{ marginBottom: 0 }}>
+                    <input
+                      className="ios-switch-input"
+                      type="checkbox"
+                      checked={row.isClosed}
+                      onChange={(event) =>
+                        setWorkingHours((prev) =>
+                          prev.map((candidate) =>
+                            candidate.weekday === row.weekday
+                              ? { ...candidate, isClosed: event.target.checked }
+                              : candidate,
+                          ),
+                        )
+                      }
+                    />
+                    <span className="ios-switch" aria-hidden="true" />
+                    <span>{row.isClosed ? "Closed" : "Open"}</span>
+                  </label>
+                </div>
+                <div className="form-grid">
+                  <div>
+                    <label>Lunch start</label>
+                    <input
+                      type="time"
+                      value={row.lunchOpen ?? ""}
+                      onChange={(event) =>
+                        setWorkingHours((prev) =>
+                          prev.map((candidate) =>
+                            candidate.weekday === row.weekday
+                              ? { ...candidate, lunchOpen: event.target.value || null }
+                              : candidate,
+                          ),
+                        )
+                      }
+                      disabled={row.isClosed}
+                    />
                   </div>
-                  <div className="form-grid">
-                    <div>
-                      <label>Lunch start</label>
-                      <input
-                        type="time"
-                        value={row.lunchOpen ?? ""}
-                        onChange={(event) =>
-                          setWorkingHours((prev) =>
-                            prev.map((candidate) =>
-                              candidate.weekday === row.weekday
-                                ? { ...candidate, lunchOpen: event.target.value || null }
-                                : candidate,
-                            ),
-                          )
-                        }
-                        disabled={row.isClosed}
-                      />
-                    </div>
-                    <div>
-                      <label>Lunch end</label>
-                      <input
-                        type="time"
-                        value={row.lunchClose ?? ""}
-                        onChange={(event) =>
-                          setWorkingHours((prev) =>
-                            prev.map((candidate) =>
-                              candidate.weekday === row.weekday
-                                ? { ...candidate, lunchClose: event.target.value || null }
-                                : candidate,
-                            ),
-                          )
-                        }
-                        disabled={row.isClosed}
-                      />
-                    </div>
-                    <div>
-                      <label>Dinner start</label>
-                      <input
-                        type="time"
-                        value={row.dinnerOpen ?? ""}
-                        onChange={(event) =>
-                          setWorkingHours((prev) =>
-                            prev.map((candidate) =>
-                              candidate.weekday === row.weekday
-                                ? { ...candidate, dinnerOpen: event.target.value || null }
-                                : candidate,
-                            ),
-                          )
-                        }
-                        disabled={row.isClosed}
-                      />
-                    </div>
-                    <div>
-                      <label>Dinner end</label>
-                      <input
-                        type="time"
-                        value={row.dinnerClose ?? ""}
-                        onChange={(event) =>
-                          setWorkingHours((prev) =>
-                            prev.map((candidate) =>
-                              candidate.weekday === row.weekday
-                                ? { ...candidate, dinnerClose: event.target.value || null }
-                                : candidate,
-                            ),
-                          )
-                        }
-                        disabled={row.isClosed}
-                      />
-                    </div>
+                  <div>
+                    <label>Lunch end</label>
+                    <input
+                      type="time"
+                      value={row.lunchClose ?? ""}
+                      onChange={(event) =>
+                        setWorkingHours((prev) =>
+                          prev.map((candidate) =>
+                            candidate.weekday === row.weekday
+                              ? { ...candidate, lunchClose: event.target.value || null }
+                              : candidate,
+                          ),
+                        )
+                      }
+                      disabled={row.isClosed}
+                    />
                   </div>
-                </article>
+                  <div>
+                    <label>Dinner start</label>
+                    <input
+                      type="time"
+                      value={row.dinnerOpen ?? ""}
+                      onChange={(event) =>
+                        setWorkingHours((prev) =>
+                          prev.map((candidate) =>
+                            candidate.weekday === row.weekday
+                              ? { ...candidate, dinnerOpen: event.target.value || null }
+                              : candidate,
+                          ),
+                        )
+                      }
+                      disabled={row.isClosed}
+                    />
+                  </div>
+                  <div>
+                    <label>Dinner end</label>
+                    <input
+                      type="time"
+                      value={row.dinnerClose ?? ""}
+                      onChange={(event) =>
+                        setWorkingHours((prev) =>
+                          prev.map((candidate) =>
+                            candidate.weekday === row.weekday
+                              ? { ...candidate, dinnerClose: event.target.value || null }
+                              : candidate,
+                          ),
+                        )
+                      }
+                      disabled={row.isClosed}
+                    />
+                  </div>
+                </div>
+              </article>
             ))}
           </div>
           <div style={{ marginTop: "0.9rem" }}>

@@ -67,8 +67,8 @@ export const sendReservationEmails = async (
 
   const locale = reservation.locale;
   const subjectGuest = isPt(locale)
-    ? "Reserva recebida - Tláloc Cantina"
-    : "Reservation received - Tláloc Cantina";
+    ? "Reserva recebida - Tláloc Restaurant"
+    : "Reservation received - Tláloc Restaurant";
   const guestText = isPt(locale)
     ? `Ola ${reservation.firstName},\n\nRecebemos o seu pedido de reserva. Em breve entraremos em contacto para confirmar.\n\n${reservationSummary(reservation, locale)}`
     : `Hi ${reservation.firstName},\n\nWe received your reservation request. We will confirm it shortly.\n\n${reservationSummary(reservation, locale)}`;
@@ -162,8 +162,8 @@ export const sendReservationWhatsApp = async (
   try {
     const locale = reservation.locale;
     const guestBody = isPt(locale)
-      ? `Tláloc Cantina: pedido de reserva recebido para ${reservation.date} às ${reservation.time}. Vamos confirmar em breve.`
-      : `Tláloc Cantina: reservation request received for ${reservation.date} at ${reservation.time}. We will confirm shortly.`;
+      ? `Tláloc Restaurant: pedido de reserva recebido para ${reservation.date} às ${reservation.time}. Vamos confirmar em breve.`
+      : `Tláloc Restaurant: reservation request received for ${reservation.date} at ${reservation.time}. We will confirm shortly.`;
     const teamBody = `New reservation from ${reservation.firstName} ${reservation.lastName} on ${reservation.date} ${reservation.time} for ${reservation.guests} guests.`;
 
     const guestTo =

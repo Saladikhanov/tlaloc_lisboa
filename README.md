@@ -1,4 +1,4 @@
-# Tláloc Cantina Platform
+# Tláloc Restaraunt Platform
 
 Single project architecture for:
 

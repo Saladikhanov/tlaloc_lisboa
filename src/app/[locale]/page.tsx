@@ -89,7 +89,7 @@ export default async function HomePage({ params }: Props) {
               <Image
                 className="home-hero-image"
                 src="/op_image.webp"
-                alt="Tláloc Cantina"
+                alt="Tláloc Restaurant"
                 width={1200}
                 height={630}
                 priority

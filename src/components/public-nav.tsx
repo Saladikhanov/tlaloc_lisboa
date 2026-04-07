@@ -115,7 +115,7 @@ export default function PublicNav({ headerTitle }: PublicNavProps) {
           <Image
             className="brand-image"
             src="/mascot_logo.webp"
-            alt="Tláloc Cantina"
+            alt="Tláloc Restaurant"
             width={1024}
             height={280}
             priority

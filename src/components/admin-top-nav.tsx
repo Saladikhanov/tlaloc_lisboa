@@ -11,7 +11,7 @@ export default function AdminTopNav() {
     <nav className="site-nav">
       <div className="site-nav-inner admin-top-nav-inner">
         <Link className="brand" href="/">
-          TLALOC CANTINA
+          TLALOC RESTAURANT
         </Link>
 
         <div className="admin-nav-links desktop-admin-links">

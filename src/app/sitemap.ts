@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const base = "https://tlaloccantina.pt";
+  const base = "https://tlaloc-restaurant.pt";
   const locales = ["en", "pt"] as const;
 
   return [

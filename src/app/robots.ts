@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: ["/", "/en", "/pt", "/en/menu", "/pt/menu", "/en/reserve", "/pt/reserve"],
       disallow: ["/admin"],
     },
-    sitemap: "https://tlaloccantina.pt/sitemap.xml",
+    sitemap: "https://tlaloc-restaurant.pt/sitemap.xml",
   };
 }
