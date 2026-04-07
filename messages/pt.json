@@ -4,6 +4,15 @@
     "reserve": "Reservas",
     "admin": "Back Office"
   },
+  "Footer": {
+    "tagline": "Restaurante mexicano em Alcântara, Lisboa.",
+    "explore": "Explorar",
+    "home": "Início",
+    "menu": "Menu",
+    "reserve": "Reservar",
+    "contact": "Contacto",
+    "copyright": "© Tláloc Restaurant. Todos os direitos reservados."
+  },
   "Home": {
     "title": "Um projeto: menu QR, reservas e website SEO.",
     "body": "Esta arquitetura comeca pelo menu QR e cresce para gestao de reservas e CMS interno. As paginas publicas sao otimizadas para SEO e o back office fica isolado nas rotas admin.",

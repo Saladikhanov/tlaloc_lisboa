@@ -4,6 +4,15 @@
     "reserve": "Reserve",
     "admin": "Back Office"
   },
+  "Footer": {
+    "tagline": "Mexican restaurant in Alcântara, Lisbon.",
+    "explore": "Explore",
+    "home": "Home",
+    "menu": "Menu",
+    "reserve": "Reserve",
+    "contact": "Contact",
+    "copyright": "© Tláloc Restaurant. All rights reserved."
+  },
   "Home": {
     "title": "One project: QR menu, reservations, and SEO website.",
     "body": "This architecture starts with the customer QR menu and is ready to expand into reservation management and full back-office CMS. Public pages stay SEO friendly while staff tools are isolated in admin routes.",
