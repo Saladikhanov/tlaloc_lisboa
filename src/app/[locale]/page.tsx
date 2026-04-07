@@ -33,6 +33,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
           "restaurante mexicano Lisboa",
           "comida mexicana Lisboa",
           "Alcântara restaurante",
+          "melhores tacos Lisboa",
+          "melhores margaritas Lisboa",
           "tacos Lisboa",
           "margaritas Lisboa",
           "Tláloc",
@@ -41,6 +43,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
           "Mexican restaurant Lisbon",
           "Mexican food Lisbon",
           "Alcântara restaurant",
+          "best tacos Lisbon",
+          "best margaritas Lisbon",
           "tacos Lisbon",
           "margaritas Lisbon",
           "Tláloc",
@@ -134,12 +138,33 @@ export default async function HomePage({ params }: Props) {
       },
     },
   };
+  const faqItems = [
+    { question: t("faqQuestion1"), answer: t("faqAnswer1") },
+    { question: t("faqQuestion2"), answer: t("faqAnswer2") },
+    { question: t("faqQuestion3"), answer: t("faqAnswer3") },
+  ];
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqItems.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.answer,
+      },
+    })),
+  };
 
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(restaurantJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
       <PublicNav />
 
@@ -252,6 +277,15 @@ export default async function HomePage({ params }: Props) {
 
         <HomeGallery />
 
+        <section className="card home-seo-card">
+          <p className="home-section-kicker">🌮 {t("seoBlockTitle")}</p>
+          <h3>{isPortuguese ? "Restaurante mexicano em Lisboa e Alcântara" : "Mexican restaurant in Lisbon and Alcântara"}</h3>
+          <p>{t("seoBlockBody1")}</p>
+          <p className="footer-note" style={{ marginTop: "0.75rem" }}>
+            {t("seoBlockBody2")}
+          </p>
+        </section>
+
         <section className="card home-contact-card">
           <p className="home-section-kicker">📍 LOCATION & CONTACT</p>
           <p>
@@ -261,7 +295,7 @@ export default async function HomePage({ params }: Props) {
             </a>
           </p>
           <p className="footer-note" style={{ marginTop: "0.35rem" }}>
-            Alto de Santo Amaro / Alcântara
+            Alcântara, Lisbon
           </p>
           <p style={{ marginTop: "0.55rem" }}>
             <strong>📞</strong> <a href="tel:+351218093388">+351 21 809 3388</a>
@@ -275,6 +309,18 @@ export default async function HomePage({ params }: Props) {
           <p className="footer-note" style={{ marginTop: "0.55rem" }}>
             {t("pricingInfo")}
           </p>
+        </section>
+
+        <section className="card home-faq-card">
+          <p className="home-section-kicker">❓ {t("faqTitle")}</p>
+          <div className="home-faq-list">
+            {faqItems.map((item) => (
+              <details key={item.question} className="home-faq-item">
+                <summary>{item.question}</summary>
+                <p className="footer-note">{item.answer}</p>
+              </details>
+            ))}
+          </div>
         </section>
 
         <div className="menu-bottom-stripe" aria-hidden="true" />

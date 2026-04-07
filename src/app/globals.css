@@ -816,6 +816,38 @@ a {
   backdrop-filter: blur(2px);
 }
 
+.home-seo-card,
+.home-faq-card {
+  margin: 0 auto 2rem;
+  max-width: 920px;
+}
+
+.home-seo-card p + p {
+  margin-top: 0.7rem;
+}
+
+.home-faq-list {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.home-faq-item {
+  border: 1px solid rgba(245, 166, 35, 0.18);
+  border-radius: 14px;
+  padding: 0.8rem 0.9rem;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.home-faq-item summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.home-faq-item p {
+  margin-top: 0.55rem;
+}
+
 .home-open-status {
   margin-top: 0.35rem;
   display: inline-flex;
