@@ -5,7 +5,8 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 const nextConfig: NextConfig = {
   images: {
-    qualities: [75, 100],
+    // Allow tuned qualities for hero (LCP) vs blurred overlay copies
+    qualities: [55, 75, 80, 85, 100],
   },
 };
 

@@ -60,8 +60,9 @@ export default async function HomePage({ params }: Props) {
                 src="/backgroundTlaloc.webp"
                 alt=""
                 fill
-                loading="lazy"
-                quality={100}
+                priority
+                fetchPriority="high"
+                quality={85}
                 sizes="100vw"
               />
               <Image
@@ -70,7 +71,8 @@ export default async function HomePage({ params }: Props) {
                 alt=""
                 fill
                 loading="lazy"
-                quality={100}
+                fetchPriority="low"
+                quality={55}
                 sizes="100vw"
               />
               <Image
@@ -79,7 +81,8 @@ export default async function HomePage({ params }: Props) {
                 alt=""
                 fill
                 loading="lazy"
-                quality={100}
+                fetchPriority="low"
+                quality={55}
                 sizes="100vw"
               />
             </div>
@@ -92,7 +95,9 @@ export default async function HomePage({ params }: Props) {
                 alt="Tláloc Restaurant"
                 width={1200}
                 height={630}
-                priority
+                loading="eager"
+                fetchPriority="low"
+                quality={85}
               />
 
               <h1>Tacos · Margaritas · Boas Vibrações</h1>

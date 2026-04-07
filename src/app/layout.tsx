@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Bebas_Neue, Geist, Geist_Mono, Pacifico } from "next/font/google";
 import ScrollToTop from "@/components/scroll-to-top";
 import "./globals.css";
@@ -82,6 +83,7 @@ export default function RootLayout({
       >
         {children}
         <ScrollToTop />
+        <SpeedInsights />
       </body>
     </html>
   );
