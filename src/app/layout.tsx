@@ -34,8 +34,8 @@ const siteDescription =
 export const metadata: Metadata = {
   metadataBase: new URL(appBaseUrl),
   icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon.ico",
+    icon: "/favicon.webp",
+    shortcut: "/favicon.webp",
   },
   title: {
     default: "Mexican Restaurant in Lisbon | Tláloc",
@@ -72,6 +72,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <meta property="og:logo" content={`${appBaseUrl}/favicon.webp`} />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${bebasNeue.variable} ${pacifico.variable}`}
         suppressHydrationWarning

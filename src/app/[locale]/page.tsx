@@ -64,6 +64,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: t("metaTitle"),
       description: t("metaDescription"),
+      type: "website",
       url: `${base}${path}`,
       locale: activeLocale === "pt" ? "pt_PT" : "en_US",
       alternateLocale: activeLocale === "pt" ? "en_US" : "pt_PT",
