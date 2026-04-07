@@ -97,9 +97,8 @@ a {
 
 .brand-image {
   display: block;
-  width: auto;
-  height: 50px;
-  max-width: min(58vw, 320px);
+  width: 42px;
+  height: 42px;
   object-fit: contain;
   border-radius: 4px;
 }
@@ -1968,8 +1967,8 @@ textarea {
   }
 
   .brand-image {
+    width: 42px;
     height: 42px;
-    max-width: min(42vw, 170px);
   }
 
   .home-hero-image {

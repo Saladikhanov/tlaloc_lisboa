@@ -35,14 +35,14 @@ export const metadata: Metadata = {
   metadataBase: new URL(appBaseUrl),
   manifest: "/manifest.webmanifest",
   icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
+    icon: "/favicon-v2.ico",
+    shortcut: "/favicon-v2.ico",
+    apple: "/apple-touch-icon-v2.png",
     other: [
-      { rel: "icon", url: "/favicon.webp", type: "image/webp" },
-      { rel: "icon", url: "/favicon.ico" },
-      { rel: "icon", url: "/icon-192.png", type: "image/png", sizes: "192x192" },
-      { rel: "icon", url: "/icon-512.png", type: "image/png", sizes: "512x512" },
+      { rel: "icon", url: "/favicon-v2.webp", type: "image/webp" },
+      { rel: "icon", url: "/favicon-v2.ico" },
+      { rel: "icon", url: "/icon-192-v2.png", type: "image/png", sizes: "192x192" },
+      { rel: "icon", url: "/icon-512-v2.png", type: "image/png", sizes: "512x512" },
     ],
   },
   title: {
@@ -81,7 +81,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <meta property="og:logo" content={`${appBaseUrl}/favicon.ico`} />
+        <meta property="og:logo" content={`${appBaseUrl}/favicon-v2.ico`} />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${bebasNeue.variable} ${pacifico.variable}`}
