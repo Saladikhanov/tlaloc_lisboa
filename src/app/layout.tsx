@@ -33,9 +33,16 @@ const siteDescription =
 
 export const metadata: Metadata = {
   metadataBase: new URL(appBaseUrl),
+  manifest: "/manifest.webmanifest",
   icons: {
     icon: "/favicon.webp",
     shortcut: "/favicon.webp",
+    apple: "/apple-touch-icon.png",
+    other: [
+      { rel: "icon", url: "/favicon.ico" },
+      { rel: "icon", url: "/icon-192.png", type: "image/png", sizes: "192x192" },
+      { rel: "icon", url: "/icon-512.png", type: "image/png", sizes: "512x512" },
+    ],
   },
   title: {
     default: "Mexican Restaurant in Lisbon | Tláloc",
