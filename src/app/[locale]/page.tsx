@@ -67,6 +67,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       url: `${base}${path}`,
       locale: activeLocale === "pt" ? "pt_PT" : "en_US",
       alternateLocale: activeLocale === "pt" ? "en_US" : "pt_PT",
+      images: [
+        {
+          url: `${base}/og_image.jpg`,
+          width: 1200,
+          height: 630,
+          alt: "Tláloc Restaurant",
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: t("metaTitle"),
+      description: t("metaDescription"),
+      images: [`${base}/og_image.jpg`],
     },
   };
 }
@@ -106,7 +120,7 @@ export default async function HomePage({ params }: Props) {
     "@id": `${base}/#restaurant`,
     name: "Tláloc Restaurant",
     alternateName: "Tláloc Cantina",
-    image: [`${base}/op_image.webp`],
+    image: [`${base}/og_image.jpg`],
     url: `${base}/${activeLocale}`,
     telephone: "+351218093388",
     servesCuisine: ["Mexican"],

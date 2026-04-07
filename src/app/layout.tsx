@@ -34,8 +34,8 @@ const siteDescription =
 export const metadata: Metadata = {
   metadataBase: new URL(appBaseUrl),
   icons: {
-    icon: "/favicon.webp",
-    shortcut: "/favicon.webp",
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
   },
   title: {
     default: "Mexican Restaurant in Lisbon | Tláloc",
@@ -50,7 +50,7 @@ export const metadata: Metadata = {
     url: appBaseUrl,
     images: [
       {
-        url: "/op_image.webp",
+        url: "/og_image.jpg",
         width: 1200,
         height: 630,
         alt: "Tláloc Restaurant",
@@ -61,7 +61,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Tláloc Restaurant",
     description: siteDescription,
-    images: ["/op_image.webp"],
+    images: ["/og_image.jpg"],
   },
 };
 
