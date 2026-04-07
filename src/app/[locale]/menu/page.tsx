@@ -1,15 +1,34 @@
+import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "@/lib/types";
 import PublicNav from "@/components/public-nav";
 import MenuQuickFind from "@/components/menu-quick-find";
 import { routing } from "@/i18n/routing";
 import { getMenuData } from "@/lib/menu-store";
+import { getSiteBaseUrl } from "@/lib/site-url";
 
 export const dynamic = "force-dynamic";
 
 type Props = {
   params: Promise<{ locale: string }>;
 };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale: routeLocale } = await params;
+  const locale = (
+    routing.locales.includes(routeLocale as "en" | "pt")
+      ? routeLocale
+      : routing.defaultLocale
+  ) as Locale;
+  const t = await getTranslations({ locale, namespace: "MenuPage" });
+  const base = getSiteBaseUrl();
+  const path = `/${locale}/menu`;
+  return {
+    title: t("metaTitle"),
+    description: t("metaDescription"),
+    alternates: { canonical: `${base}${path}` },
+  };
+}
 
 export default async function MenuPage({ params }: Props) {
   const { locale: routeLocale } = await params;

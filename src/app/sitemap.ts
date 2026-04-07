@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next";
+import { getSiteBaseUrl } from "@/lib/site-url";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const base = "https://tlaloc-restaurant.pt";
+  const base = getSiteBaseUrl();
   const locales = ["en", "pt"] as const;
 
   return [

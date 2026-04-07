@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Bebas_Neue, Geist, Geist_Mono, Pacifico } from "next/font/google";
 import ScrollToTop from "@/components/scroll-to-top";
+import { getSiteBaseUrl } from "@/lib/site-url";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -26,15 +27,9 @@ const pacifico = Pacifico({
   weight: "400",
 });
 
-const appBaseUrlRaw =
-  process.env.APP_BASE_URL ??
-  process.env.NEXT_PUBLIC_APP_URL ??
-  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://tlaloc-lisboa-16i8.vercel.app");
-const appBaseUrl = appBaseUrlRaw.startsWith("http")
-  ? appBaseUrlRaw
-  : `https://${appBaseUrlRaw}`;
+const appBaseUrl = getSiteBaseUrl();
 const siteDescription =
-  "An authentic Mexican corner in the heart of Alcântara, Lisboa — homestyle recipes, craft margaritas, and warm hospitality that keeps you coming back.";
+  "Mexican restaurant in Lisbon (Alcântara): tacos, margaritas, homestyle Mexican food and reservations.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(appBaseUrl),
@@ -43,8 +38,8 @@ export const metadata: Metadata = {
     shortcut: "/favicon.webp",
   },
   title: {
-    default: "Tláloc Restaurant | Mexican Restaurant in Lisbon",
-    template: "%s | Tláloc Restaurant",
+    default: "Mexican Restaurant in Lisbon | Tláloc",
+    template: "%s | Tláloc",
   },
   description: siteDescription,
   openGraph: {

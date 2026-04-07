@@ -1,12 +1,14 @@
 import type { MetadataRoute } from "next";
+import { getSiteBaseUrl } from "@/lib/site-url";
 
 export default function robots(): MetadataRoute.Robots {
+  const base = getSiteBaseUrl();
   return {
     rules: {
       userAgent: "*",
       allow: ["/", "/en", "/pt", "/en/menu", "/pt/menu", "/en/reserve", "/pt/reserve"],
       disallow: ["/admin"],
     },
-    sitemap: "https://tlaloc-restaurant.pt/sitemap.xml",
+    sitemap: `${base}/sitemap.xml`,
   };
 }

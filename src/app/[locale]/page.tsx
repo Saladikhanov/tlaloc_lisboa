@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
@@ -8,6 +9,7 @@ import HomeGallery from "@/components/home-gallery";
 import HomeOpenStatus from "@/components/home-open-status";
 import { computeIsOpenNow } from "@/lib/working-hours-open-now";
 import { listWorkingHours } from "@/lib/working-hours-store";
+import { getSiteBaseUrl } from "@/lib/site-url";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -16,6 +18,54 @@ type Props = {
 export const revalidate = 60;
 
 const mapsUrl = "https://maps.google.com/?q=R.+do+Cruzeiro+1+Lisboa";
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const activeLocale = routing.locales.includes(locale as "en" | "pt")
+    ? locale
+    : routing.defaultLocale;
+  const t = await getTranslations({ locale: activeLocale, namespace: "Home" });
+  const base = getSiteBaseUrl();
+  const path = `/${activeLocale}`;
+  const keywords =
+    activeLocale === "pt"
+      ? [
+          "restaurante mexicano Lisboa",
+          "comida mexicana Lisboa",
+          "Alcântara restaurante",
+          "tacos Lisboa",
+          "margaritas Lisboa",
+          "Tláloc",
+        ]
+      : [
+          "Mexican restaurant Lisbon",
+          "Mexican food Lisbon",
+          "Alcântara restaurant",
+          "tacos Lisbon",
+          "margaritas Lisbon",
+          "Tláloc",
+        ];
+
+  return {
+    title: t("metaTitle"),
+    description: t("metaDescription"),
+    keywords,
+    alternates: {
+      canonical: `${base}${path}`,
+      languages: {
+        en: `${base}/en`,
+        pt: `${base}/pt`,
+      },
+    },
+    openGraph: {
+      title: t("metaTitle"),
+      description: t("metaDescription"),
+      url: `${base}${path}`,
+      locale: activeLocale === "pt" ? "pt_PT" : "en_US",
+      alternateLocale: activeLocale === "pt" ? "en_US" : "pt_PT",
+    },
+  };
+}
 
 export default async function HomePage({ params }: Props) {
   const { locale } = await params;
@@ -45,8 +95,52 @@ export default async function HomePage({ params }: Props) {
       : t("closedLabel");
   const sundayText = sun?.isClosed ? t("closedLabel") : `${sun?.lunchOpen ?? "--:--"}-${sun?.lunchClose ?? "--:--"}`;
 
+  const base = getSiteBaseUrl();
+  const restaurantJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Restaurant",
+    "@id": `${base}/#restaurant`,
+    name: "Tláloc Restaurant",
+    alternateName: "Tláloc Cantina",
+    image: [`${base}/op_image.webp`],
+    url: `${base}/${activeLocale}`,
+    telephone: "+351218093388",
+    servesCuisine: ["Mexican"],
+    priceRange: "€€",
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: "R. do Cruzeiro 1",
+      addressLocality: "Lisboa",
+      postalCode: "1300-160",
+      addressRegion: "Lisboa",
+      addressCountry: "PT",
+    },
+    geo: {
+      "@type": "GeoCoordinates",
+      latitude: 38.7039,
+      longitude: -9.1749,
+    },
+    areaServed: [
+      { "@type": "City", name: "Lisbon" },
+      { "@type": "AdministrativeArea", name: "Alcântara, Lisbon" },
+    ],
+    hasMenu: `${base}/${activeLocale}/menu`,
+    acceptsReservations: true,
+    potentialAction: {
+      "@type": "ReserveAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${base}/${activeLocale}/reserve`,
+      },
+    },
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(restaurantJsonLd) }}
+      />
       <PublicNav />
 
       <main className="site-shell">
@@ -92,7 +186,7 @@ export default async function HomePage({ params }: Props) {
               <Image
                 className="home-hero-image"
                 src="/op_image.webp"
-                alt="Tláloc Restaurant"
+                alt={t("heroImageAlt")}
                 width={1200}
                 height={630}
                 loading="eager"
@@ -100,7 +194,10 @@ export default async function HomePage({ params }: Props) {
                 quality={85}
               />
 
-              <h1>Tacos · Margaritas · Boas Vibrações</h1>
+              <h1>
+                <span className="hero-h1-primary">{t("heroHeading")}</span>
+                <span className="hero-h1-secondary">{t("heroSubheading")}</span>
+              </h1>
               <p>{t("heroDescription")}</p>
             </div>
 
