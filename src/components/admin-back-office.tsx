@@ -37,6 +37,14 @@ type AdminWorkingHours = {
   dinnerClose: string | null;
 };
 
+type AdminReservationClosure = {
+  id: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  note?: string;
+};
+
 type AdminMessageTemplate = {
   id: string;
   key: "reservation_new" | "reservation_confirmed" | "reservation_cancelled";
@@ -378,6 +386,7 @@ export default function AdminBackOffice() {
   const [reservations, setReservations] = useState<ReservationRecord[]>([]);
   const [menuSections, setMenuSections] = useState<AdminMenuSection[]>([]);
   const [workingHours, setWorkingHours] = useState<AdminWorkingHours[]>([]);
+  const [reservationClosures, setReservationClosures] = useState<AdminReservationClosure[]>([]);
   const [messageTemplates, setMessageTemplates] = useState<AdminMessageTemplate[]>([]);
   const [tutorialSettings, setTutorialSettings] = useState<AdminTutorialSettings>({
     id: "default",
@@ -392,6 +401,12 @@ export default function AdminBackOffice() {
     lunchClose: "15:00",
     dinnerOpen: "18:00",
     dinnerClose: "22:00",
+  });
+  const [isClosureToolsOpen, setIsClosureToolsOpen] = useState(false);
+  const [closureForm, setClosureForm] = useState({
+    startTime: "18:00",
+    endTime: "20:00",
+    note: "",
   });
   const [statusMessage, setStatusMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -587,11 +602,29 @@ export default function AdminBackOffice() {
     const found = calendarCells.find((cell) => cell.day === selectedCalendarDay);
     return found?.reservations ?? [];
   }, [calendarCells, selectedCalendarDay]);
+  const selectedCalendarDate = useMemo(() => {
+    if (selectedCalendarDay === null) {
+      return null;
+    }
+
+    return `${calendarMonthDate.getFullYear()}-${String(calendarMonthDate.getMonth() + 1).padStart(2, "0")}-${String(selectedCalendarDay).padStart(2, "0")}`;
+  }, [calendarMonthDate, selectedCalendarDay]);
+  const selectedDayClosures = useMemo(() => {
+    if (!selectedCalendarDate) {
+      return [];
+    }
+
+    return reservationClosures.filter((closure) => closure.date === selectedCalendarDate);
+  }, [reservationClosures, selectedCalendarDate]);
   const workingHoursMondayFirst = useMemo(() => {
     return [...workingHours].sort(
       (a, b) => mondayFirstOrder.indexOf(a.weekday) - mondayFirstOrder.indexOf(b.weekday),
     );
   }, [workingHours]);
+
+  useEffect(() => {
+    setIsClosureToolsOpen(false);
+  }, [selectedCalendarDate]);
 
   const loadAll = useCallback(async (showFullLoader = false) => {
     if (showFullLoader) {
@@ -605,12 +638,14 @@ export default function AdminBackOffice() {
         reservationResponse,
         menuResponse,
         workingHoursResponse,
+        reservationClosuresResponse,
         messageTemplatesResponse,
         tutorialSettingsResponse,
       ] = await Promise.all([
         fetch("/api/reservations", { cache: "no-store" }),
         fetch("/api/admin/menu", { cache: "no-store" }),
         fetch("/api/admin/working-hours", { cache: "no-store" }),
+        fetch("/api/admin/reservation-closures", { cache: "no-store" }),
         fetch("/api/admin/message-templates", { cache: "no-store" }),
         fetch("/api/admin/tutorial-settings", { cache: "no-store" }),
       ]);
@@ -619,6 +654,9 @@ export default function AdminBackOffice() {
       const menuJson = (await menuResponse.json()) as { data?: AdminMenuSection[] };
       const workingHoursJson = (await workingHoursResponse.json()) as {
         data?: AdminWorkingHours[];
+      };
+      const reservationClosuresJson = (await reservationClosuresResponse.json()) as {
+        data?: AdminReservationClosure[];
       };
       const messageTemplatesJson = (await messageTemplatesResponse.json()) as {
         data?: AdminMessageTemplate[];
@@ -630,6 +668,7 @@ export default function AdminBackOffice() {
       setReservations(reservationJson.data ?? []);
       setMenuSections(menuJson.data ?? []);
       setWorkingHours(workingHoursJson.data ?? []);
+      setReservationClosures(reservationClosuresJson.data ?? []);
       setMessageTemplates(messageTemplatesJson.data ?? []);
       setTutorialSettings(
         tutorialSettingsJson.data ?? {
@@ -895,6 +934,52 @@ export default function AdminBackOffice() {
       }
 
       setStatusMessage("Working hours updated.");
+      await loadAll();
+    });
+  }
+
+  async function createCalendarClosure() {
+    if (!selectedCalendarDate) {
+      setStatusMessage("Select a day in the calendar first.");
+      return;
+    }
+
+    await runAction("create-calendar-closure", async () => {
+      const response = await fetch("/api/admin/reservation-closures", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          date: selectedCalendarDate,
+          startTime: closureForm.startTime,
+          endTime: closureForm.endTime,
+          note: closureForm.note,
+        }),
+      });
+
+      const json = (await response.json().catch(() => ({}))) as { error?: string };
+      if (!response.ok) {
+        setStatusMessage(json.error ?? "Could not create closure window.");
+        return;
+      }
+
+      setClosureForm((prev) => ({ ...prev, note: "" }));
+      setStatusMessage("Reservation window closed for that day.");
+      await loadAll();
+    });
+  }
+
+  async function deleteCalendarClosure(id: string) {
+    await runAction(`delete-closure-${id}`, async () => {
+      const response = await fetch(`/api/admin/reservation-closures/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        setStatusMessage("Could not remove closure window.");
+        return;
+      }
+
+      setStatusMessage("Closure window removed.");
       await loadAll();
     });
   }
@@ -1613,77 +1698,200 @@ export default function AdminBackOffice() {
               <p className="footer-note" style={{ marginTop: 0 }}>
                 Select a day to view confirmed reservations.
               </p>
-            ) : selectedDayReservations.length === 0 ? (
-              <p className="footer-note" style={{ marginTop: 0 }}>
-                No confirmed reservations for day {selectedCalendarDay}.
-              </p>
             ) : (
-              selectedDayReservations.map((reservation) => (
-                <article className="card" key={`confirmed-${reservation.id}`}>
-                  <div className="reservation-meta-row">
-                    <p className="footer-note" style={{ marginTop: 0, marginBottom: "0.35rem" }}>
-                      Reservation #{reservation.id.slice(0, 8)}
-                    </p>
-                    <span className="pill reservation-locale-chip">
-                      {getMessageLanguageLabel(reservation)}
-                    </span>
-                  </div>
-                  <strong>
-                    {reservation.firstName} {reservation.lastName}
-                  </strong>
-                  <p>
-                    {formatEuropeanDate(reservation.date)} at {reservation.time} · Guests:{" "}
-                    {reservation.guests}
-                  </p>
-                  <p>
-                    <a
-                      href={toWhatsAppUrl(reservation.phone, reservation, messageTemplates)}
-                      target="_blank"
-                      rel="noopener noreferrer"
+              <>
+                <article className="card" style={{ padding: "0.9rem" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      gap: "0.8rem",
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <div>
+                      <h4 style={{ marginTop: 0, marginBottom: "0.3rem" }}>
+                        Close reservation window
+                      </h4>
+                      <p className="footer-note" style={{ marginTop: 0 }}>
+                        {selectedDayClosures.length > 0
+                          ? `${selectedDayClosures.length} closed window${selectedDayClosures.length === 1 ? "" : "s"} for ${selectedCalendarDate}`
+                          : `No closed windows for ${selectedCalendarDate}`}
+                      </p>
+                    </div>
+                    <label
+                      className="ios-switch-field"
+                      style={{ marginBottom: 0, alignSelf: "center", fontWeight: 600 }}
                     >
-                      {reservation.phone}
-                    </a>
-                  </p>
-                  <p>
-                    <a href={toEmailUrl(reservation.email, reservation, messageTemplates)}>
-                      {reservation.email}
-                    </a>
-                  </p>
-                  {hasReservationExtraDetails(reservation) ? (
-                    <details className="reservation-extra-details">
-                      <summary>More details</summary>
-                      <p className="footer-note" style={{ marginTop: "0.45rem" }}>
-                        <strong>Occasion:</strong>{" "}
-                        {reservation.occasion?.trim() ? reservation.occasion : "-"}
-                      </p>
-                      <p className="footer-note" style={{ marginTop: "0.25rem" }}>
-                        <strong>Special requests:</strong>{" "}
-                        {reservation.notes?.trim() ? reservation.notes : "-"}
-                      </p>
-                    </details>
+                      <input
+                        className="ios-switch-input"
+                        type="checkbox"
+                        checked={isClosureToolsOpen}
+                        onChange={(event) => setIsClosureToolsOpen(event.target.checked)}
+                      />
+                      <span className="ios-switch" aria-hidden="true" />
+                      Manage closed windows
+                    </label>
+                  </div>
+
+                  {isClosureToolsOpen ? (
+                    <div style={{ marginTop: "0.8rem", display: "grid", gap: "0.8rem" }}>
+                      <div className="form-grid">
+                        <div>
+                          <label>From</label>
+                          <input
+                            type="time"
+                            value={closureForm.startTime}
+                            onChange={(event) =>
+                              setClosureForm((prev) => ({ ...prev, startTime: event.target.value }))
+                            }
+                          />
+                        </div>
+                        <div>
+                          <label>Until</label>
+                          <input
+                            type="time"
+                            value={closureForm.endTime}
+                            onChange={(event) =>
+                              setClosureForm((prev) => ({ ...prev, endTime: event.target.value }))
+                            }
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label>Reason (optional)</label>
+                        <input
+                          value={closureForm.note}
+                          placeholder="Private event, fully booked, etc."
+                          onChange={(event) =>
+                            setClosureForm((prev) => ({ ...prev, note: event.target.value }))
+                          }
+                        />
+                      </div>
+                      <div>
+                        <button
+                          className="btn btn-primary"
+                          type="button"
+                          disabled={actionKey !== null}
+                          onClick={createCalendarClosure}
+                        >
+                          {actionKey === "create-calendar-closure"
+                            ? "Saving..."
+                            : "Close reservation window"}
+                        </button>
+                      </div>
+                      <div style={{ display: "grid", gap: "0.5rem" }}>
+                        {selectedDayClosures.length === 0 ? (
+                          <p className="footer-note" style={{ marginTop: 0 }}>
+                            No closure windows for this day.
+                          </p>
+                        ) : (
+                          selectedDayClosures.map((closure) => (
+                            <div
+                              key={closure.id}
+                              className="card"
+                              style={{ padding: "0.7rem", display: "grid", gap: "0.35rem" }}
+                            >
+                              <strong>
+                                {closure.startTime} - {closure.endTime}
+                              </strong>
+                              <p className="footer-note" style={{ marginTop: 0 }}>
+                                {closure.note?.trim() || "Closed to new reservations in this window."}
+                              </p>
+                              <div>
+                                <button
+                                  className="btn btn-secondary"
+                                  type="button"
+                                  disabled={actionKey !== null}
+                                  onClick={() => deleteCalendarClosure(closure.id)}
+                                >
+                                  {actionKey === `delete-closure-${closure.id}`
+                                    ? "Removing..."
+                                    : "Remove closure"}
+                                </button>
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
                   ) : null}
-                  <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.4rem", flexWrap: "wrap" }}>
-                    <button
-                      className="btn btn-secondary"
-                      type="button"
-                      disabled={actionKey !== null}
-                      onClick={() => changeReservationStatus(reservation.id, "new")}
-                    >
-                      {actionKey === `reservation-${reservation.id}-new` ? "Updating..." : "New"}
-                    </button>
-                    <button
-                      className="btn btn-secondary"
-                      type="button"
-                      disabled={actionKey !== null}
-                      onClick={() => changeReservationStatus(reservation.id, "cancelled")}
-                    >
-                      {actionKey === `reservation-${reservation.id}-cancelled`
-                        ? "Updating..."
-                        : "Cancelled"}
-                    </button>
-                  </div>
                 </article>
-              ))
+
+                {selectedDayReservations.length === 0 ? (
+                  <p className="footer-note" style={{ marginTop: 0 }}>
+                    No confirmed reservations for day {selectedCalendarDay}.
+                  </p>
+                ) : (
+                  selectedDayReservations.map((reservation) => (
+                    <article className="card" key={`confirmed-${reservation.id}`}>
+                      <div className="reservation-meta-row">
+                        <p className="footer-note" style={{ marginTop: 0, marginBottom: "0.35rem" }}>
+                          Reservation #{reservation.id.slice(0, 8)}
+                        </p>
+                        <span className="pill reservation-locale-chip">
+                          {getMessageLanguageLabel(reservation)}
+                        </span>
+                      </div>
+                      <strong>
+                        {reservation.firstName} {reservation.lastName}
+                      </strong>
+                      <p>
+                        {formatEuropeanDate(reservation.date)} at {reservation.time} · Guests:{" "}
+                        {reservation.guests}
+                      </p>
+                      <p>
+                        <a
+                          href={toWhatsAppUrl(reservation.phone, reservation, messageTemplates)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {reservation.phone}
+                        </a>
+                      </p>
+                      <p>
+                        <a href={toEmailUrl(reservation.email, reservation, messageTemplates)}>
+                          {reservation.email}
+                        </a>
+                      </p>
+                      {hasReservationExtraDetails(reservation) ? (
+                        <details className="reservation-extra-details">
+                          <summary>More details</summary>
+                          <p className="footer-note" style={{ marginTop: "0.45rem" }}>
+                            <strong>Occasion:</strong>{" "}
+                            {reservation.occasion?.trim() ? reservation.occasion : "-"}
+                          </p>
+                          <p className="footer-note" style={{ marginTop: "0.25rem" }}>
+                            <strong>Special requests:</strong>{" "}
+                            {reservation.notes?.trim() ? reservation.notes : "-"}
+                          </p>
+                        </details>
+                      ) : null}
+                      <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.4rem", flexWrap: "wrap" }}>
+                        <button
+                          className="btn btn-secondary"
+                          type="button"
+                          disabled={actionKey !== null}
+                          onClick={() => changeReservationStatus(reservation.id, "new")}
+                        >
+                          {actionKey === `reservation-${reservation.id}-new` ? "Updating..." : "New"}
+                        </button>
+                        <button
+                          className="btn btn-secondary"
+                          type="button"
+                          disabled={actionKey !== null}
+                          onClick={() => changeReservationStatus(reservation.id, "cancelled")}
+                        >
+                          {actionKey === `reservation-${reservation.id}-cancelled`
+                            ? "Updating..."
+                            : "Cancelled"}
+                        </button>
+                      </div>
+                    </article>
+                  ))
+                )}
+              </>
             )}
           </div>
         </section>

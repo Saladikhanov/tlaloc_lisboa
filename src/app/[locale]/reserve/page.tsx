@@ -1,5 +1,6 @@
 "use client";
 
+import { AnimatePresence, motion } from "framer-motion";
 import { FormEvent, Suspense, useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
@@ -7,6 +8,11 @@ import PublicNav from "@/components/public-nav";
 import type { Locale } from "@/lib/types";
 
 type Status = "idle" | "loading" | "success" | "error";
+type AvailabilityModalState = {
+  title: string;
+  message: string;
+  variant: "full" | "closed";
+} | null;
 type WorkingHoursEntry = {
   id: string;
   weekday: number;
@@ -41,6 +47,63 @@ const dayFromIsoDate = (value: string): number | null => {
   return new Date(Date.UTC(year, month - 1, day, 12, 0, 0)).getUTCDay();
 };
 
+function ModalStatusIcon({ variant }: { variant: "success" | "full" | "closed" }) {
+  const isSuccess = variant === "success";
+
+  return (
+    <motion.div
+      className={`reservation-modal-icon reservation-modal-icon-${variant}`}
+      initial={{ scale: 0.82, opacity: 0, y: 10 }}
+      animate={{ scale: 1, opacity: 1, y: 0 }}
+      transition={{ duration: 0.28, ease: "easeOut" }}
+    >
+      <motion.div
+        className="reservation-modal-icon-glow"
+        animate={{ scale: [1, 1.08, 1], opacity: [0.28, 0.5, 0.28] }}
+        transition={{ duration: 1.8, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+      />
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <circle className="reservation-modal-icon-ring" cx="32" cy="32" r="26" />
+        {isSuccess ? (
+          <motion.path
+            className="reservation-modal-icon-mark"
+            d="M20 33.5 L28 41.5 L44.5 24.5"
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="5"
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: 1 }}
+            transition={{ duration: 0.38, delay: 0.12, ease: "easeOut" }}
+          />
+        ) : (
+          <>
+            <motion.path
+              className="reservation-modal-icon-mark"
+              d="M32 20v15"
+              fill="none"
+              strokeLinecap="round"
+              strokeWidth="5"
+              initial={{ pathLength: 0 }}
+              animate={{ pathLength: 1 }}
+              transition={{ duration: 0.28, delay: 0.1, ease: "easeOut" }}
+            />
+            <motion.circle
+              className="reservation-modal-icon-dot"
+              cx="32"
+              cy="41.5"
+              r="2.8"
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.22, delay: 0.32, ease: "easeOut" }}
+            />
+          </>
+        )}
+      </svg>
+    </motion.div>
+  );
+}
+
 function ReservePageContent() {
   const localeValue = useLocale();
   const locale = localeValue as Locale;
@@ -50,7 +113,7 @@ function ReservePageContent() {
   const [status, setStatus] = useState<Status>("idle");
   const [message, setMessage] = useState("");
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
-  const [workingHoursErrorModalMessage, setWorkingHoursErrorModalMessage] = useState("");
+  const [availabilityModal, setAvailabilityModal] = useState<AvailabilityModalState>(null);
   const [workingHours, setWorkingHours] = useState<WorkingHoursEntry[]>([]);
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
@@ -146,11 +209,13 @@ function ReservePageContent() {
     if (dayHours?.isClosed) {
       setSelectedDate("");
       setSelectedTime("");
-      setWorkingHoursErrorModalMessage(
-        isPortuguese
+      setAvailabilityModal({
+        title: isPortuguese ? "Dia fechado" : "Day closed",
+        message: isPortuguese
           ? "Dia fechado. Escolha uma data dentro dos dias de funcionamento."
           : "This day is closed. Please choose a working day.",
-      );
+        variant: "closed",
+      });
       return;
     }
 
@@ -192,9 +257,20 @@ function ReservePageContent() {
     };
 
     if (!response.ok) {
-      if (json.code === "outside_working_hours") {
+      if (json.code === "outside_working_hours" || json.code === "time_window_full") {
         setStatus("idle");
-        setWorkingHoursErrorModalMessage(json.error ?? t("error"));
+        setAvailabilityModal({
+          title:
+            json.code === "time_window_full"
+              ? isPortuguese
+                ? "Desculpe, estamos lotados"
+                : "Sorry, we're full"
+              : isPortuguese
+                ? "Fora do horario"
+                : "Outside working hours",
+          message: json.error ?? t("error"),
+          variant: json.code === "time_window_full" ? "full" : "closed",
+        });
         return;
       }
 
@@ -317,61 +393,85 @@ function ReservePageContent() {
         </div>
       </form>
 
-      {workingHoursErrorModalMessage ? (
-        <>
-          <button
-            className="confirm-modal-backdrop"
-            type="button"
-            aria-label={t("successModalClose")}
-            onClick={() => setWorkingHoursErrorModalMessage("")}
-          />
-          <div className="confirm-modal-wrap" onClick={() => setWorkingHoursErrorModalMessage("")}>
-            <section className="confirm-modal-card" onClick={(event) => event.stopPropagation()}>
-              <h3>{locale === "pt" ? "Fora do Horario" : "Outside Working Hours"}</h3>
-              <p className="footer-note" style={{ marginTop: "0.6rem" }}>
-                {workingHoursErrorModalMessage}
-              </p>
-              <div className="confirm-modal-actions">
-                <button
-                  className="btn btn-primary"
-                  type="button"
-                  onClick={() => setWorkingHoursErrorModalMessage("")}
-                >
-                  {t("successModalClose")}
-                </button>
-              </div>
-            </section>
-          </div>
-        </>
-      ) : null}
+      <AnimatePresence>
+        {availabilityModal ? (
+          <>
+            <motion.button
+              className="confirm-modal-backdrop"
+              type="button"
+              aria-label={t("successModalClose")}
+              onClick={() => setAvailabilityModal(null)}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            />
+            <div className="confirm-modal-wrap" onClick={() => setAvailabilityModal(null)}>
+              <motion.section
+                className="confirm-modal-card"
+                onClick={(event) => event.stopPropagation()}
+                initial={{ opacity: 0, y: 18, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 12, scale: 0.97 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+              >
+                <ModalStatusIcon variant={availabilityModal.variant} />
+                <h3>{availabilityModal.title}</h3>
+                <p className="footer-note" style={{ marginTop: "0.6rem" }}>
+                  {availabilityModal.message}
+                </p>
+                <div className="confirm-modal-actions">
+                  <button
+                    className="btn btn-primary"
+                    type="button"
+                    onClick={() => setAvailabilityModal(null)}
+                  >
+                    {t("successModalClose")}
+                  </button>
+                </div>
+              </motion.section>
+            </div>
+          </>
+        ) : null}
 
-      {isSuccessModalOpen ? (
-        <>
-          <button
-            className="confirm-modal-backdrop"
-            type="button"
-            aria-label={t("successModalClose")}
-            onClick={() => setIsSuccessModalOpen(false)}
-          />
-          <div className="confirm-modal-wrap" onClick={() => setIsSuccessModalOpen(false)}>
-            <section className="confirm-modal-card" onClick={(event) => event.stopPropagation()}>
-              <h3>{t("successModalTitle")}</h3>
-              <p className="footer-note" style={{ marginTop: "0.6rem" }}>
-                {t("success")}
-              </p>
-              <div className="confirm-modal-actions">
-                <button
-                  className="btn btn-primary"
-                  type="button"
-                  onClick={() => setIsSuccessModalOpen(false)}
-                >
-                  {t("successModalClose")}
-                </button>
-              </div>
-            </section>
-          </div>
-        </>
-      ) : null}
+        {isSuccessModalOpen ? (
+          <>
+            <motion.button
+              className="confirm-modal-backdrop"
+              type="button"
+              aria-label={t("successModalClose")}
+              onClick={() => setIsSuccessModalOpen(false)}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            />
+            <div className="confirm-modal-wrap" onClick={() => setIsSuccessModalOpen(false)}>
+              <motion.section
+                className="confirm-modal-card"
+                onClick={(event) => event.stopPropagation()}
+                initial={{ opacity: 0, y: 18, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 12, scale: 0.97 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+              >
+                <ModalStatusIcon variant="success" />
+                <h3>{t("successModalTitle")}</h3>
+                <p className="footer-note" style={{ marginTop: "0.6rem" }}>
+                  {t("success")}
+                </p>
+                <div className="confirm-modal-actions">
+                  <button
+                    className="btn btn-primary"
+                    type="button"
+                    onClick={() => setIsSuccessModalOpen(false)}
+                  >
+                    {t("successModalClose")}
+                  </button>
+                </div>
+              </motion.section>
+            </div>
+          </>
+        ) : null}
+      </AnimatePresence>
     </main>
   );
 }

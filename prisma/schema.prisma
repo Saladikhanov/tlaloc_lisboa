@@ -92,6 +92,18 @@ model WorkingHours {
   @@index([weekday])
 }
 
+model ReservationClosure {
+  id        String   @id @default(cuid())
+  date      String
+  startTime String
+  endTime   String
+  note      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([date, startTime])
+}
+
 model MessageTemplate {
   id        String   @id @default(cuid())
   key       String   @unique
