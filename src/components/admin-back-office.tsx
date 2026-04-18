@@ -100,6 +100,11 @@ type AdminToast = {
   message: string;
 };
 
+type AdminStatusToast = {
+  id: number;
+  message: string;
+};
+
 type AdminManualReservationForm = {
   locale: "en" | "pt";
   fullName: string;
@@ -131,7 +136,7 @@ const defaultAdminRealtimeSettings: AdminRealtimeSettings = {
 };
 
 const defaultManualReservationForm: AdminManualReservationForm = {
-  locale: "en",
+  locale: "pt",
   fullName: "",
   phone: "",
   email: "",
@@ -139,6 +144,31 @@ const defaultManualReservationForm: AdminManualReservationForm = {
   guests: "2",
   otherInfo: "",
 };
+
+const manualReservationLocaleOptions: Array<{ value: "en" | "pt"; label: string }> = [
+  { value: "en", label: "EN" },
+  { value: "pt", label: "PT" },
+];
+
+const manualReservationGuestOptions = ["1", "2", "3", "4", "5", "6+"];
+
+const manualReservationTimeOptions = [
+  "12:00",
+  "12:30",
+  "13:00",
+  "13:30",
+  "14:00",
+  "14:30",
+  "18:00",
+  "18:30",
+  "19:00",
+  "19:30",
+  "20:00",
+  "20:30",
+  "21:00",
+  "21:30",
+  "22:00",
+];
 
 type TabId = "reservations" | "today" | "metrics" | "rewards" | "calendar" | "menu" | "hours" | "security";
 type DeleteReservationModalState = {
@@ -731,6 +761,7 @@ export default function AdminBackOffice() {
     useState<NativeNotificationPermission>("default");
   const [hasLoadedRealtimeSettings, setHasLoadedRealtimeSettings] = useState(false);
   const [adminToasts, setAdminToasts] = useState<AdminToast[]>([]);
+  const [adminStatusToast, setAdminStatusToast] = useState<AdminStatusToast | null>(null);
   const [highlightedReservationIds, setHighlightedReservationIds] = useState<string[]>([]);
   const [showReadInPending, setShowReadInPending] = useState(false);
   const [actionKey, setActionKey] = useState<string | null>(null);
@@ -740,6 +771,8 @@ export default function AdminBackOffice() {
   const toastTimeoutsRef = useRef<number[]>([]);
   const highlightTimeoutsRef = useRef<Record<string, number>>({});
   const toastIdRef = useRef(0);
+  const statusToastTimeoutRef = useRef<number | null>(null);
+  const statusToastIdRef = useRef(0);
   const hasShownRealtimeSelfTestRef = useRef(false);
 
   const [newSection, setNewSection] = useState({
@@ -1420,6 +1453,26 @@ export default function AdminBackOffice() {
     setAdminToasts((current) => current.filter((toast) => toast.id !== toastId));
   }, []);
 
+  useEffect(() => {
+    if (!statusMessage) {
+      return;
+    }
+
+    const nextToastId = statusToastIdRef.current + 1;
+    statusToastIdRef.current = nextToastId;
+    setAdminStatusToast({ id: nextToastId, message: statusMessage });
+
+    if (statusToastTimeoutRef.current) {
+      clearTimeout(statusToastTimeoutRef.current);
+    }
+    statusToastTimeoutRef.current = window.setTimeout(() => {
+      setAdminStatusToast((current) => (current?.id === nextToastId ? null : current));
+      statusToastTimeoutRef.current = null;
+    }, 3200);
+
+    setStatusMessage("");
+  }, [statusMessage]);
+
   const handleDesktopNotificationToggle = useCallback(async (nextValue: boolean) => {
     if (!nextValue) {
       setAdminRealtimeSettings((current) => ({ ...current, desktopEnabled: false }));
@@ -1525,6 +1578,9 @@ export default function AdminBackOffice() {
       for (const timeoutId of toastTimeouts) {
         clearTimeout(timeoutId);
       }
+      if (statusToastTimeoutRef.current) {
+        clearTimeout(statusToastTimeoutRef.current);
+      }
       for (const timeoutId of Object.values(highlightTimeouts)) {
         clearTimeout(timeoutId);
       }
@@ -1547,11 +1603,7 @@ export default function AdminBackOffice() {
 
     const handleReservationCreated = (message: Event) => {
       const event = JSON.parse((message as MessageEvent<string>).data) as AdminEvent;
-      setStatusMessage("New reservation received.");
-      pushAdminToast(
-        "New reservation",
-        `${event.guestName} · ${formatEuropeanDate(event.date)} at ${event.time}`,
-      );
+      pushAdminToast("New reservation", `${event.guestName} · ${formatEuropeanDate(event.date)} at ${event.time}`);
       highlightReservationCard(event.reservationId);
       if (adminRealtimeSettings.soundEnabled) {
         playAdminNotificationSound();
@@ -2279,8 +2331,6 @@ export default function AdminBackOffice() {
         </div>
       )}
 
-      {statusMessage ? <p className="footer-note">{statusMessage}</p> : null}
-      {isLoading ? <p className="footer-note db-loader">Loading data...</p> : null}
       <AnimatePresence>
         {adminToasts.length > 0 ? (
           <div className="admin-toast-stack" aria-live="polite" aria-atomic="true">
@@ -2303,6 +2353,27 @@ export default function AdminBackOffice() {
                 </button>
               </motion.div>
             ))}
+          </div>
+        ) : null}
+      </AnimatePresence>
+      <AnimatePresence>
+        {adminStatusToast || isLoading ? (
+          <div className="admin-status-toast-wrap">
+            <motion.div
+              key={adminStatusToast ? adminStatusToast.id : "loading"}
+              className={`admin-status-toast ${isLoading ? "admin-status-toast-loading" : ""}`}
+              aria-live="polite"
+              aria-label={adminStatusToast ? undefined : "Loading data"}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+            >
+              {adminStatusToast ? (
+                adminStatusToast.message
+              ) : (
+                <span className="admin-status-loader-ring" aria-hidden="true" />
+              )}
+            </motion.div>
           </div>
         ) : null}
       </AnimatePresence>
@@ -3372,9 +3443,9 @@ export default function AdminBackOffice() {
 
       {activeTab === "calendar" ? (
         <section className="card">
-          <div className="admin-calendar-head" style={{ position: "relative", paddingRight: "3.2rem" }}>
-            <h3>Confirmed Reservations Calendar</h3>
-            <div style={{ display: "flex", gap: "0.45rem" }}>
+          <div className="admin-calendar-head">
+            <h3 className="admin-calendar-head-title">Confirmed Calendar</h3>
+            <div className="admin-calendar-controls">
               <button
                 className="btn btn-secondary"
                 type="button"
@@ -3409,23 +3480,22 @@ export default function AdminBackOffice() {
               >
                 Next
               </button>
+              <button
+                className="btn btn-secondary btn-icon"
+                type="button"
+                aria-label={selectedCalendarDate ? `Add reservation for ${selectedCalendarDate}` : "Select a day first"}
+                title={selectedCalendarDate ? "Add reservation" : "Select a day first"}
+                onClick={() => {
+                  if (!selectedCalendarDate) {
+                    setStatusMessage("Select a day in the calendar first.");
+                    return;
+                  }
+                  setIsManualReservationFormOpen(true);
+                }}
+              >
+                +
+              </button>
             </div>
-            <button
-              className="btn btn-secondary btn-icon"
-              type="button"
-              style={{ position: "absolute", right: 0, top: "50%", transform: "translateY(-50%)" }}
-              aria-label={selectedCalendarDate ? `Add reservation for ${selectedCalendarDate}` : "Select a day first"}
-              title={selectedCalendarDate ? "Add reservation" : "Select a day first"}
-              onClick={() => {
-                if (!selectedCalendarDate) {
-                  setStatusMessage("Select a day in the calendar first.");
-                  return;
-                }
-                setIsManualReservationFormOpen(true);
-              }}
-            >
-              +
-            </button>
           </div>
           <p className="footer-note" style={{ marginTop: "0.5rem" }}>
             {monthLabel}
@@ -4643,11 +4713,11 @@ export default function AdminBackOffice() {
           />
           <div className="confirm-modal-wrap" onClick={() => setIsManualReservationFormOpen(false)}>
             <section
-              className="confirm-modal-card"
+              className="confirm-modal-card admin-manual-reservation-modal"
               role="dialog"
               aria-modal="true"
               onClick={(event) => event.stopPropagation()}
-              style={{ width: "min(720px, calc(100vw - 2rem))" }}
+              style={{ width: "min(640px, calc(100vw - 2rem))", maxHeight: "90dvh", overflowY: "auto" }}
             >
               <h3>Add reservation</h3>
               <p className="footer-note" style={{ marginTop: "0.5rem" }}>
@@ -4655,46 +4725,63 @@ export default function AdminBackOffice() {
                 {formatEuropeanDate(selectedCalendarDate)}.
               </p>
 
-              <div style={{ marginTop: "0.8rem", display: "grid", gap: "0.8rem" }}>
+              <div className="admin-manual-reservation-form">
+                <div className="admin-manual-choice-section">
+                  <label>Language</label>
+                  <div className="admin-manual-choice-grid admin-manual-choice-grid-tight admin-manual-choice-grid-language">
+                    {manualReservationLocaleOptions.map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        className={`admin-manual-choice admin-manual-choice-language ${
+                          manualReservationForm.locale === option.value ? "active" : ""
+                        }`}
+                        onClick={() =>
+                          setManualReservationForm((prev) => ({
+                            ...prev,
+                            locale: option.value,
+                          }))
+                        }
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="admin-manual-choice-section">
+                  <label>Time</label>
+                  <div className="admin-manual-choice-grid">
+                    {manualReservationTimeOptions.map((time) => (
+                      <button
+                        key={time}
+                        type="button"
+                        className={`admin-manual-choice ${manualReservationForm.time === time ? "active" : ""}`}
+                        onClick={() => setManualReservationForm((prev) => ({ ...prev, time }))}
+                      >
+                        {time}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="admin-manual-choice-section">
+                  <label>Guests</label>
+                  <div className="admin-manual-choice-grid admin-manual-choice-grid-tight">
+                    {manualReservationGuestOptions.map((guests) => (
+                      <button
+                        key={guests}
+                        type="button"
+                        className={`admin-manual-choice ${manualReservationForm.guests === guests ? "active" : ""}`}
+                        onClick={() => setManualReservationForm((prev) => ({ ...prev, guests }))}
+                      >
+                        {guests}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 <div className="form-grid">
-                  <div>
-                    <label>Language</label>
-                    <select
-                      value={manualReservationForm.locale}
-                      onChange={(event) =>
-                        setManualReservationForm((prev) => ({
-                          ...prev,
-                          locale: event.target.value as "en" | "pt",
-                        }))
-                      }
-                    >
-                      <option value="en">EN</option>
-                      <option value="pt">PT</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label>Time</label>
-                    <input
-                      type="time"
-                      required
-                      value={manualReservationForm.time}
-                      onChange={(event) =>
-                        setManualReservationForm((prev) => ({ ...prev, time: event.target.value }))
-                      }
-                    />
-                  </div>
-                  <div>
-                    <label>Guests</label>
-                    <input
-                      required
-                      value={manualReservationForm.guests}
-                      onChange={(event) =>
-                        setManualReservationForm((prev) => ({ ...prev, guests: event.target.value }))
-                      }
-                      inputMode="numeric"
-                      placeholder="2"
-                    />
-                  </div>
                   <div>
                     <label>Full name</label>
                     <input
@@ -4710,6 +4797,8 @@ export default function AdminBackOffice() {
                     <label>Phone</label>
                     <input
                       required
+                      inputMode="tel"
+                      autoComplete="tel"
                       value={manualReservationForm.phone}
                       onChange={(event) =>
                         setManualReservationForm((prev) => ({ ...prev, phone: event.target.value }))
@@ -4741,11 +4830,6 @@ export default function AdminBackOffice() {
                 </div>
 
                 <div className="confirm-modal-actions">
-                  {manualReservationValidationError ? (
-                    <p className="footer-note" style={{ marginTop: 0, marginRight: "auto" }}>
-                      {manualReservationValidationError}
-                    </p>
-                  ) : null}
                   <button
                     className="btn btn-secondary"
                     type="button"
@@ -4760,7 +4844,7 @@ export default function AdminBackOffice() {
                   <button
                     className="btn btn-primary"
                     type="button"
-                    disabled={actionKey !== null || Boolean(manualReservationValidationError)}
+                    disabled={actionKey !== null}
                     onClick={() => void createManualCalendarReservation()}
                   >
                     {actionKey === "create-manual-calendar-reservation" ? "Saving..." : "Add confirmed reservation"}

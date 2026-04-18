@@ -764,7 +764,13 @@ export default function ReserveFlow() {
               </div>
               <div>
                 <label htmlFor="reserve-phone">{t.phone}</label>
-                <input id="reserve-phone" value={phone} onChange={(event) => setPhone(event.target.value)} />
+                <input
+                  id="reserve-phone"
+                  inputMode="tel"
+                  autoComplete="tel"
+                  value={phone}
+                  onChange={(event) => setPhone(event.target.value)}
+                />
               </div>
             </div>
             <div className="form-grid" style={{ marginTop: "0.8rem" }}>
