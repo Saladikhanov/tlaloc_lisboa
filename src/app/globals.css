@@ -1642,12 +1642,26 @@ a {
 
 .reserve-flow-step-chip {
   opacity: 0.65;
+  width: 42px;
+  height: 42px;
+  padding: 0;
 }
 
 .reserve-flow-step-chip.active {
   opacity: 1;
   border-color: var(--accent);
   color: var(--accent);
+}
+
+.reserve-flow-step-icon {
+  display: inline-flex;
+  width: 18px;
+  height: 18px;
+}
+
+.reserve-flow-step-icon svg {
+  width: 100%;
+  height: 100%;
 }
 
 .reserve-flow-card {
@@ -1726,18 +1740,18 @@ a {
 }
 
 .reserve-flow-success-block {
-  margin-top: 0.9rem;
+  margin-top: 0.6rem;
   border: 1px solid var(--line);
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.03);
-  padding: 0.8rem;
+  padding: 0.6rem 0.7rem;
   text-align: left;
 }
 
 .reserve-flow-success-grid {
-  margin-top: 0.5rem;
+  margin-top: 0.35rem;
   display: grid;
-  gap: 0.4rem;
+  gap: 0.25rem;
 }
 
 .reservation-list-loader {
@@ -2041,7 +2055,7 @@ textarea {
 .footer-note {
   color: var(--muted);
   font-size: 0.86rem;
-  margin-top: 2rem;
+  margin-top: 0.5rem;
 }
 
 .site-footer {

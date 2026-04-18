@@ -67,6 +67,8 @@ type ReserveText = {
   nextMonth: string;
 };
 
+type StepIconName = "date" | "time" | "guests" | "details";
+
 const weekdayShortMondayFirst = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const weekdayShortMondayFirstPt = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sab", "Dom"];
 const monthNamesEn = [
@@ -216,6 +218,8 @@ const texts = {
   },
 } satisfies Record<Locale, ReserveText>;
 
+const stepIcons: StepIconName[] = ["date", "time", "guests", "details"];
+
 function ModalStatusIcon({ variant }: { variant: "success" | "full" | "closed" }) {
   const isSuccess = variant === "success";
 
@@ -270,6 +274,67 @@ function ModalStatusIcon({ variant }: { variant: "success" | "full" | "closed" }
         )}
       </svg>
     </motion.div>
+  );
+}
+
+function StepIcon({ name }: { name: StepIconName }) {
+  if (name === "date") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path
+          d="M7 3v3M17 3v3M4 9h16M6 5h12a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.8"
+        />
+      </svg>
+    );
+  }
+
+  if (name === "time") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" strokeWidth="1.8" />
+        <path
+          d="M12 8v4l3 2"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.8"
+        />
+      </svg>
+    );
+  }
+
+  if (name === "guests") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path
+          d="M8 11a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Zm8 1.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM3.5 18a4.5 4.5 0 0 1 9 0M12 18a4 4 0 0 1 8 0"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.8"
+        />
+      </svg>
+    );
+  }
+
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        d="M8 6h8M8 10h8M8 14h5M6 4h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
+    </svg>
   );
 }
 
@@ -501,8 +566,12 @@ export default function ReserveFlow() {
           <span
             key={step}
             className={`quick-chip reserve-flow-step-chip ${currentStep === index + 1 ? "active" : ""}`}
+            title={step}
+            aria-label={step}
           >
-            {index + 1}. {step}
+            <span className="reserve-flow-step-icon" aria-hidden="true">
+              <StepIcon name={stepIcons[index]} />
+            </span>
           </span>
         ))}
       </div>
@@ -808,7 +877,7 @@ export default function ReserveFlow() {
                     </div>
                     <div className="reserve-flow-success-block">
                       <strong>{t.successNextTitle}</strong>
-                      <p className="footer-note" style={{ marginTop: "0.45rem" }}>
+                      <p className="footer-note" style={{ marginTop: "0.3rem" }}>
                         {t.successNextBody}
                       </p>
                     </div>
