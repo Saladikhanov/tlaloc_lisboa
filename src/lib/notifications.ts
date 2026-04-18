@@ -1,5 +1,5 @@
 import nodemailer from "nodemailer";
-import type { Locale, ReservationRecord } from "@/lib/types";
+import type { Locale, ReservationRecord, ReservationV2Record } from "@/lib/types";
 import { createReservationConfirmUrl } from "@/lib/reservation-confirmation";
 
 type NotificationStatus = {
@@ -36,6 +36,33 @@ const reservationSummary = (
     `Email: ${reservation.email}`,
     `Occasion: ${reservation.occasion ?? "-"}`,
     `Notes: ${reservation.notes ?? "-"}`,
+  ].join("\n");
+};
+
+const reservationV2Summary = (
+  reservation: ReservationV2Record,
+  locale: Locale,
+): string => {
+  if (isPt(locale)) {
+    return [
+      `Nome: ${reservation.fullName}`,
+      `Data: ${reservation.date}`,
+      `Hora: ${reservation.time}`,
+      `Convidados: ${reservation.guests}`,
+      `Telefone: ${reservation.phone}`,
+      `Email: ${reservation.email ?? "-"}`,
+      `Informações: ${reservation.otherInfo ?? "-"}`,
+    ].join("\n");
+  }
+
+  return [
+    `Name: ${reservation.fullName}`,
+    `Date: ${reservation.date}`,
+    `Time: ${reservation.time}`,
+    `Guests: ${reservation.guests}`,
+    `Phone: ${reservation.phone}`,
+    `Email: ${reservation.email ?? "-"}`,
+    `Other info: ${reservation.otherInfo ?? "-"}`,
   ].join("\n");
 };
 
@@ -182,6 +209,108 @@ export const sendReservationWhatsApp = async (
     const teamResponse = await sendTwilioWhatsApp(teamTo, teamBody);
     if (!teamResponse.ok) {
       throw new Error("Failed to send WhatsApp message to team.");
+    }
+
+    return { channel: "whatsapp", sent: true };
+  } catch (error) {
+    return {
+      channel: "whatsapp",
+      sent: false,
+      reason: error instanceof Error ? error.message : "Unknown WhatsApp error",
+    };
+  }
+};
+
+export const sendReservationV2Emails = async (
+  reservation: ReservationV2Record,
+): Promise<NotificationStatus> => {
+  const host = process.env.SMTP_HOST;
+  const port = Number(process.env.SMTP_PORT ?? "587");
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+  const from = process.env.SMTP_FROM ?? user;
+  const notifyTo = process.env.RESERVATION_NOTIFY_EMAIL;
+
+  if (!host || !user || !pass || !from || !notifyTo) {
+    return {
+      channel: "email",
+      sent: false,
+      reason:
+        "Missing SMTP_HOST/SMTP_USER/SMTP_PASS/SMTP_FROM/RESERVATION_NOTIFY_EMAIL.",
+    };
+  }
+
+  const transporter = nodemailer.createTransport({
+    host,
+    port,
+    secure: port === 465,
+    auth: { user, pass },
+  });
+
+  const locale = reservation.locale;
+  const subjectGuest = isPt(locale)
+    ? "Reserva recebida - Tláloc Restaurant"
+    : "Reservation received - Tláloc Restaurant";
+  const guestText = isPt(locale)
+    ? `Ola ${reservation.fullName},\n\nRecebemos o seu pedido de reserva. Em breve entraremos em contacto para confirmar.\n\n${reservationV2Summary(reservation, locale)}`
+    : `Hi ${reservation.fullName},\n\nWe received your reservation request. We will confirm it shortly.\n\n${reservationV2Summary(reservation, locale)}`;
+
+  const subjectTeam = "New reservation v2 request";
+  const teamText = reservationV2Summary(reservation, "en");
+
+  if (reservation.email) {
+    await transporter.sendMail({
+      from,
+      to: reservation.email,
+      subject: subjectGuest,
+      text: guestText,
+    });
+  }
+
+  await transporter.sendMail({
+    from,
+    to: notifyTo,
+    subject: subjectTeam,
+    text: teamText,
+    html: `<pre style="font-family:inherit;white-space:pre-wrap;line-height:1.5">${teamText}</pre>`,
+  });
+
+  return { channel: "email", sent: true };
+};
+
+export const sendReservationV2WhatsApp = async (
+  reservation: ReservationV2Record,
+): Promise<NotificationStatus> => {
+  const notifyTo = process.env.WHATSAPP_NOTIFY_TO;
+
+  if (!notifyTo) {
+    return {
+      channel: "whatsapp",
+      sent: false,
+      reason: "Missing WHATSAPP_NOTIFY_TO.",
+    };
+  }
+
+  try {
+    const locale = reservation.locale;
+    const guestBody = isPt(locale)
+      ? `Tláloc Restaurant: pedido de reserva recebido para ${reservation.date} às ${reservation.time}. Vamos confirmar em breve.`
+      : `Tláloc Restaurant: reservation request received for ${reservation.date} at ${reservation.time}. We will confirm shortly.`;
+    const teamBody = `New reservation v2 from ${reservation.fullName} on ${reservation.date} ${reservation.time} for ${reservation.guests} guests.`;
+
+    const guestTo = reservation.phone.startsWith("whatsapp:")
+      ? reservation.phone
+      : `whatsapp:${reservation.phone}`;
+    const teamTo = notifyTo.startsWith("whatsapp:")
+      ? notifyTo
+      : `whatsapp:${notifyTo}`;
+
+    const [guestResponse, teamResponse] = await Promise.all([
+      sendTwilioWhatsApp(guestTo, guestBody),
+      sendTwilioWhatsApp(teamTo, teamBody),
+    ]);
+    if (!guestResponse.ok || !teamResponse.ok) {
+      throw new Error("Failed to send WhatsApp message.");
     }
 
     return { channel: "whatsapp", sent: true };

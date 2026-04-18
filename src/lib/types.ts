@@ -38,3 +38,24 @@ export type ReservationRecord = ReservationPayload & {
   status: "new" | "confirmed" | "cancelled";
   createdAt: string;
 };
+
+export type ReservationV2Payload = {
+  locale: Locale;
+  fullName: string;
+  phone: string;
+  email?: string;
+  date: string;
+  time: string;
+  guests: string;
+  otherInfo?: string;
+};
+
+export type ReservationV2Record = ReservationV2Payload & {
+  id: string;
+  isRead: boolean;
+  isTest: boolean;
+  status: "new" | "confirmed" | "cancelled";
+  archivedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+};

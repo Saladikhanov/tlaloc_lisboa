@@ -38,6 +38,29 @@ model Reservation {
   @@index([isRead, status, createdAt(sort: Desc)])
 }
 
+model ReservationV2 {
+  id         String            @id @default(cuid())
+  locale     Locale
+  fullName   String
+  phone      String
+  email      String?
+  date       String
+  time       String
+  guests     String
+  otherInfo  String?
+  isRead     Boolean           @default(false)
+  isTest     Boolean           @default(false)
+  status     ReservationStatus @default(new)
+  archivedAt DateTime?
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  @@index([createdAt(sort: Desc)])
+  @@index([date, time])
+  @@index([isRead, status, createdAt(sort: Desc)])
+  @@index([archivedAt])
+}
+
 model AdminUser {
   id           String   @id @default(cuid())
   username     String   @unique

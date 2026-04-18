@@ -2,7 +2,7 @@
 
 import { FormEvent, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import type { ReservationRecord } from "@/lib/types";
+import type { ReservationRecord, ReservationV2Record } from "@/lib/types";
 
 type AdminMenuItem = {
   id: string;
@@ -43,6 +43,24 @@ type AdminReservationClosure = {
   startTime: string;
   endTime: string;
   note?: string;
+};
+
+type AdminReservationRecord = {
+  id: string;
+  version: "v1" | "v2";
+  locale: "en" | "pt";
+  firstName: string;
+  lastName: string;
+  phone: string;
+  email: string;
+  date: string;
+  time: string;
+  guests: string;
+  occasion?: string;
+  notes?: string;
+  isRead: boolean;
+  status: "new" | "confirmed" | "cancelled";
+  createdAt: string;
 };
 
 type AdminMessageTemplate = {
@@ -107,9 +125,38 @@ const formatEuropeanDate = (isoDate: string): string => {
   return `${String(parsed.day).padStart(2, "0")}/${String(parsed.month).padStart(2, "0")}/${parsed.year}`;
 };
 
+const toAdminReservationRecord = (reservation: ReservationRecord): AdminReservationRecord => ({
+  ...reservation,
+  version: "v1",
+});
+
+const toAdminReservationV2Record = (
+  reservation: ReservationV2Record,
+): AdminReservationRecord => {
+  const [firstName, ...rest] = reservation.fullName.trim().split(/\s+/);
+
+  return {
+    id: reservation.id,
+    version: "v2",
+    locale: reservation.locale,
+    firstName: firstName || reservation.fullName,
+    lastName: rest.join(" "),
+    phone: reservation.phone,
+    email: reservation.email ?? "",
+    date: reservation.date,
+    time: reservation.time,
+    guests: reservation.guests,
+    occasion: undefined,
+    notes: reservation.otherInfo ?? undefined,
+    isRead: reservation.isRead,
+    status: reservation.status,
+    createdAt: reservation.createdAt,
+  };
+};
+
 const compareReservationChronological = (
-  a: ReservationRecord,
-  b: ReservationRecord,
+  a: AdminReservationRecord,
+  b: AdminReservationRecord,
 ): number => {
   const aKey = `${a.date}T${a.time}`;
   const bKey = `${b.date}T${b.time}`;
@@ -151,7 +198,7 @@ const defaultMessageTemplates: Omit<AdminMessageTemplate, "id">[] = [
   },
 ];
 
-const renderTemplate = (value: string, reservation: ReservationRecord): string => {
+const renderTemplate = (value: string, reservation: AdminReservationRecord): string => {
   const variables: Record<string, string> = {
     firstName: reservation.firstName,
     lastName: reservation.lastName,
@@ -186,7 +233,7 @@ const getTemplateByKey = (
 };
 
 const getContactTemplate = (
-  reservation: ReservationRecord,
+  reservation: AdminReservationRecord,
   templates: AdminMessageTemplate[],
 ): { subject: string; body: string } => {
   const isPortuguese = reservation.locale === "pt";
@@ -206,7 +253,7 @@ const getContactTemplate = (
 
 const toWhatsAppUrl = (
   phone: string,
-  reservation: ReservationRecord,
+  reservation: AdminReservationRecord,
   templates: AdminMessageTemplate[],
 ): string => {
   const raw = phone.trim();
@@ -229,7 +276,7 @@ const toWhatsAppUrl = (
 
 const toEmailUrl = (
   email: string,
-  reservation: ReservationRecord,
+  reservation: AdminReservationRecord,
   templates: AdminMessageTemplate[],
 ): string => {
   const normalized = email.trim();
@@ -245,10 +292,10 @@ const toEmailUrl = (
   return `mailto:${normalized}?${params.toString()}`;
 };
 
-const getMessageLanguageLabel = (reservation: ReservationRecord): "EN" | "PT" =>
+const getMessageLanguageLabel = (reservation: AdminReservationRecord): "EN" | "PT" =>
   reservation.locale === "pt" ? "PT" : "EN";
 
-const hasReservationExtraDetails = (reservation: ReservationRecord): boolean =>
+const hasReservationExtraDetails = (reservation: AdminReservationRecord): boolean =>
   Boolean(reservation.occasion?.trim() || reservation.notes?.trim());
 
 function ReservationAnchorHints({
@@ -383,7 +430,7 @@ export default function AdminBackOffice() {
   const [activeTab, setActiveTab] = useState<TabId>("reservations");
   const [isMenuEditMode, setIsMenuEditMode] = useState(false);
   const [expandedSectionId, setExpandedSectionId] = useState<string | null>(null);
-  const [reservations, setReservations] = useState<ReservationRecord[]>([]);
+  const [reservations, setReservations] = useState<AdminReservationRecord[]>([]);
   const [menuSections, setMenuSections] = useState<AdminMenuSection[]>([]);
   const [workingHours, setWorkingHours] = useState<AdminWorkingHours[]>([]);
   const [reservationClosures, setReservationClosures] = useState<AdminReservationClosure[]>([]);
@@ -415,7 +462,7 @@ export default function AdminBackOffice() {
   const [isTutorialInProgress, setIsTutorialInProgress] = useState(false);
   const [tutorialStepIndex, setTutorialStepIndex] = useState(0);
   const [tutorialDemoStatus, setTutorialDemoStatus] =
-    useState<ReservationRecord["status"]>("new");
+    useState<AdminReservationRecord["status"]>("new");
   const [tutorialDemoIsRead, setTutorialDemoIsRead] = useState(false);
   const [showReadInPending, setShowReadInPending] = useState(false);
   const [actionKey, setActionKey] = useState<string | null>(null);
@@ -487,9 +534,10 @@ export default function AdminBackOffice() {
 
     return null;
   }, [activeTab, isTutorialInProgress, isTutorialMode, tutorialStepIndex]);
-  const tutorialDemoReservation = useMemo<ReservationRecord>(
+  const tutorialDemoReservation = useMemo<AdminReservationRecord>(
     () => ({
       id: "tutorial-demo-reservation",
+      version: "v1",
       locale: "en",
       firstName: "Alex",
       lastName: "Demo",
@@ -527,11 +575,12 @@ export default function AdminBackOffice() {
     }
     return new Date(Number(match[1]), Number(match[2]) - 1, 1);
   }, [calendarMonth]);
-  const tutorialCalendarReservation = useMemo<ReservationRecord>(() => {
+  const tutorialCalendarReservation = useMemo<AdminReservationRecord>(() => {
     const year = calendarMonthDate.getFullYear();
     const month = String(calendarMonthDate.getMonth() + 1).padStart(2, "0");
     return {
       id: "tutorial-demo-calendar",
+      version: "v1",
       locale: "en",
       firstName: "Alex",
       lastName: "Demo",
@@ -566,7 +615,7 @@ export default function AdminBackOffice() {
       (new Date(Date.UTC(year, monthIndex, 1, 12, 0, 0)).getUTCDay() + 6) % 7;
     const daysInMonth = new Date(Date.UTC(year, monthIndex + 1, 0, 12, 0, 0)).getUTCDate();
 
-    const reservationsByDay = new Map<number, ReservationRecord[]>();
+    const reservationsByDay = new Map<number, AdminReservationRecord[]>();
     for (const reservation of confirmedReservationsToRender) {
       const parsed = parseIsoDate(reservation.date);
       if (!parsed || parsed.year !== year || parsed.month !== monthIndex + 1) {
@@ -583,7 +632,7 @@ export default function AdminBackOffice() {
     }
 
     const totalCells = Math.ceil((firstDayWeekdayMondayIndex + daysInMonth) / 7) * 7;
-    const cells: Array<{ day: number | null; reservations: ReservationRecord[] }> = [];
+    const cells: Array<{ day: number | null; reservations: AdminReservationRecord[] }> = [];
     for (let index = 0; index < totalCells; index += 1) {
       const day = index - firstDayWeekdayMondayIndex + 1;
       if (day < 1 || day > daysInMonth) {
@@ -636,6 +685,7 @@ export default function AdminBackOffice() {
     try {
       const [
         reservationResponse,
+        reservationV2Response,
         menuResponse,
         workingHoursResponse,
         reservationClosuresResponse,
@@ -643,6 +693,7 @@ export default function AdminBackOffice() {
         tutorialSettingsResponse,
       ] = await Promise.all([
         fetch("/api/reservations", { cache: "no-store" }),
+        fetch("/api/reservations-v2", { cache: "no-store" }),
         fetch("/api/admin/menu", { cache: "no-store" }),
         fetch("/api/admin/working-hours", { cache: "no-store" }),
         fetch("/api/admin/reservation-closures", { cache: "no-store" }),
@@ -651,6 +702,9 @@ export default function AdminBackOffice() {
       ]);
 
       const reservationJson = (await reservationResponse.json()) as { data?: ReservationRecord[] };
+      const reservationV2Json = (await reservationV2Response.json()) as {
+        data?: ReservationV2Record[];
+      };
       const menuJson = (await menuResponse.json()) as { data?: AdminMenuSection[] };
       const workingHoursJson = (await workingHoursResponse.json()) as {
         data?: AdminWorkingHours[];
@@ -665,7 +719,10 @@ export default function AdminBackOffice() {
         data?: AdminTutorialSettings;
       };
 
-      setReservations(reservationJson.data ?? []);
+      setReservations([
+        ...(reservationJson.data ?? []).map(toAdminReservationRecord),
+        ...(reservationV2Json.data ?? []).map(toAdminReservationV2Record),
+      ]);
       setMenuSections(menuJson.data ?? []);
       setWorkingHours(workingHoursJson.data ?? []);
       setReservationClosures(reservationClosuresJson.data ?? []);
@@ -767,14 +824,18 @@ export default function AdminBackOffice() {
     }
   }
 
-  async function changeReservationStatus(id: string, status: ReservationRecord["status"]) {
+  async function changeReservationStatus(id: string, status: AdminReservationRecord["status"]) {
     const current = reservations.find((reservation) => reservation.id === id);
     if (current?.status === status) {
       return;
     }
 
     await runAction(`reservation-${id}-${status}`, async () => {
-      const response = await fetch(`/api/admin/reservations/${id}/status`, {
+      const route =
+        current?.version === "v2"
+          ? `/api/admin/reservations-v2/${id}/status`
+          : `/api/admin/reservations/${id}/status`;
+      const response = await fetch(route, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
@@ -1087,7 +1148,12 @@ export default function AdminBackOffice() {
 
   async function markReservationRead(id: string) {
     await runAction(`read-reservation-${id}`, async () => {
-      const response = await fetch(`/api/admin/reservations/${id}`, {
+      const current = reservations.find((reservation) => reservation.id === id);
+      const route =
+        current?.version === "v2"
+          ? `/api/admin/reservations-v2/${id}`
+          : `/api/admin/reservations/${id}`;
+      const response = await fetch(route, {
         method: "PATCH",
       });
 
@@ -1107,12 +1173,21 @@ export default function AdminBackOffice() {
 
     const reservationId = deleteReservationModal.id;
     await runAction(`delete-reservation-${reservationId}`, async () => {
-      const response = await fetch(`/api/admin/reservations/${reservationId}`, {
+      const current = reservations.find((reservation) => reservation.id === reservationId);
+      const route =
+        current?.version === "v2"
+          ? `/api/admin/reservations-v2/${reservationId}`
+          : `/api/admin/reservations/${reservationId}`;
+      const response = await fetch(route, {
         method: "DELETE",
       });
 
       if (!response.ok) {
-        setStatusMessage("Could not delete reservation.");
+        setStatusMessage(
+          current?.version === "v2"
+            ? "Could not archive reservation."
+            : "Could not delete reservation.",
+        );
         return;
       }
 
@@ -1514,9 +1589,12 @@ export default function AdminBackOffice() {
                   <p className="footer-note" style={{ marginTop: 0, marginBottom: "0.35rem" }}>
                     Reservation #{reservation.id.slice(0, 8)}
                   </p>
-                  <span className="pill reservation-locale-chip">
-                    {getMessageLanguageLabel(reservation)}
-                  </span>
+                  <div style={{ display: "flex", gap: "0.35rem", flexWrap: "wrap" }}>
+                    <span className="pill reservation-locale-chip">
+                      {getMessageLanguageLabel(reservation)}
+                    </span>
+                    <span className="pill reservation-locale-chip">{reservation.version}</span>
+                  </div>
                 </div>
                 {reservation.isRead ? (
                   <p className="footer-note" style={{ marginTop: 0, marginBottom: "0.35rem" }}>
@@ -1551,13 +1629,23 @@ export default function AdminBackOffice() {
                 {hasReservationExtraDetails(reservation) ? (
                   <details className="reservation-extra-details">
                     <summary>More details</summary>
-                    <p className="footer-note" style={{ marginTop: "0.45rem" }}>
-                      <strong>Occasion:</strong> {reservation.occasion?.trim() ? reservation.occasion : "-"}
-                    </p>
-                    <p className="footer-note" style={{ marginTop: "0.25rem" }}>
-                      <strong>Special requests:</strong>{" "}
-                      {reservation.notes?.trim() ? reservation.notes : "-"}
-                    </p>
+                    {reservation.version === "v1" ? (
+                      <>
+                        <p className="footer-note" style={{ marginTop: "0.45rem" }}>
+                          <strong>Occasion:</strong>{" "}
+                          {reservation.occasion?.trim() ? reservation.occasion : "-"}
+                        </p>
+                        <p className="footer-note" style={{ marginTop: "0.25rem" }}>
+                          <strong>Special requests:</strong>{" "}
+                          {reservation.notes?.trim() ? reservation.notes : "-"}
+                        </p>
+                      </>
+                    ) : (
+                      <p className="footer-note" style={{ marginTop: "0.45rem" }}>
+                        <strong>Other information:</strong>{" "}
+                        {reservation.notes?.trim() ? reservation.notes : "-"}
+                      </p>
+                    )}
                   </details>
                 ) : null}
                 <div
@@ -1830,9 +1918,12 @@ export default function AdminBackOffice() {
                         <p className="footer-note" style={{ marginTop: 0, marginBottom: "0.35rem" }}>
                           Reservation #{reservation.id.slice(0, 8)}
                         </p>
-                        <span className="pill reservation-locale-chip">
-                          {getMessageLanguageLabel(reservation)}
-                        </span>
+                        <div style={{ display: "flex", gap: "0.35rem", flexWrap: "wrap" }}>
+                          <span className="pill reservation-locale-chip">
+                            {getMessageLanguageLabel(reservation)}
+                          </span>
+                          <span className="pill reservation-locale-chip">{reservation.version}</span>
+                        </div>
                       </div>
                       <strong>
                         {reservation.firstName} {reservation.lastName}
@@ -1858,14 +1949,23 @@ export default function AdminBackOffice() {
                       {hasReservationExtraDetails(reservation) ? (
                         <details className="reservation-extra-details">
                           <summary>More details</summary>
-                          <p className="footer-note" style={{ marginTop: "0.45rem" }}>
-                            <strong>Occasion:</strong>{" "}
-                            {reservation.occasion?.trim() ? reservation.occasion : "-"}
-                          </p>
-                          <p className="footer-note" style={{ marginTop: "0.25rem" }}>
-                            <strong>Special requests:</strong>{" "}
-                            {reservation.notes?.trim() ? reservation.notes : "-"}
-                          </p>
+                          {reservation.version === "v1" ? (
+                            <>
+                              <p className="footer-note" style={{ marginTop: "0.45rem" }}>
+                                <strong>Occasion:</strong>{" "}
+                                {reservation.occasion?.trim() ? reservation.occasion : "-"}
+                              </p>
+                              <p className="footer-note" style={{ marginTop: "0.25rem" }}>
+                                <strong>Special requests:</strong>{" "}
+                                {reservation.notes?.trim() ? reservation.notes : "-"}
+                              </p>
+                            </>
+                          ) : (
+                            <p className="footer-note" style={{ marginTop: "0.45rem" }}>
+                              <strong>Other information:</strong>{" "}
+                              {reservation.notes?.trim() ? reservation.notes : "-"}
+                            </p>
+                          )}
                         </details>
                       ) : null}
                       <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.4rem", flexWrap: "wrap" }}>

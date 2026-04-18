@@ -58,6 +58,22 @@ export const listReservationClosures = async (): Promise<ReservationClosureRecor
   return rows.map(toRecord);
 };
 
+export const listReservationClosuresForDate = async (
+  date: string,
+): Promise<ReservationClosureRecord[]> => {
+  if (!prisma) {
+    return [];
+  }
+
+  const normalizedDate = normalizeDate(date);
+  const rows = await prisma.reservationClosure.findMany({
+    where: { date: normalizedDate },
+    orderBy: { startTime: "asc" },
+  });
+
+  return rows.map(toRecord);
+};
+
 export const createReservationClosure = async (payload: {
   date: string;
   startTime: string;

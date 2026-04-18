@@ -1593,6 +1593,153 @@ a {
   min-width: 120px;
 }
 
+.reserve-v2-steps {
+  margin-top: 0.8rem;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.reserve-v2-progress {
+  margin-top: 1rem;
+}
+
+.reserve-v2-progress-track {
+  position: relative;
+  height: 14px;
+  border-radius: 999px;
+  overflow: visible;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--line);
+}
+
+.reserve-v2-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent-soft), var(--accent));
+  box-shadow: 0 0 18px rgba(245, 166, 35, 0.28);
+}
+
+.reserve-v2-progress-icon {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(19, 8, 0, 0.96);
+  border: 1px solid rgba(245, 166, 35, 0.55);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.32);
+}
+
+.reserve-v2-progress-icon-glyph {
+  display: block;
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+.reserve-v2-step-chip {
+  opacity: 0.65;
+}
+
+.reserve-v2-step-chip.active {
+  opacity: 1;
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.reserve-v2-card {
+  margin-top: 1rem;
+}
+
+.reserve-v2-step-panel {
+  overflow: hidden;
+}
+
+.reserve-v2-nav {
+  margin-bottom: 0.8rem;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.reserve-v2-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.35rem;
+}
+
+.reserve-v2-calendar-weekday,
+.reserve-v2-calendar-empty,
+.reserve-v2-calendar-day {
+  min-height: 46px;
+  border-radius: 10px;
+}
+
+.reserve-v2-calendar-weekday {
+  display: grid;
+  place-items: center;
+  font-size: 0.84rem;
+  color: var(--muted);
+}
+
+.reserve-v2-calendar-empty {
+  border: 1px dashed rgba(255, 255, 255, 0.06);
+}
+
+.reserve-v2-calendar-day {
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.reserve-v2-calendar-day:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.reserve-v2-calendar-day.active {
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--accent-soft), var(--accent));
+  color: #130800;
+}
+
+.reserve-v2-calendar-day:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.reserve-v2-option-grid {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.reserve-v2-summary {
+  margin-top: 0.5rem;
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.reserve-v2-success-block {
+  margin-top: 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 0.8rem;
+  text-align: left;
+}
+
+.reserve-v2-success-grid {
+  margin-top: 0.5rem;
+  display: grid;
+  gap: 0.4rem;
+}
+
 .reservation-list-loader {
   display: grid;
   gap: 0.6rem;
