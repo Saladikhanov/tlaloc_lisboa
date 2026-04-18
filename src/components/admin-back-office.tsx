@@ -98,6 +98,16 @@ type AdminToast = {
   message: string;
 };
 
+type AdminManualReservationForm = {
+  locale: "en" | "pt";
+  fullName: string;
+  phone: string;
+  email: string;
+  time: string;
+  guests: string;
+  otherInfo: string;
+};
+
 const defaultRewardProgram: RewardProgramSettingsRecord = {
   id: "default",
   isEnabled: false,
@@ -118,7 +128,17 @@ const defaultAdminRealtimeSettings: AdminRealtimeSettings = {
   desktopEnabled: false,
 };
 
-type TabId = "reservations" | "metrics" | "rewards" | "calendar" | "menu" | "hours" | "security";
+const defaultManualReservationForm: AdminManualReservationForm = {
+  locale: "en",
+  fullName: "",
+  phone: "",
+  email: "",
+  time: "19:00",
+  guests: "2",
+  otherInfo: "",
+};
+
+type TabId = "reservations" | "today" | "metrics" | "rewards" | "calendar" | "menu" | "hours" | "security";
 type DeleteReservationModalState = {
   id: string;
   guestName: string;
@@ -136,6 +156,7 @@ const mondayFirstOrder: number[] = [1, 2, 3, 4, 5, 6, 0];
 const weekdayShortMondayFirst = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const adminTabIds: TabId[] = [
   "reservations",
+  "today",
   "calendar",
   "metrics",
   "rewards",
@@ -144,7 +165,7 @@ const adminTabIds: TabId[] = [
   "hours",
 ];
 
-const getTabFromSearchParams = (searchParams: URLSearchParams | ReadonlyURLSearchParams): TabId | null => {
+const getTabFromSearchParams = (searchParams: Pick<URLSearchParams, "get">): TabId | null => {
   const tab = searchParams.get("tab");
   return tab && adminTabIds.includes(tab as TabId) ? (tab as TabId) : null;
 };
@@ -269,6 +290,56 @@ const compareReservationChronological = (
   }
 
   return a.createdAt.localeCompare(b.createdAt);
+};
+
+const getManualReservationValidationError = (form: AdminManualReservationForm): string | null => {
+  if (!form.fullName.trim()) {
+    return "Full name is required.";
+  }
+  if (!form.phone.trim()) {
+    return "Phone is required.";
+  }
+  if (!form.time.trim()) {
+    return "Time is required.";
+  }
+  if (!form.guests.trim()) {
+    return "Guests is required.";
+  }
+  if (form.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+    return "Email format is invalid.";
+  }
+  return null;
+};
+
+const toTimeMinutes = (time: string): number => {
+  const match = /^(\d{2}):(\d{2})$/.exec(time);
+  if (!match) {
+    return 0;
+  }
+  return Number(match[1]) * 60 + Number(match[2]);
+};
+
+const getLisbonCurrentMinutes = (): number => {
+  const formatter = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Lisbon",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+  const parts = formatter.formatToParts(new Date());
+  const getPart = (type: Intl.DateTimeFormatPartTypes): string =>
+    parts.find((part) => part.type === type)?.value ?? "00";
+  return Number(getPart("hour")) * 60 + Number(getPart("minute"));
+};
+
+const getLisbonCurrentTimeLabel = (): string => {
+  const formatter = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Lisbon",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+  return formatter.format(new Date());
 };
 
 const defaultMessageTemplates: Omit<AdminMessageTemplate, "id">[] = [
@@ -592,6 +663,21 @@ export default function AdminBackOffice() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<TabId>(() => getTabFromSearchParams(searchParams) ?? "reservations");
+  const navigateToTab = useCallback(
+    (tab: TabId) => {
+      setActiveTab((currentTab) => (currentTab === tab ? currentTab : tab));
+
+      const currentTab = getTabFromSearchParams(searchParams) ?? "reservations";
+      if (currentTab === tab) {
+        return;
+      }
+
+      const nextSearchParams = new URLSearchParams(searchParams.toString());
+      nextSearchParams.set("tab", tab);
+      router.replace(`${pathname}?${nextSearchParams.toString()}`, { scroll: false });
+    },
+    [pathname, router, searchParams],
+  );
   const [isMenuEditMode, setIsMenuEditMode] = useState(false);
   const [expandedSectionId, setExpandedSectionId] = useState<string | null>(null);
   const [reservations, setReservations] = useState<AdminReservationRecord[]>([]);
@@ -619,6 +705,9 @@ export default function AdminBackOffice() {
     dinnerClose: "22:00",
   });
   const [isClosureToolsOpen, setIsClosureToolsOpen] = useState(false);
+  const [isManualReservationFormOpen, setIsManualReservationFormOpen] = useState(false);
+  const [manualReservationForm, setManualReservationForm] =
+    useState<AdminManualReservationForm>(defaultManualReservationForm);
   const [closureForm, setClosureForm] = useState({
     startTime: "18:00",
     endTime: "20:00",
@@ -689,6 +778,88 @@ export default function AdminBackOffice() {
     () => reservations.filter((reservation) => reservation.status === "confirmed"),
     [reservations],
   );
+  const manualReservationValidationError = useMemo(
+    () => getManualReservationValidationError(manualReservationForm),
+    [manualReservationForm],
+  );
+  const todayTimeline = useMemo(() => {
+    const todayIso = getLisbonTodayIso();
+    const currentMinutes = getLisbonCurrentMinutes();
+    const currentTimeLabel = getLisbonCurrentTimeLabel();
+    const todayReservations = reservations
+      .filter((reservation) => reservation.date === todayIso)
+      .sort(compareReservationChronological);
+    const activeStatuses: AdminReservationRecord["status"][] = ["new", "confirmed"];
+    const isActiveReservation = (reservation: AdminReservationRecord): boolean =>
+      activeStatuses.includes(reservation.status);
+
+    const happeningNow = todayReservations.filter((reservation) => {
+      if (!isActiveReservation(reservation)) {
+        return false;
+      }
+      const reservationMinutes = toTimeMinutes(reservation.time);
+      return reservationMinutes >= currentMinutes - 45 && reservationMinutes <= currentMinutes + 30;
+    });
+
+    const nextUp = todayReservations.filter((reservation) => {
+      if (!isActiveReservation(reservation)) {
+        return false;
+      }
+      const reservationMinutes = toTimeMinutes(reservation.time);
+      return reservationMinutes > currentMinutes + 30 && reservationMinutes <= currentMinutes + 120;
+    });
+
+    const laterToday = todayReservations.filter((reservation) => {
+      if (!isActiveReservation(reservation)) {
+        return false;
+      }
+      const reservationMinutes = toTimeMinutes(reservation.time);
+      return reservationMinutes > currentMinutes + 120;
+    });
+
+    const timelineReservations = todayReservations.filter((reservation) => isActiveReservation(reservation));
+    const closedReservations = todayReservations.filter((reservation) => !isActiveReservation(reservation));
+    const currentMarkerIndex = timelineReservations.findIndex(
+      (reservation) => toTimeMinutes(reservation.time) >= currentMinutes,
+    );
+    const effectiveMarkerIndex =
+      currentMarkerIndex === -1 ? timelineReservations.length : currentMarkerIndex;
+
+    const coversToday = todayReservations.reduce((sum, reservation) => sum + toGuestCount(reservation.guests), 0);
+    const activeCount = timelineReservations.length;
+    const pendingCount = todayReservations.filter((reservation) => reservation.status === "new").length;
+
+    return {
+      date: todayIso,
+      currentTimeLabel,
+      cards: [
+        {
+          label: "Today total",
+          value: String(todayReservations.length),
+          note: todayReservations.length === 1 ? "1 booking on the board" : `${todayReservations.length} bookings on the board`,
+        },
+        {
+          label: "Live now",
+          value: String(happeningNow.length + nextUp.length),
+          note: `${happeningNow.length} now, ${nextUp.length} soon`,
+        },
+        {
+          label: "Covers today",
+          value: String(coversToday),
+          note: `${activeCount} active reservations still in play`,
+        },
+        {
+          label: "Pending",
+          value: String(pendingCount),
+          note: laterToday.length > 0 ? `${laterToday.length} later today` : "Nothing later today",
+        },
+      ],
+      currentReservationIds: happeningNow.map((reservation) => reservation.id),
+      timelineReservations,
+      closedReservations,
+      markerIndex: effectiveMarkerIndex,
+    };
+  }, [reservations]);
   const reservationMetrics = useMemo(() => {
     const todayIso = getLisbonTodayIso();
     const next30End = addDaysToIsoDate(todayIso, 29);
@@ -1073,6 +1244,8 @@ export default function AdminBackOffice() {
 
   useEffect(() => {
     setIsClosureToolsOpen(false);
+    setIsManualReservationFormOpen(false);
+    setManualReservationForm(defaultManualReservationForm);
   }, [selectedCalendarDate]);
 
   const loadAll = useCallback(async (showFullLoader = false) => {
@@ -1321,17 +1494,6 @@ export default function AdminBackOffice() {
   }, [searchParams]);
 
   useEffect(() => {
-    const currentTab = getTabFromSearchParams(searchParams) ?? "reservations";
-    if (currentTab === activeTab) {
-      return;
-    }
-
-    const nextSearchParams = new URLSearchParams(searchParams.toString());
-    nextSearchParams.set("tab", activeTab);
-    router.replace(`${pathname}?${nextSearchParams.toString()}`, { scroll: false });
-  }, [activeTab, pathname, router, searchParams]);
-
-  useEffect(() => {
     let eventSource: EventSource | null = null;
     let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
     let isDisposed = false;
@@ -1424,12 +1586,15 @@ export default function AdminBackOffice() {
     stepCard.scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
   }, [isTutorialMode, tutorialStepIndex]);
 
-  const handleTutorialGoTo = useCallback((tab: TabId, stepIndex: number) => {
-    setTutorialStepIndex(stepIndex);
-    setActiveTab(tab);
-    setIsTutorialInProgress(true);
-    setIsTutorialMode(false);
-  }, []);
+  const handleTutorialGoTo = useCallback(
+    (tab: TabId, stepIndex: number) => {
+      setTutorialStepIndex(stepIndex);
+      navigateToTab(tab);
+      setIsTutorialInProgress(true);
+      setIsTutorialMode(false);
+    },
+    [navigateToTab],
+  );
 
   const handleHideTutorial = useCallback(() => {
     setIsTutorialMode(false);
@@ -1662,6 +1827,40 @@ export default function AdminBackOffice() {
 
       setClosureForm((prev) => ({ ...prev, note: "" }));
       setStatusMessage("Reservation window closed for that day.");
+      await loadAll();
+    });
+  }
+
+  async function createManualCalendarReservation() {
+    if (!selectedCalendarDate) {
+      setStatusMessage("Select a day in the calendar first.");
+      return;
+    }
+
+    if (manualReservationValidationError) {
+      setStatusMessage(manualReservationValidationError);
+      return;
+    }
+
+    await runAction("create-manual-calendar-reservation", async () => {
+      const response = await fetch("/api/admin/reservations-v2", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...manualReservationForm,
+          date: selectedCalendarDate,
+        }),
+      });
+
+      const json = (await response.json().catch(() => ({}))) as { error?: string };
+      if (!response.ok) {
+        setStatusMessage(json.error ?? "Could not create reservation.");
+        return;
+      }
+
+      setManualReservationForm(defaultManualReservationForm);
+      setIsManualReservationFormOpen(false);
+      setStatusMessage("Reservation added to confirmed calendar.");
       await loadAll();
     });
   }
@@ -1940,64 +2139,98 @@ export default function AdminBackOffice() {
 
   return (
     <div style={{ marginTop: "1rem", display: "grid", gap: "1rem" }}>
-      <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap" }}>
-        <button
-          className={`btn ${activeTab === "reservations" ? "btn-primary" : "btn-secondary"}`}
-          onClick={() => setActiveTab("reservations")}
-          type="button"
-        >
-          Reservations
-        </button>
-        <button
-          className={`btn ${activeTab === "calendar" ? "btn-primary" : "btn-secondary"}`}
-          onClick={() => setActiveTab("calendar")}
-          type="button"
-        >
-          Confirmed Calendar
-        </button>
-        <button
-          className={`btn ${activeTab === "metrics" ? "btn-primary" : "btn-secondary"}`}
-          onClick={() => setActiveTab("metrics")}
-          type="button"
-        >
-          Metrics
-        </button>
-        <button
-          className={`btn ${activeTab === "rewards" ? "btn-primary" : "btn-secondary"}`}
-          onClick={() => setActiveTab("rewards")}
-          type="button"
-        >
-          Reward Program (Beta)
-        </button>
-        <button
-          className={`btn ${activeTab === "menu" ? "btn-primary" : "btn-secondary"}`}
-          onClick={() => setActiveTab("menu")}
-          type="button"
-        >
-          Menu Configuration
-        </button>
-        <button
-          className={`btn ${activeTab === "security" ? "btn-primary" : "btn-secondary"}`}
-          onClick={() => setActiveTab("security")}
-          type="button"
-        >
-          Settings
-        </button>
-        <button
-          className={`btn ${activeTab === "hours" ? "btn-primary" : "btn-secondary"}`}
-          onClick={() => setActiveTab("hours")}
-          type="button"
-        >
-          Working Hours
-        </button>
-        <button
-          className={`btn ${isTutorialMode || isTutorialInProgress ? "btn-primary" : "btn-secondary"}`}
-          type="button"
-          onClick={handleToggleTutorial}
-        >
-          {isTutorialMode ? "Exit tutorial mode" : "Tutorial mode"}
-        </button>
-      </div>
+      {activeTab === "today" ? (
+        <div>
+          <button
+            className="btn btn-secondary"
+            type="button"
+            onClick={() => navigateToTab("reservations")}
+            style={{ display: "inline-flex", alignItems: "center", gap: "0.55rem" }}
+            aria-label="Back to back office sections"
+          >
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+              width="16"
+              height="16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+            Back
+          </button>
+        </div>
+      ) : (
+        <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap" }}>
+          <button
+            className={`btn ${activeTab === "reservations" ? "btn-primary" : "btn-secondary"}`}
+            onClick={() => navigateToTab("reservations")}
+            type="button"
+          >
+            Reservations
+          </button>
+          <button
+            className="btn btn-secondary"
+            onClick={() => navigateToTab("today")}
+            type="button"
+          >
+            Today
+          </button>
+          <button
+            className={`btn ${activeTab === "calendar" ? "btn-primary" : "btn-secondary"}`}
+            onClick={() => navigateToTab("calendar")}
+            type="button"
+          >
+            Confirmed Calendar
+          </button>
+          <button
+            className={`btn ${activeTab === "metrics" ? "btn-primary" : "btn-secondary"}`}
+            onClick={() => navigateToTab("metrics")}
+            type="button"
+          >
+            Metrics
+          </button>
+          <button
+            className={`btn ${activeTab === "rewards" ? "btn-primary" : "btn-secondary"}`}
+            onClick={() => navigateToTab("rewards")}
+            type="button"
+          >
+            Reward Program (Beta)
+          </button>
+          <button
+            className={`btn ${activeTab === "menu" ? "btn-primary" : "btn-secondary"}`}
+            onClick={() => navigateToTab("menu")}
+            type="button"
+          >
+            Menu Configuration
+          </button>
+          <button
+            className={`btn ${activeTab === "security" ? "btn-primary" : "btn-secondary"}`}
+            onClick={() => navigateToTab("security")}
+            type="button"
+          >
+            Settings
+          </button>
+          <button
+            className={`btn ${activeTab === "hours" ? "btn-primary" : "btn-secondary"}`}
+            onClick={() => navigateToTab("hours")}
+            type="button"
+          >
+            Working Hours
+          </button>
+          <button
+            className={`btn ${isTutorialMode || isTutorialInProgress ? "btn-primary" : "btn-secondary"}`}
+            type="button"
+            onClick={handleToggleTutorial}
+          >
+            {isTutorialMode ? "Exit tutorial mode" : "Tutorial mode"}
+          </button>
+        </div>
+      )}
 
       {statusMessage ? <p className="footer-note">{statusMessage}</p> : null}
       {isLoading ? <p className="footer-note db-loader">Loading data...</p> : null}
@@ -2106,7 +2339,7 @@ export default function AdminBackOffice() {
                     className="btn btn-secondary"
                     type="button"
                     onClick={() => {
-                      setActiveTab("reservations");
+                      navigateToTab("reservations");
                       setTutorialStepIndex(2);
                       handleHideTutorial();
                     }}
@@ -2131,7 +2364,7 @@ export default function AdminBackOffice() {
                     className="btn btn-secondary"
                     type="button"
                     onClick={() => {
-                      setActiveTab("reservations");
+                      navigateToTab("reservations");
                       setTutorialStepIndex(3);
                       handleHideTutorial();
                     }}
@@ -2157,7 +2390,7 @@ export default function AdminBackOffice() {
                     className="btn btn-secondary"
                     type="button"
                     onClick={() => {
-                      setActiveTab("reservations");
+                      navigateToTab("reservations");
                       setTutorialStepIndex(4);
                       handleHideTutorial();
                     }}
@@ -2543,6 +2776,157 @@ export default function AdminBackOffice() {
             ))
           )}
         </div>
+      ) : null}
+
+      {activeTab === "today" ? (
+        <section style={{ display: "grid", gap: "0.9rem" }}>
+          <section className="card admin-today-card">
+            <p className="footer-note admin-chart-subtitle" style={{ marginTop: 0 }}>
+              {formatEuropeanDate(todayTimeline.date)} in Lisbon time.
+            </p>
+
+            {todayTimeline.timelineReservations.length === 0 ? (
+              <p className="footer-note" style={{ marginTop: 0 }}>
+                No active reservations left for today.
+              </p>
+            ) : (
+              <div className="admin-today-timeline">
+                {todayTimeline.timelineReservations.map((reservation, index) => (
+                  <div key={reservation.id}>
+                    {todayTimeline.markerIndex === index ? (
+                      <div className="admin-today-marker">
+                        <span className="admin-today-marker-line" />
+                      </div>
+                    ) : null}
+                    <div className="admin-today-row">
+                      <div className="admin-today-time-rail">
+                        <p className="admin-today-time">{reservation.time}</p>
+                        <span className="admin-today-rail-line" />
+                      </div>
+                      <article
+                        className={`card admin-today-item ${
+                          todayTimeline.currentReservationIds.includes(reservation.id) ? "admin-today-item-live" : ""
+                        }`}
+                      >
+                        <div className="admin-today-item-head">
+                          <div>
+                            <strong>
+                              {reservation.firstName} {reservation.lastName}
+                            </strong>
+                            <p className="footer-note admin-today-meta">
+                              {reservation.guests} guests
+                              {reservation.notes?.trim() ? ` · ${reservation.notes.trim()}` : ""}
+                            </p>
+                          </div>
+                          <div className="admin-today-badges">
+                            {!reservation.isRead ? (
+                              <span className="pill reservation-status reservation-status-new">Unread</span>
+                            ) : null}
+                            <span className={`pill reservation-status reservation-status-${reservation.status}`}>
+                              {reservation.status}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="admin-today-links">
+                          <a
+                            className="btn btn-secondary"
+                            href={toWhatsAppUrl(reservation.phone, reservation, messageTemplates)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            {reservation.phone}
+                          </a>
+                          {!reservation.isRead ? (
+                            <button
+                              className="btn btn-secondary"
+                              type="button"
+                              disabled={actionKey !== null}
+                              onClick={() => void markReservationRead(reservation.id)}
+                            >
+                              Read
+                            </button>
+                          ) : null}
+                          {reservation.status !== "confirmed" ? (
+                            <button
+                              className="btn btn-secondary"
+                              type="button"
+                              disabled={actionKey !== null}
+                              onClick={() => void changeReservationStatus(reservation.id, "confirmed")}
+                            >
+                              {actionKey === `reservation-${reservation.id}-confirmed` ? "Updating..." : "Confirm"}
+                            </button>
+                          ) : null}
+                          {reservation.status !== "cancelled" ? (
+                            <button
+                              className="btn btn-secondary"
+                              type="button"
+                              disabled={actionKey !== null}
+                              onClick={() => void changeReservationStatus(reservation.id, "cancelled")}
+                            >
+                              {actionKey === `reservation-${reservation.id}-cancelled` ? "Updating..." : "Cancel"}
+                            </button>
+                          ) : null}
+                          {reservation.status !== "no_show" ? (
+                            <button
+                              className="btn btn-secondary"
+                              type="button"
+                              disabled={actionKey !== null}
+                              onClick={() => void changeReservationStatus(reservation.id, "no_show")}
+                            >
+                              {actionKey === `reservation-${reservation.id}-no_show` ? "Updating..." : "No show"}
+                            </button>
+                          ) : null}
+                        </div>
+                      </article>
+                    </div>
+                  </div>
+                ))}
+                {todayTimeline.markerIndex === todayTimeline.timelineReservations.length ? (
+                  <div className="admin-today-marker">
+                    <span className="admin-today-marker-line" />
+                  </div>
+                ) : null}
+              </div>
+            )}
+
+            <section className="admin-today-closed">
+              <div className="admin-today-section-head">
+                <div>
+                  <h4>Closed today</h4>
+                  <p className="footer-note" style={{ marginTop: "0.2rem" }}>
+                    Cancelled and no-show reservations, kept out of the live timeline.
+                  </p>
+                </div>
+                <span className="pill reservation-locale-chip">{todayTimeline.closedReservations.length}</span>
+              </div>
+
+              {todayTimeline.closedReservations.length === 0 ? (
+                <p className="footer-note" style={{ marginTop: 0 }}>
+                  No cancelled or no-show reservations today.
+                </p>
+              ) : (
+                <div className="admin-today-closed-list">
+                  {todayTimeline.closedReservations.map((reservation) => (
+                    <div className="admin-today-closed-row" key={reservation.id}>
+                      <div>
+                        <strong>
+                          {reservation.time} · {reservation.firstName} {reservation.lastName}
+                        </strong>
+                        <p className="footer-note" style={{ marginTop: "0.15rem" }}>
+                          {reservation.guests} guests
+                        </p>
+                      </div>
+                      <span className={`pill reservation-status reservation-status-${reservation.status}`}>
+                        {reservation.status}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+          </section>
+        </section>
       ) : null}
 
       {activeTab === "metrics" ? (
@@ -2941,7 +3325,7 @@ export default function AdminBackOffice() {
 
       {activeTab === "calendar" ? (
         <section className="card">
-          <div className="admin-calendar-head">
+          <div className="admin-calendar-head" style={{ position: "relative", paddingRight: "3.2rem" }}>
             <h3>Confirmed Reservations Calendar</h3>
             <div style={{ display: "flex", gap: "0.45rem" }}>
               <button
@@ -2979,6 +3363,22 @@ export default function AdminBackOffice() {
                 Next
               </button>
             </div>
+            <button
+              className="btn btn-secondary btn-icon"
+              type="button"
+              style={{ position: "absolute", right: 0, top: "50%", transform: "translateY(-50%)" }}
+              aria-label={selectedCalendarDate ? `Add reservation for ${selectedCalendarDate}` : "Select a day first"}
+              title={selectedCalendarDate ? "Add reservation" : "Select a day first"}
+              onClick={() => {
+                if (!selectedCalendarDate) {
+                  setStatusMessage("Select a day in the calendar first.");
+                  return;
+                }
+                setIsManualReservationFormOpen(true);
+              }}
+            >
+              +
+            </button>
           </div>
           <p className="footer-note" style={{ marginTop: "0.5rem" }}>
             {monthLabel}
@@ -4169,6 +4569,145 @@ export default function AdminBackOffice() {
                     ? "Deleting..."
                     : "Delete"}
                 </button>
+              </div>
+            </section>
+          </div>
+        </>
+      ) : null}
+
+      {isManualReservationFormOpen && selectedCalendarDate ? (
+        <>
+          <button
+            className="confirm-modal-backdrop"
+            type="button"
+            aria-label="Close add reservation modal"
+            onClick={() => setIsManualReservationFormOpen(false)}
+          />
+          <div className="confirm-modal-wrap" onClick={() => setIsManualReservationFormOpen(false)}>
+            <section
+              className="confirm-modal-card"
+              role="dialog"
+              aria-modal="true"
+              onClick={(event) => event.stopPropagation()}
+              style={{ width: "min(720px, calc(100vw - 2rem))" }}
+            >
+              <h3>Add reservation</h3>
+              <p className="footer-note" style={{ marginTop: "0.5rem" }}>
+                Add a phone or walk-in booking directly to the confirmed calendar for{" "}
+                {formatEuropeanDate(selectedCalendarDate)}.
+              </p>
+
+              <div style={{ marginTop: "0.8rem", display: "grid", gap: "0.8rem" }}>
+                <div className="form-grid">
+                  <div>
+                    <label>Language</label>
+                    <select
+                      value={manualReservationForm.locale}
+                      onChange={(event) =>
+                        setManualReservationForm((prev) => ({
+                          ...prev,
+                          locale: event.target.value as "en" | "pt",
+                        }))
+                      }
+                    >
+                      <option value="en">EN</option>
+                      <option value="pt">PT</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label>Time</label>
+                    <input
+                      type="time"
+                      required
+                      value={manualReservationForm.time}
+                      onChange={(event) =>
+                        setManualReservationForm((prev) => ({ ...prev, time: event.target.value }))
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label>Guests</label>
+                    <input
+                      required
+                      value={manualReservationForm.guests}
+                      onChange={(event) =>
+                        setManualReservationForm((prev) => ({ ...prev, guests: event.target.value }))
+                      }
+                      inputMode="numeric"
+                      placeholder="2"
+                    />
+                  </div>
+                  <div>
+                    <label>Full name</label>
+                    <input
+                      required
+                      value={manualReservationForm.fullName}
+                      onChange={(event) =>
+                        setManualReservationForm((prev) => ({ ...prev, fullName: event.target.value }))
+                      }
+                      placeholder="Guest full name"
+                    />
+                  </div>
+                  <div>
+                    <label>Phone</label>
+                    <input
+                      required
+                      value={manualReservationForm.phone}
+                      onChange={(event) =>
+                        setManualReservationForm((prev) => ({ ...prev, phone: event.target.value }))
+                      }
+                      placeholder="+351..."
+                    />
+                  </div>
+                  <div>
+                    <label>Email (optional)</label>
+                    <input
+                      type="email"
+                      value={manualReservationForm.email}
+                      onChange={(event) =>
+                        setManualReservationForm((prev) => ({ ...prev, email: event.target.value }))
+                      }
+                      placeholder="guest@email.com"
+                    />
+                  </div>
+                  <div style={{ gridColumn: "1 / -1" }}>
+                    <label>Other information (optional)</label>
+                    <textarea
+                      value={manualReservationForm.otherInfo}
+                      onChange={(event) =>
+                        setManualReservationForm((prev) => ({ ...prev, otherInfo: event.target.value }))
+                      }
+                      placeholder="Notes, seating request, dietary info..."
+                    />
+                  </div>
+                </div>
+
+                <div className="confirm-modal-actions">
+                  {manualReservationValidationError ? (
+                    <p className="footer-note" style={{ marginTop: 0, marginRight: "auto" }}>
+                      {manualReservationValidationError}
+                    </p>
+                  ) : null}
+                  <button
+                    className="btn btn-secondary"
+                    type="button"
+                    disabled={actionKey !== null}
+                    onClick={() => {
+                      setManualReservationForm(defaultManualReservationForm);
+                      setIsManualReservationFormOpen(false);
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="btn btn-primary"
+                    type="button"
+                    disabled={actionKey !== null || Boolean(manualReservationValidationError)}
+                    onClick={() => void createManualCalendarReservation()}
+                  >
+                    {actionKey === "create-manual-calendar-reservation" ? "Saving..." : "Add confirmed reservation"}
+                  </button>
+                </div>
               </div>
             </section>
           </div>
