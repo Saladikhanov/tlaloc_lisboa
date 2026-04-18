@@ -23,9 +23,9 @@ const DEFAULT_SETTINGS = {
   rewardValue: "10",
   rewardLabel: "10% off",
   messageEn:
-    "Thank you for coming back to Tlaloc Restaurant. Use code {code} for {rewardLabel} on your next visit.",
+    "Here is your Tlaloc promo code: {code}. Use it for {rewardLabel} on your next visit.",
   messagePt:
-    "Obrigado por voltar ao Tlaloc Restaurant. Use o codigo {code} para {rewardLabel} na sua proxima visita.",
+    "Aqui esta o seu codigo promocional Tlaloc: {code}. Use-o para {rewardLabel} na sua proxima visita.",
 };
 
 const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -272,6 +272,13 @@ export const listRewardCodes = async (): Promise<RewardCodeRecord[]> => {
   return rows.map(toRewardCodeRecord);
 };
 
+export const deleteRedeemedRewardCodes = async (): Promise<number> => {
+  const result = await getPrisma().rewardCode.deleteMany({
+    where: { status: "used" },
+  });
+  return result.count;
+};
+
 export const getRewardCodeByCode = async (code: string): Promise<RewardCodeRecord | null> => {
   const row = await getPrisma().rewardCode.findUnique({
     where: { code: code.trim().toUpperCase() },
@@ -292,6 +299,16 @@ const cancelActiveCodesForCluster = async (
         ...(emailKeys.length > 0 ? [{ emailKey: { in: emailKeys } }] : []),
       ],
     },
+    data: {
+      status: "cancelled",
+      cancelledAt: new Date(),
+    },
+  });
+};
+
+const cancelAllActiveRewardCodes = async (): Promise<void> => {
+  await getPrisma().rewardCode.updateMany({
+    where: { status: "active" },
     data: {
       status: "cancelled",
       cancelledAt: new Date(),
@@ -392,6 +409,12 @@ export const syncRewardCodesForReservation = async (
 };
 
 export const syncRewardCodesForAllGuests = async (): Promise<void> => {
+  const settings = await getRewardProgramSettings();
+  if (!settings.isEnabled) {
+    await cancelAllActiveRewardCodes();
+    return;
+  }
+
   const allReservations = await listAllReservationIdentities();
   const processedKeys = new Set<string>();
 
@@ -416,6 +439,7 @@ export const validateRewardCode = async (payload: {
   phone?: string;
   email?: string;
 }): Promise<RewardCodeValidationResult> => {
+  const settings = await getRewardProgramSettings();
   const db = getPrisma();
   const normalizedCode = payload.code.trim().toUpperCase();
   const row = await db.rewardCode.findUnique({ where: { code: normalizedCode } });
@@ -438,7 +462,7 @@ export const validateRewardCode = async (payload: {
     };
   }
 
-  if (row.status !== "active") {
+  if (!settings.isEnabled || row.status !== "active") {
     return { code: toRewardCodeRecord(row), isValid: false, reason: "inactive" };
   }
 

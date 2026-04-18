@@ -1463,19 +1463,22 @@ export default function AdminBackOffice() {
     });
   }
 
-  async function saveRewardProgramConfiguration() {
+  async function saveRewardProgramConfiguration(
+    nextRewardProgram: RewardProgramSettingsRecord = rewardProgram,
+  ): Promise<boolean> {
+    let didSave = false;
     await runAction("save-reward-program", async () => {
       const response = await fetch("/api/admin/reward-program", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          isEnabled: rewardProgram.isEnabled,
-          visitThreshold: rewardProgram.visitThreshold,
-          rewardType: rewardProgram.rewardType,
-          rewardValue: rewardProgram.rewardValue,
-          rewardLabel: rewardProgram.rewardLabel,
-          messageEn: rewardProgram.messageEn,
-          messagePt: rewardProgram.messagePt,
+          isEnabled: nextRewardProgram.isEnabled,
+          visitThreshold: nextRewardProgram.visitThreshold,
+          rewardType: nextRewardProgram.rewardType,
+          rewardValue: nextRewardProgram.rewardValue,
+          rewardLabel: nextRewardProgram.rewardLabel,
+          messageEn: nextRewardProgram.messageEn,
+          messagePt: nextRewardProgram.messagePt,
         }),
       });
 
@@ -1485,9 +1488,22 @@ export default function AdminBackOffice() {
         return;
       }
 
+      didSave = true;
       setStatusMessage("Reward program updated.");
       await loadAll();
     });
+    return didSave;
+  }
+
+  async function handleRewardProgramToggle(isEnabled: boolean) {
+    const previousRewardProgram = rewardProgram;
+    const nextRewardProgram = { ...rewardProgram, isEnabled };
+    setRewardProgram(nextRewardProgram);
+
+    const didSave = await saveRewardProgramConfiguration(nextRewardProgram);
+    if (!didSave) {
+      setRewardProgram(previousRewardProgram);
+    }
   }
 
   function lookupRewardCode() {
@@ -1613,6 +1629,33 @@ export default function AdminBackOffice() {
     });
   }
 
+  async function clearRedeemedRewardCodes() {
+    await runAction("clear-redeemed-reward-codes", async () => {
+      const response = await fetch("/api/admin/reward-codes", {
+        method: "DELETE",
+      });
+      const json = (await response.json().catch(() => ({}))) as {
+        error?: string;
+        data?: { deletedCount?: number };
+      };
+
+      if (!response.ok) {
+        setStatusMessage(json.error ?? "Could not clean redeemed reward codes.");
+        return;
+      }
+
+      const deletedCount = json.data?.deletedCount ?? 0;
+      setRewardLookupResult((current) => (current?.status === "used" ? null : current));
+      setRewardLookupFeedback((current) =>
+        current === "Promo code not found." ? current : "",
+      );
+      setStatusMessage(
+        deletedCount === 1 ? "1 redeemed reward code removed." : `${deletedCount} redeemed reward codes removed.`,
+      );
+      await loadAll();
+    });
+  }
+
   async function confirmDeleteReservation() {
     if (!deleteReservationModal) {
       return;
@@ -1654,6 +1697,13 @@ export default function AdminBackOffice() {
           Reservations
         </button>
         <button
+          className={`btn ${activeTab === "calendar" ? "btn-primary" : "btn-secondary"}`}
+          onClick={() => setActiveTab("calendar")}
+          type="button"
+        >
+          Confirmed Calendar
+        </button>
+        <button
           className={`btn ${activeTab === "metrics" ? "btn-primary" : "btn-secondary"}`}
           onClick={() => setActiveTab("metrics")}
           type="button"
@@ -1665,14 +1715,7 @@ export default function AdminBackOffice() {
           onClick={() => setActiveTab("rewards")}
           type="button"
         >
-          Reward Program
-        </button>
-        <button
-          className={`btn ${activeTab === "calendar" ? "btn-primary" : "btn-secondary"}`}
-          onClick={() => setActiveTab("calendar")}
-          type="button"
-        >
-          Confirmed Calendar
+          Reward Program (Beta)
         </button>
         <button
           className={`btn ${activeTab === "menu" ? "btn-primary" : "btn-secondary"}`}
@@ -2251,8 +2294,8 @@ export default function AdminBackOffice() {
                           width: `${Math.max(
                             reservationDashboard.statusBreakdown.some((entry) => entry.value > 0)
                               ? (item.value /
-                                  Math.max(...reservationDashboard.statusBreakdown.map((entry) => entry.value), 1)) *
-                                  100
+                                Math.max(...reservationDashboard.statusBreakdown.map((entry) => entry.value), 1)) *
+                              100
                               : 0,
                             item.value > 0 ? 10 : 0,
                           )}%`,
@@ -2290,8 +2333,8 @@ export default function AdminBackOffice() {
                             width: `${Math.max(
                               reservationDashboard.topReturningGuests.some((entry) => entry.value > 0)
                                 ? (item.value /
-                                    Math.max(...reservationDashboard.topReturningGuests.map((entry) => entry.value), 1)) *
-                                    100
+                                  Math.max(...reservationDashboard.topReturningGuests.map((entry) => entry.value), 1)) *
+                                100
                                 : 0,
                               item.value > 0 ? 10 : 0,
                             )}%`,
@@ -2324,8 +2367,8 @@ export default function AdminBackOffice() {
                           width: `${Math.max(
                             reservationDashboard.weekdayDemand.some((entry) => entry.value > 0)
                               ? (item.value /
-                                  Math.max(...reservationDashboard.weekdayDemand.map((entry) => entry.value), 1)) *
-                                  100
+                                Math.max(...reservationDashboard.weekdayDemand.map((entry) => entry.value), 1)) *
+                              100
                               : 0,
                             item.value > 0 ? 10 : 0,
                           )}%`,
@@ -2364,8 +2407,8 @@ export default function AdminBackOffice() {
                             width: `${Math.max(
                               reservationDashboard.topTimeSlots.some((entry) => entry.value > 0)
                                 ? (item.value /
-                                    Math.max(...reservationDashboard.topTimeSlots.map((entry) => entry.value), 1)) *
-                                    100
+                                  Math.max(...reservationDashboard.topTimeSlots.map((entry) => entry.value), 1)) *
+                                100
                                 : 0,
                               item.value > 0 ? 10 : 0,
                             )}%`,
@@ -2396,9 +2439,10 @@ export default function AdminBackOffice() {
                 className="ios-switch-input"
                 type="checkbox"
                 checked={rewardProgram.isEnabled}
-                onChange={(event) =>
-                  setRewardProgram((prev) => ({ ...prev, isEnabled: event.target.checked }))
-                }
+                disabled={actionKey === "save-reward-program"}
+                onChange={(event) => {
+                  void handleRewardProgramToggle(event.target.checked);
+                }}
               />
               <span className="ios-switch" aria-hidden="true" />
               Reward program enabled
@@ -2481,7 +2525,9 @@ export default function AdminBackOffice() {
               className="btn btn-primary"
               type="button"
               disabled={actionKey !== null}
-              onClick={saveRewardProgramConfiguration}
+              onClick={() => {
+                void saveRewardProgramConfiguration();
+              }}
             >
               {actionKey === "save-reward-program" ? "Saving..." : "Save reward program"}
             </button>
@@ -2577,6 +2623,14 @@ export default function AdminBackOffice() {
             <article className="card admin-chart-card">
               <div className="admin-chart-head">
                 <h4>Recently redeemed</h4>
+                <button
+                  className="btn btn-secondary"
+                  type="button"
+                  disabled={actionKey !== null || rewardCodes.every((code) => code.status !== "used")}
+                  onClick={() => void clearRedeemedRewardCodes()}
+                >
+                  {actionKey === "clear-redeemed-reward-codes" ? "Cleaning..." : "Clean redeemed"}
+                </button>
               </div>
               {rewardCodes.filter((code) => code.status === "used").length === 0 ? (
                 <p className="footer-note" style={{ marginTop: 0 }}>
@@ -2842,7 +2896,7 @@ export default function AdminBackOffice() {
                         return activeRewardCode ? (
                           <div className="card admin-reward-card">
                             <div className="admin-reward-head">
-                              <strong>Returning guest reward</strong>
+                              <strong>Guest reward</strong>
                               <span className="pill reservation-locale-chip">{activeRewardCode.status}</span>
                             </div>
                             <p className="footer-note" style={{ marginTop: "0.25rem" }}>

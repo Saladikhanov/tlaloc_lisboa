@@ -42,10 +42,30 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Invalid payload." }, { status: 400 });
   }
 
+  const isEnabled = typeof payload.isEnabled === "boolean" ? payload.isEnabled : undefined;
   const visitThreshold = Number(payload.visitThreshold);
   const rewardType = typeof payload.rewardType === "string" ? (payload.rewardType as RewardType) : null;
   const rewardValue = typeof payload.rewardValue === "string" ? payload.rewardValue.trim() : "";
   const rewardLabel = typeof payload.rewardLabel === "string" ? payload.rewardLabel.trim() : "";
+
+  if (isEnabled === false) {
+    try {
+      const data = await updateRewardProgramSettings({
+        isEnabled: false,
+        visitThreshold:
+          Number.isFinite(visitThreshold) && visitThreshold >= 1 ? visitThreshold : undefined,
+        rewardType: rewardType && rewardTypes.has(rewardType) ? rewardType : undefined,
+        rewardValue: rewardValue || undefined,
+        rewardLabel: rewardLabel || undefined,
+        messageEn: typeof payload.messageEn === "string" ? payload.messageEn : undefined,
+        messagePt: typeof payload.messagePt === "string" ? payload.messagePt : undefined,
+      });
+      await syncRewardCodesForAllGuests();
+      return NextResponse.json({ data });
+    } catch {
+      return NextResponse.json({ error: "Could not save reward settings." }, { status: 500 });
+    }
+  }
 
   if (!Number.isFinite(visitThreshold) || visitThreshold < 1) {
     return NextResponse.json({ error: "Visit threshold must be at least 1." }, { status: 400 });
@@ -61,7 +81,7 @@ export async function PATCH(request: Request) {
 
   try {
     const data = await updateRewardProgramSettings({
-      isEnabled: Boolean(payload.isEnabled),
+      isEnabled: Boolean(isEnabled),
       visitThreshold,
       rewardType,
       rewardValue,
