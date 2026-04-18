@@ -1,4 +1,7 @@
 export type Locale = "en" | "pt";
+export type ReservationLifecycleStatus = "new" | "confirmed" | "cancelled" | "no_show";
+export type RewardType = "percent" | "fixed_amount" | "free_item" | "custom";
+export type RewardCodeStatus = "active" | "used" | "cancelled";
 
 export type LocalizedText = {
   en: string;
@@ -35,7 +38,7 @@ export type ReservationPayload = {
 export type ReservationRecord = ReservationPayload & {
   id: string;
   isRead: boolean;
-  status: "new" | "confirmed" | "cancelled";
+  status: ReservationLifecycleStatus;
   createdAt: string;
 };
 
@@ -54,7 +57,7 @@ export type ReservationV2Record = ReservationV2Payload & {
   id: string;
   isRead: boolean;
   isTest: boolean;
-  status: "new" | "confirmed" | "cancelled";
+  status: ReservationLifecycleStatus;
   archivedAt?: string;
   createdAt: string;
   updatedAt: string;
@@ -62,3 +65,45 @@ export type ReservationV2Record = ReservationV2Payload & {
 
 export type ReservationRequestPayload = ReservationV2Payload;
 export type ReservationRequestRecord = ReservationV2Record;
+
+export type RewardProgramSettingsRecord = {
+  id: string;
+  isEnabled: boolean;
+  visitThreshold: number;
+  rewardType: RewardType;
+  rewardValue: string;
+  rewardLabel: string;
+  messageEn?: string;
+  messagePt?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type RewardCodeRecord = {
+  id: string;
+  code: string;
+  status: RewardCodeStatus;
+  phoneKey?: string;
+  emailKey?: string;
+  guestName?: string;
+  rewardType: RewardType;
+  rewardValue: string;
+  rewardLabel: string;
+  messageEn?: string;
+  messagePt?: string;
+  generatedAfterConfirmedCount: number;
+  originReservationId?: string;
+  originReservationVersion?: "v1" | "v2";
+  usedByReservationId?: string;
+  usedByReservationVersion?: "v1" | "v2";
+  usedAt?: string;
+  cancelledAt?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type RewardCodeValidationResult = {
+  code: RewardCodeRecord;
+  isValid: boolean;
+  reason?: "not_found" | "inactive" | "identity_mismatch";
+};

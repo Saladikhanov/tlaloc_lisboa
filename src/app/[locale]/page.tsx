@@ -8,6 +8,7 @@ import { routing } from "@/i18n/routing";
 import HomeGallery from "@/components/home-gallery";
 import HomeOpenStatus from "@/components/home-open-status";
 import { computeIsOpenNow } from "@/lib/working-hours-open-now";
+import { listTutorialSettings } from "@/lib/tutorial-settings-store";
 import { listWorkingHours } from "@/lib/working-hours-store";
 import { getSiteBaseUrl } from "@/lib/site-url";
 
@@ -96,7 +97,10 @@ export default async function HomePage({ params }: Props) {
     locale: activeLocale,
     namespace: "Home",
   });
-  const schedule = await listWorkingHours();
+  const [schedule, businessContact] = await Promise.all([
+    listWorkingHours(),
+    listTutorialSettings(),
+  ]);
   const isOpenNow = computeIsOpenNow(schedule);
   const getDayHours = (weekday: number) => schedule.find((entry) => entry.weekday === weekday);
   const mon = getDayHours(1);
@@ -115,6 +119,7 @@ export default async function HomePage({ params }: Props) {
   const sundayText = sun?.isClosed ? t("closedLabel") : `${sun?.lunchOpen ?? "--:--"}-${sun?.lunchClose ?? "--:--"}`;
 
   const base = getSiteBaseUrl();
+  const whatsappDigits = businessContact.businessPhone.replace(/[^\d]/g, "");
   const restaurantJsonLd = {
     "@context": "https://schema.org",
     "@type": "Restaurant",
@@ -317,9 +322,12 @@ export default async function HomePage({ params }: Props) {
           </p>
           <p style={{ marginTop: "0.25rem" }}>
             <strong>📱</strong>{" "}
-            <a href="https://wa.me/351933357555" target="_blank" rel="noopener noreferrer">
-              +351 933 357 555 (WhatsApp)
+            <a href={`https://wa.me/${whatsappDigits}`} target="_blank" rel="noopener noreferrer">
+              {businessContact.businessPhone} (WhatsApp)
             </a>
+          </p>
+          <p style={{ marginTop: "0.25rem" }}>
+            <strong>✉️</strong> <a href={`mailto:${businessContact.businessEmail}`}>{businessContact.businessEmail}</a>
           </p>
           <p className="footer-note" style={{ marginTop: "0.55rem" }}>
             {t("pricingInfo")}

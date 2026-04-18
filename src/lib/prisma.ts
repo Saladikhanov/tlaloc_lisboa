@@ -22,7 +22,12 @@ const hasRequiredReservationModels = (client: PrismaClient | null | undefined): 
   }
 
   const modelClient = client as unknown as Record<string, unknown>;
-  return "reservationClosure" in modelClient && "reservationV2" in modelClient;
+  return (
+    "reservationClosure" in modelClient &&
+    "reservationV2" in modelClient &&
+    "rewardProgramSettings" in modelClient &&
+    "rewardCode" in modelClient
+  );
 };
 
 export const prisma =

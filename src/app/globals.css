@@ -1448,6 +1448,19 @@ a {
   background: rgba(232, 53, 26, 0.2);
 }
 
+.reservation-status-confirmed {
+  color: #c9ffd8;
+  border-color: rgba(45, 123, 79, 0.7);
+  background: rgba(45, 123, 79, 0.22);
+}
+
+.reservation-status-cancelled,
+.reservation-status-no_show {
+  color: #f0ddb8;
+  border-color: rgba(255, 209, 102, 0.45);
+  background: rgba(255, 209, 102, 0.16);
+}
+
 .icon-btn {
   width: 30px;
   height: 30px;
@@ -1752,6 +1765,138 @@ a {
   margin-top: 0.35rem;
   display: grid;
   gap: 0.25rem;
+}
+
+.admin-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 0.75rem;
+}
+
+.admin-metric-card {
+  padding: 0.9rem;
+}
+
+.admin-metric-label {
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.admin-metric-value {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 2rem;
+  line-height: 1;
+  color: var(--text);
+}
+
+.admin-metric-note {
+  margin-top: 0.35rem;
+  line-height: 1.35;
+}
+
+.admin-dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 0.9rem;
+}
+
+.admin-chart-card {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.admin-chart-head {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.admin-chart-subtitle {
+  margin-top: 0;
+}
+
+.admin-chart-list {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.admin-chart-row {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.admin-chart-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.92rem;
+}
+
+.admin-chart-track {
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(245, 166, 35, 0.12);
+}
+
+.admin-chart-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent-soft), var(--accent));
+}
+
+.admin-chart-fill-secondary {
+  background: linear-gradient(90deg, rgba(0, 169, 165, 0.7), rgba(45, 123, 79, 0.95));
+}
+
+.admin-chart-note {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.admin-reward-program-card {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.admin-reward-codes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.8rem;
+}
+
+.admin-reward-code-row {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.55rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.admin-reward-card {
+  margin-top: 0.55rem;
+  padding: 0.75rem;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.admin-reward-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.admin-reward-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 0.45rem;
+  margin-top: 0.45rem;
 }
 
 .reservation-list-loader {

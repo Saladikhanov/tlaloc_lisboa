@@ -1,5 +1,6 @@
 import type { ReservationV2 } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { syncRewardCodesForReservation } from "@/lib/reward-store";
 import type { ReservationV2Payload, ReservationV2Record } from "@/lib/types";
 
 const datePattern = /^\d{4}-\d{2}-\d{2}$/;
@@ -90,6 +91,8 @@ export const updateReservationV2Status = async (
     where: { id },
     data: { status, isRead: status === "new" ? false : undefined },
   });
+
+  await syncRewardCodesForReservation("v2", id);
 
   return toReservationV2Record(reservation);
 };

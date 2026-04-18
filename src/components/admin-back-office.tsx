@@ -2,7 +2,14 @@
 
 import { FormEvent, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import type { ReservationRecord, ReservationV2Record } from "@/lib/types";
+import type {
+  ReservationLifecycleStatus,
+  ReservationRecord,
+  ReservationV2Record,
+  RewardCodeRecord,
+  RewardProgramSettingsRecord,
+  RewardType,
+} from "@/lib/types";
 
 type AdminMenuItem = {
   id: string;
@@ -59,7 +66,7 @@ type AdminReservationRecord = {
   occasion?: string;
   notes?: string;
   isRead: boolean;
-  status: "new" | "confirmed" | "cancelled";
+  status: ReservationLifecycleStatus;
   createdAt: string;
 };
 
@@ -78,7 +85,22 @@ type AdminTutorialSettings = {
   businessEmail: string;
 };
 
-type TabId = "reservations" | "calendar" | "menu" | "hours" | "security";
+const defaultRewardProgram: RewardProgramSettingsRecord = {
+  id: "default",
+  isEnabled: false,
+  visitThreshold: 3,
+  rewardType: "percent",
+  rewardValue: "10",
+  rewardLabel: "10% off",
+  messageEn:
+    "Thank you for coming back to Tlaloc Restaurant. Use code {code} for {rewardLabel} on your next visit.",
+  messagePt:
+    "Obrigado por voltar ao Tlaloc Restaurant. Use o codigo {code} para {rewardLabel} na sua proxima visita.",
+  createdAt: new Date(0).toISOString(),
+  updatedAt: new Date(0).toISOString(),
+};
+
+type TabId = "reservations" | "metrics" | "rewards" | "calendar" | "menu" | "hours" | "security";
 type DeleteReservationModalState = {
   id: string;
   guestName: string;
@@ -94,6 +116,55 @@ type ReservationTutorialHintMode = "contact" | "status" | "clean";
 const weekdayLabels = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const mondayFirstOrder: number[] = [1, 2, 3, 4, 5, 6, 0];
 const weekdayShortMondayFirst = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+const getLisbonTodayIso = (): string => {
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Lisbon",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  const parts = formatter.formatToParts(new Date());
+  const getPart = (type: Intl.DateTimeFormatPartTypes): string =>
+    parts.find((part) => part.type === type)?.value ?? "00";
+
+  return `${getPart("year")}-${getPart("month")}-${getPart("day")}`;
+};
+
+const addDaysToIsoDate = (isoDate: string, days: number): string => {
+  const parsed = parseIsoDate(isoDate);
+  if (!parsed) {
+    return isoDate;
+  }
+
+  const next = new Date(Date.UTC(parsed.year, parsed.month - 1, parsed.day + days, 12, 0, 0));
+  return `${next.getUTCFullYear()}-${String(next.getUTCMonth() + 1).padStart(2, "0")}-${String(
+    next.getUTCDate(),
+  ).padStart(2, "0")}`;
+};
+
+const toGuestCount = (guests: string): number => {
+  const normalized = guests.trim();
+  if (!normalized) {
+    return 0;
+  }
+
+  if (normalized.endsWith("+")) {
+    return Number(normalized.slice(0, -1)) || 0;
+  }
+
+  return Number(normalized) || 0;
+};
+
+const normalizePhoneKey = (phone: string): string | null => {
+  const digits = phone.replace(/[^\d]/g, "");
+  return digits ? digits : null;
+};
+
+const normalizeEmailKey = (email: string): string | null => {
+  const normalized = email.trim().toLowerCase();
+  return normalized ? normalized : null;
+};
 
 const getTodayMonthKey = (): string => {
   const now = new Date();
@@ -240,7 +311,7 @@ const getContactTemplate = (
   const key: AdminMessageTemplate["key"] =
     reservation.status === "confirmed"
       ? "reservation_confirmed"
-      : reservation.status === "cancelled"
+      : reservation.status === "cancelled" || reservation.status === "no_show"
         ? "reservation_cancelled"
         : "reservation_new";
   const template = getTemplateByKey(templates, key);
@@ -294,6 +365,64 @@ const toEmailUrl = (
 
 const getMessageLanguageLabel = (reservation: AdminReservationRecord): "EN" | "PT" =>
   reservation.locale === "pt" ? "PT" : "EN";
+
+const normalizeRewardPhoneKey = (phone: string): string | undefined => {
+  const digits = phone.replace(/[^\d]/g, "");
+  return digits || undefined;
+};
+
+const normalizeRewardEmailKey = (email: string): string | undefined => {
+  const normalized = email.trim().toLowerCase();
+  return normalized || undefined;
+};
+
+const getActiveRewardCodeForReservation = (
+  reservation: AdminReservationRecord,
+  rewardCodes: RewardCodeRecord[],
+): RewardCodeRecord | null => {
+  const phoneKey = normalizeRewardPhoneKey(reservation.phone);
+  const emailKey = normalizeRewardEmailKey(reservation.email);
+  return (
+    rewardCodes.find(
+      (rewardCode) =>
+        rewardCode.status === "active" &&
+        ((phoneKey && rewardCode.phoneKey === phoneKey) || (emailKey && rewardCode.emailKey === emailKey)),
+    ) ?? null
+  );
+};
+
+const getRewardMessage = (
+  rewardCode: RewardCodeRecord,
+  locale: "en" | "pt",
+): string => (locale === "pt" ? rewardCode.messagePt : rewardCode.messageEn) ?? rewardCode.rewardLabel;
+
+const toRewardWhatsAppUrl = (
+  phone: string,
+  rewardCode: RewardCodeRecord,
+  locale: "en" | "pt",
+): string => {
+  const digits = phone.replace(/[^\d]/g, "");
+  if (!digits) {
+    return "#";
+  }
+  return `https://wa.me/${digits}?text=${encodeURIComponent(getRewardMessage(rewardCode, locale))}`;
+};
+
+const toRewardEmailUrl = (
+  email: string,
+  rewardCode: RewardCodeRecord,
+  locale: "en" | "pt",
+): string => {
+  const normalized = email.trim();
+  if (!normalized) {
+    return "mailto:";
+  }
+  const params = new URLSearchParams({
+    subject: locale === "pt" ? "Codigo promocional - Tlaloc Restaurant" : "Promo code - Tlaloc Restaurant",
+    body: getRewardMessage(rewardCode, locale),
+  });
+  return `mailto:${normalized}?${params.toString()}`;
+};
 
 const hasReservationExtraDetails = (reservation: AdminReservationRecord): boolean =>
   Boolean(reservation.occasion?.trim() || reservation.notes?.trim());
@@ -435,6 +564,11 @@ export default function AdminBackOffice() {
   const [workingHours, setWorkingHours] = useState<AdminWorkingHours[]>([]);
   const [reservationClosures, setReservationClosures] = useState<AdminReservationClosure[]>([]);
   const [messageTemplates, setMessageTemplates] = useState<AdminMessageTemplate[]>([]);
+  const [rewardProgram, setRewardProgram] = useState<RewardProgramSettingsRecord>(defaultRewardProgram);
+  const [rewardCodes, setRewardCodes] = useState<RewardCodeRecord[]>([]);
+  const [rewardLookupCode, setRewardLookupCode] = useState("");
+  const [rewardLookupFeedback, setRewardLookupFeedback] = useState("");
+  const [rewardLookupResult, setRewardLookupResult] = useState<RewardCodeRecord | null>(null);
   const [tutorialSettings, setTutorialSettings] = useState<AdminTutorialSettings>({
     id: "default",
     businessPhone: "+351 933 357 555",
@@ -512,6 +646,229 @@ export default function AdminBackOffice() {
     () => reservations.filter((reservation) => reservation.status === "confirmed"),
     [reservations],
   );
+  const reservationMetrics = useMemo(() => {
+    const todayIso = getLisbonTodayIso();
+    const next30End = addDaysToIsoDate(todayIso, 29);
+    const monthKey = todayIso.slice(0, 7);
+    const pendingInbox = reservations.filter(
+      (reservation) => reservation.status === "new" && reservation.isRead !== true,
+    );
+    const confirmedThisMonth = confirmedReservations.filter((reservation) =>
+      reservation.date.startsWith(monthKey),
+    );
+    const busiestDayMap = new Map<string, { reservations: number; covers: number }>();
+
+    for (const reservation of confirmedReservations) {
+      if (reservation.date < todayIso || reservation.date > next30End) {
+        continue;
+      }
+
+      const entry = busiestDayMap.get(reservation.date) ?? { reservations: 0, covers: 0 };
+      entry.reservations += 1;
+      entry.covers += toGuestCount(reservation.guests);
+      busiestDayMap.set(reservation.date, entry);
+    }
+
+    const busiestDay = [...busiestDayMap.entries()].sort((a, b) => {
+      if (b[1].covers !== a[1].covers) {
+        return b[1].covers - a[1].covers;
+      }
+      if (b[1].reservations !== a[1].reservations) {
+        return b[1].reservations - a[1].reservations;
+      }
+      return a[0].localeCompare(b[0]);
+    })[0];
+
+    return [
+      {
+        label: "Pending inbox",
+        value: String(pendingInbox.length),
+        note: pendingInbox.length === 1 ? "1 unread request to review" : `${pendingInbox.length} unread requests to review`,
+      },
+      {
+        label: "This month",
+        value: String(confirmedThisMonth.length),
+        note: `${confirmedThisMonth.reduce((sum, reservation) => sum + toGuestCount(reservation.guests), 0)} covers confirmed`,
+      },
+      {
+        label: "Busiest day",
+        value: busiestDay ? `${busiestDay[1].covers}` : "-",
+        note: busiestDay
+          ? `${formatEuropeanDate(busiestDay[0])} · ${busiestDay[1].reservations} bookings`
+          : "No confirmed demand in the next 30 days",
+      },
+    ];
+  }, [confirmedReservations, reservations]);
+  const reservationDashboard = useMemo(() => {
+    const todayIso = getLisbonTodayIso();
+    const next30End = addDaysToIsoDate(todayIso, 29);
+    const upcomingConfirmed = confirmedReservations.filter(
+      (reservation) => reservation.date >= todayIso && reservation.date <= next30End,
+    );
+    const statusBreakdown = [
+      { label: "New", value: reservations.filter((reservation) => reservation.status === "new").length },
+      {
+        label: "Confirmed",
+        value: reservations.filter((reservation) => reservation.status === "confirmed").length,
+      },
+      {
+        label: "Cancelled",
+        value: reservations.filter((reservation) => reservation.status === "cancelled").length,
+      },
+      {
+        label: "No show",
+        value: reservations.filter((reservation) => reservation.status === "no_show").length,
+      },
+    ];
+    const guestAliasMap = new Map<string, string>();
+    const guestsById = new Map<
+      string,
+      {
+        id: string;
+        name: string;
+        phone: string;
+        email: string;
+        reservations: number;
+        confirmed: number;
+        upcomingConfirmed: number;
+      }
+    >();
+
+    for (const reservation of reservations) {
+      const phoneKey = normalizePhoneKey(reservation.phone);
+      const emailKey = normalizeEmailKey(reservation.email);
+      const matchedGuestId =
+        (emailKey ? guestAliasMap.get(`email:${emailKey}`) : undefined) ??
+        (phoneKey ? guestAliasMap.get(`phone:${phoneKey}`) : undefined);
+
+      const guestId =
+        matchedGuestId ?? emailKey ?? phoneKey ?? `guest:${reservation.id}`;
+      const existingGuest = guestsById.get(guestId) ?? {
+        id: guestId,
+        name: `${reservation.firstName} ${reservation.lastName}`.trim(),
+        phone: reservation.phone,
+        email: reservation.email,
+        reservations: 0,
+        confirmed: 0,
+        upcomingConfirmed: 0,
+      };
+
+      existingGuest.reservations += 1;
+      if (reservation.status === "confirmed") {
+        existingGuest.confirmed += 1;
+      }
+      if (
+        reservation.status === "confirmed" &&
+        reservation.date >= todayIso &&
+        reservation.date <= next30End
+      ) {
+        existingGuest.upcomingConfirmed += 1;
+      }
+      if (!existingGuest.phone && reservation.phone) {
+        existingGuest.phone = reservation.phone;
+      }
+      if (!existingGuest.email && reservation.email) {
+        existingGuest.email = reservation.email;
+      }
+      guestsById.set(guestId, existingGuest);
+
+      if (phoneKey) {
+        guestAliasMap.set(`phone:${phoneKey}`, guestId);
+      }
+      if (emailKey) {
+        guestAliasMap.set(`email:${emailKey}`, guestId);
+      }
+    }
+
+    const guestList = [...guestsById.values()];
+    const returningGuests = guestList.filter((guest) => guest.reservations >= 2);
+    const topReturningGuests = [...returningGuests]
+      .sort((a, b) => {
+        if (b.reservations !== a.reservations) {
+          return b.reservations - a.reservations;
+        }
+        if (b.confirmed !== a.confirmed) {
+          return b.confirmed - a.confirmed;
+        }
+        return a.name.localeCompare(b.name);
+      })
+      .slice(0, 6)
+      .map((guest) => ({
+        label: guest.name || guest.phone || guest.email || "Guest",
+        value: guest.reservations,
+        note:
+          guest.email?.trim() ||
+          guest.phone?.trim() ||
+          `${guest.confirmed} confirmed bookings`,
+      }));
+
+    const weekdayDemandMap = new Map<number, { bookings: number; covers: number }>();
+    for (const weekday of mondayFirstOrder) {
+      weekdayDemandMap.set(weekday, { bookings: 0, covers: 0 });
+    }
+    for (const reservation of upcomingConfirmed) {
+      const parsed = parseIsoDate(reservation.date);
+      if (!parsed) {
+        continue;
+      }
+      const weekday = new Date(Date.UTC(parsed.year, parsed.month - 1, parsed.day, 12, 0, 0)).getUTCDay();
+      const current = weekdayDemandMap.get(weekday) ?? { bookings: 0, covers: 0 };
+      current.bookings += 1;
+      current.covers += toGuestCount(reservation.guests);
+      weekdayDemandMap.set(weekday, current);
+    }
+    const weekdayDemand = mondayFirstOrder.map((weekday, index) => {
+      const totals = weekdayDemandMap.get(weekday) ?? { bookings: 0, covers: 0 };
+      return {
+        label: weekdayShortMondayFirst[index],
+        value: totals.covers,
+        note: `${totals.bookings} bookings`,
+      };
+    });
+
+    const timeSlotMap = new Map<string, { bookings: number; covers: number }>();
+    for (const reservation of upcomingConfirmed) {
+      const current = timeSlotMap.get(reservation.time) ?? { bookings: 0, covers: 0 };
+      current.bookings += 1;
+      current.covers += toGuestCount(reservation.guests);
+      timeSlotMap.set(reservation.time, current);
+    }
+    const topTimeSlots = [...timeSlotMap.entries()]
+      .sort((a, b) => {
+        if (b[1].bookings !== a[1].bookings) {
+          return b[1].bookings - a[1].bookings;
+        }
+        if (b[1].covers !== a[1].covers) {
+          return b[1].covers - a[1].covers;
+        }
+        return a[0].localeCompare(b[0]);
+      })
+      .slice(0, 6)
+      .map(([label, value]) => ({
+        label,
+        value: value.bookings,
+        note: `${value.covers} covers`,
+      }));
+
+    return {
+      cards: [
+        ...reservationMetrics,
+        {
+          label: "Returning guests",
+          value: String(returningGuests.length),
+          note:
+            guestList.length > 0
+              ? `${Math.round((returningGuests.length / guestList.length) * 100)}% of identified guests came more than once`
+              : "No guest history yet",
+        },
+      ],
+      statusBreakdown,
+      topReturningGuests,
+      weekdayDemand,
+      topTimeSlots,
+      hasUpcomingData: upcomingConfirmed.length > 0,
+    };
+  }, [confirmedReservations, reservationMetrics, reservations]);
   const isTutorialReservationMode = isTutorialInProgress && activeTab === "reservations";
   const isTutorialCalendarMode = isTutorialInProgress && activeTab === "calendar";
   const reservationTutorialHintMode: ReservationTutorialHintMode | null = useMemo(() => {
@@ -690,6 +1047,8 @@ export default function AdminBackOffice() {
         workingHoursResponse,
         reservationClosuresResponse,
         messageTemplatesResponse,
+        rewardProgramResponse,
+        rewardCodesResponse,
         tutorialSettingsResponse,
       ] = await Promise.all([
         fetch("/api/reservations", { cache: "no-store" }),
@@ -698,6 +1057,8 @@ export default function AdminBackOffice() {
         fetch("/api/admin/working-hours", { cache: "no-store" }),
         fetch("/api/admin/reservation-closures", { cache: "no-store" }),
         fetch("/api/admin/message-templates", { cache: "no-store" }),
+        fetch("/api/admin/reward-program", { cache: "no-store" }),
+        fetch("/api/admin/reward-codes", { cache: "no-store" }),
         fetch("/api/admin/tutorial-settings", { cache: "no-store" }),
       ]);
 
@@ -715,6 +1076,12 @@ export default function AdminBackOffice() {
       const messageTemplatesJson = (await messageTemplatesResponse.json()) as {
         data?: AdminMessageTemplate[];
       };
+      const rewardProgramJson = (await rewardProgramResponse.json()) as {
+        data?: RewardProgramSettingsRecord;
+      };
+      const rewardCodesJson = (await rewardCodesResponse.json()) as {
+        data?: RewardCodeRecord[];
+      };
       const tutorialSettingsJson = (await tutorialSettingsResponse.json()) as {
         data?: AdminTutorialSettings;
       };
@@ -727,6 +1094,8 @@ export default function AdminBackOffice() {
       setWorkingHours(workingHoursJson.data ?? []);
       setReservationClosures(reservationClosuresJson.data ?? []);
       setMessageTemplates(messageTemplatesJson.data ?? []);
+      setRewardProgram(rewardProgramJson.data ?? defaultRewardProgram);
+      setRewardCodes(rewardCodesJson.data ?? []);
       setTutorialSettings(
         tutorialSettingsJson.data ?? {
           id: "default",
@@ -1089,8 +1458,86 @@ export default function AdminBackOffice() {
         return;
       }
 
-      setStatusMessage("Tutorial demo contact updated.");
+      setStatusMessage("Business contact updated.");
       await loadAll();
+    });
+  }
+
+  async function saveRewardProgramConfiguration() {
+    await runAction("save-reward-program", async () => {
+      const response = await fetch("/api/admin/reward-program", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          isEnabled: rewardProgram.isEnabled,
+          visitThreshold: rewardProgram.visitThreshold,
+          rewardType: rewardProgram.rewardType,
+          rewardValue: rewardProgram.rewardValue,
+          rewardLabel: rewardProgram.rewardLabel,
+          messageEn: rewardProgram.messageEn,
+          messagePt: rewardProgram.messagePt,
+        }),
+      });
+
+      const json = (await response.json().catch(() => ({}))) as { error?: string };
+      if (!response.ok) {
+        setStatusMessage(json.error ?? "Could not save reward program.");
+        return;
+      }
+
+      setStatusMessage("Reward program updated.");
+      await loadAll();
+    });
+  }
+
+  function lookupRewardCode() {
+    const normalizedCode = rewardLookupCode.trim().toUpperCase();
+    if (!normalizedCode) {
+      setRewardLookupResult(null);
+      setRewardLookupFeedback("Enter a promo code first.");
+      return;
+    }
+
+    const match =
+      rewardCodes.find((rewardCode) => rewardCode.code.toUpperCase() === normalizedCode) ?? null;
+    setRewardLookupResult(match);
+    setRewardLookupFeedback(match ? "" : "Promo code not found.");
+  }
+
+  async function redeemLookupRewardCode() {
+    const normalizedCode = rewardLookupCode.trim().toUpperCase();
+    if (!normalizedCode) {
+      setRewardLookupResult(null);
+      setRewardLookupFeedback("Enter a promo code first.");
+      return;
+    }
+
+    await runAction("redeem-reward-lookup", async () => {
+      const response = await fetch("/api/admin/reward-codes/redeem", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: normalizedCode }),
+      });
+      const json = (await response.json().catch(() => ({}))) as {
+        error?: string;
+        data?: { isValid?: boolean; reason?: string; code?: RewardCodeRecord };
+      };
+
+      if (!response.ok) {
+        setRewardLookupFeedback(json.error ?? "Could not redeem promo code.");
+        return;
+      }
+
+      if (!json.data?.isValid) {
+        setRewardLookupFeedback(
+          json.data?.reason === "inactive" ? "Code is already used or cancelled." : "Promo code not found.",
+        );
+        return;
+      }
+
+      setRewardLookupFeedback(`Redeemed: ${json.data.code?.code ?? normalizedCode}`);
+      await loadAll();
+      setRewardLookupResult(json.data.code ?? null);
     });
   }
 
@@ -1205,6 +1652,20 @@ export default function AdminBackOffice() {
           type="button"
         >
           Reservations
+        </button>
+        <button
+          className={`btn ${activeTab === "metrics" ? "btn-primary" : "btn-secondary"}`}
+          onClick={() => setActiveTab("metrics")}
+          type="button"
+        >
+          Metrics
+        </button>
+        <button
+          className={`btn ${activeTab === "rewards" ? "btn-primary" : "btn-secondary"}`}
+          onClick={() => setActiveTab("rewards")}
+          type="button"
+        >
+          Reward Program
         </button>
         <button
           className={`btn ${activeTab === "calendar" ? "btn-primary" : "btn-secondary"}`}
@@ -1626,6 +2087,36 @@ export default function AdminBackOffice() {
                     {reservation.email}
                   </a>
                 </p>
+                {(() => {
+                  const activeRewardCode = getActiveRewardCodeForReservation(reservation, rewardCodes);
+                  return activeRewardCode ? (
+                    <div className="card admin-reward-card">
+                      <div className="admin-reward-head">
+                        <strong>Returning guest reward</strong>
+                        <span className="pill reservation-locale-chip">{activeRewardCode.status}</span>
+                      </div>
+                      <p className="footer-note" style={{ marginTop: "0.25rem" }}>
+                        <strong>{activeRewardCode.code}</strong> · {activeRewardCode.rewardLabel}
+                      </p>
+                      <div style={{ display: "flex", gap: "0.45rem", flexWrap: "wrap", marginTop: "0.5rem" }}>
+                        <a
+                          className="btn btn-secondary"
+                          href={toRewardWhatsAppUrl(reservation.phone, activeRewardCode, reservation.locale)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Send reward WhatsApp
+                        </a>
+                        <a
+                          className="btn btn-secondary"
+                          href={toRewardEmailUrl(reservation.email, activeRewardCode, reservation.locale)}
+                        >
+                          Send reward email
+                        </a>
+                      </div>
+                    </div>
+                  ) : null;
+                })()}
                 {hasReservationExtraDetails(reservation) ? (
                   <details className="reservation-extra-details">
                     <summary>More details</summary>
@@ -1700,6 +2191,22 @@ export default function AdminBackOffice() {
                       ? "Updating..."
                       : "Cancelled"}
                   </button>
+                  <button
+                    className="btn btn-secondary"
+                    type="button"
+                    disabled={reservation.id === "tutorial-demo-reservation" ? false : actionKey !== null}
+                    onClick={() => {
+                      if (reservation.id === "tutorial-demo-reservation") {
+                        setTutorialDemoStatus("no_show");
+                        return;
+                      }
+                      void changeReservationStatus(reservation.id, "no_show");
+                    }}
+                  >
+                    {reservation.id !== "tutorial-demo-reservation" && actionKey === `reservation-${reservation.id}-no_show`
+                      ? "Updating..."
+                      : "No show"}
+                  </button>
                   <span
                     className={`pill reservation-status reservation-status-${reservation.status}`}
                   >
@@ -1710,6 +2217,390 @@ export default function AdminBackOffice() {
             ))
           )}
         </div>
+      ) : null}
+
+      {activeTab === "metrics" ? (
+        <section style={{ display: "grid", gap: "0.9rem" }}>
+          <section className="admin-metrics-grid">
+            {reservationDashboard.cards.map((metric) => (
+              <article className="card admin-metric-card" key={metric.label}>
+                <p className="admin-metric-label">{metric.label}</p>
+                <strong className="admin-metric-value">{metric.value}</strong>
+                <p className="footer-note admin-metric-note">{metric.note}</p>
+              </article>
+            ))}
+          </section>
+
+          <section className="admin-dashboard-grid">
+            <article className="card admin-chart-card">
+              <div className="admin-chart-head">
+                <h3>Status mix</h3>
+                <p className="footer-note admin-chart-subtitle">All reservations in the system</p>
+              </div>
+              <div className="admin-chart-list">
+                {reservationDashboard.statusBreakdown.map((item) => (
+                  <div className="admin-chart-row" key={item.label}>
+                    <div className="admin-chart-meta">
+                      <strong>{item.label}</strong>
+                      <span>{item.value}</span>
+                    </div>
+                    <div className="admin-chart-track">
+                      <div
+                        className="admin-chart-fill"
+                        style={{
+                          width: `${Math.max(
+                            reservationDashboard.statusBreakdown.some((entry) => entry.value > 0)
+                              ? (item.value /
+                                  Math.max(...reservationDashboard.statusBreakdown.map((entry) => entry.value), 1)) *
+                                  100
+                              : 0,
+                            item.value > 0 ? 10 : 0,
+                          )}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </article>
+
+            <article className="card admin-chart-card">
+              <div className="admin-chart-head">
+                <h3>Returning guests</h3>
+                <p className="footer-note admin-chart-subtitle">
+                  Matched by phone or email across reservation history
+                </p>
+              </div>
+              {reservationDashboard.topReturningGuests.length === 0 ? (
+                <p className="footer-note" style={{ marginTop: 0 }}>
+                  No returning guests identified yet.
+                </p>
+              ) : (
+                <div className="admin-chart-list">
+                  {reservationDashboard.topReturningGuests.map((item) => (
+                    <div className="admin-chart-row" key={item.label}>
+                      <div className="admin-chart-meta">
+                        <strong>{item.label}</strong>
+                        <span>{item.value}</span>
+                      </div>
+                      <div className="admin-chart-track">
+                        <div
+                          className="admin-chart-fill admin-chart-fill-secondary"
+                          style={{
+                            width: `${Math.max(
+                              reservationDashboard.topReturningGuests.some((entry) => entry.value > 0)
+                                ? (item.value /
+                                    Math.max(...reservationDashboard.topReturningGuests.map((entry) => entry.value), 1)) *
+                                    100
+                                : 0,
+                              item.value > 0 ? 10 : 0,
+                            )}%`,
+                          }}
+                        />
+                      </div>
+                      <span className="admin-chart-note">{item.note}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </article>
+
+            <article className="card admin-chart-card">
+              <div className="admin-chart-head">
+                <h3>Upcoming demand by weekday</h3>
+                <p className="footer-note admin-chart-subtitle">Confirmed covers in the next 30 days</p>
+              </div>
+              <div className="admin-chart-list">
+                {reservationDashboard.weekdayDemand.map((item) => (
+                  <div className="admin-chart-row" key={item.label}>
+                    <div className="admin-chart-meta">
+                      <strong>{item.label}</strong>
+                      <span>{item.value}</span>
+                    </div>
+                    <div className="admin-chart-track">
+                      <div
+                        className="admin-chart-fill"
+                        style={{
+                          width: `${Math.max(
+                            reservationDashboard.weekdayDemand.some((entry) => entry.value > 0)
+                              ? (item.value /
+                                  Math.max(...reservationDashboard.weekdayDemand.map((entry) => entry.value), 1)) *
+                                  100
+                              : 0,
+                            item.value > 0 ? 10 : 0,
+                          )}%`,
+                        }}
+                      />
+                    </div>
+                    <span className="admin-chart-note">{item.note}</span>
+                  </div>
+                ))}
+              </div>
+            </article>
+
+            <article className="card admin-chart-card">
+              <div className="admin-chart-head">
+                <h3>Top time slots</h3>
+                <p className="footer-note admin-chart-subtitle">Most booked confirmed times in next 30 days</p>
+              </div>
+              {reservationDashboard.topTimeSlots.length === 0 ? (
+                <p className="footer-note" style={{ marginTop: 0 }}>
+                  {reservationDashboard.hasUpcomingData
+                    ? "No repeated time-slot pattern yet."
+                    : "No upcoming confirmed reservations yet."}
+                </p>
+              ) : (
+                <div className="admin-chart-list">
+                  {reservationDashboard.topTimeSlots.map((item) => (
+                    <div className="admin-chart-row" key={item.label}>
+                      <div className="admin-chart-meta">
+                        <strong>{item.label}</strong>
+                        <span>{item.value}</span>
+                      </div>
+                      <div className="admin-chart-track">
+                        <div
+                          className="admin-chart-fill admin-chart-fill-secondary"
+                          style={{
+                            width: `${Math.max(
+                              reservationDashboard.topTimeSlots.some((entry) => entry.value > 0)
+                                ? (item.value /
+                                    Math.max(...reservationDashboard.topTimeSlots.map((entry) => entry.value), 1)) *
+                                    100
+                                : 0,
+                              item.value > 0 ? 10 : 0,
+                            )}%`,
+                          }}
+                        />
+                      </div>
+                      <span className="admin-chart-note">{item.note}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </article>
+          </section>
+        </section>
+      ) : null}
+
+      {activeTab === "rewards" ? (
+        <section className="card admin-reward-program-card">
+          <div className="admin-chart-head">
+            <h3>Reward program</h3>
+            <p className="footer-note admin-chart-subtitle">
+              Generate one active code per returning guest after enough confirmed visits.
+            </p>
+          </div>
+          <div className="form-grid" style={{ marginTop: "0.6rem" }}>
+            <label className="ios-switch-field" style={{ marginBottom: 0, alignSelf: "center" }}>
+              <input
+                className="ios-switch-input"
+                type="checkbox"
+                checked={rewardProgram.isEnabled}
+                onChange={(event) =>
+                  setRewardProgram((prev) => ({ ...prev, isEnabled: event.target.checked }))
+                }
+              />
+              <span className="ios-switch" aria-hidden="true" />
+              Reward program enabled
+            </label>
+            <div>
+              <label>Confirmed visits needed</label>
+              <input
+                type="number"
+                min={1}
+                value={rewardProgram.visitThreshold}
+                onChange={(event) =>
+                  setRewardProgram((prev) => ({
+                    ...prev,
+                    visitThreshold: Math.max(1, Number(event.target.value) || 1),
+                  }))
+                }
+              />
+            </div>
+            <div>
+              <label>Reward type</label>
+              <select
+                value={rewardProgram.rewardType}
+                onChange={(event) =>
+                  setRewardProgram((prev) => ({
+                    ...prev,
+                    rewardType: event.target.value as RewardType,
+                  }))
+                }
+              >
+                <option value="percent">Percent off</option>
+                <option value="fixed_amount">Fixed amount off</option>
+                <option value="free_item">Free item</option>
+                <option value="custom">Custom</option>
+              </select>
+            </div>
+            <div>
+              <label>Reward value</label>
+              <input
+                value={rewardProgram.rewardValue}
+                onChange={(event) =>
+                  setRewardProgram((prev) => ({ ...prev, rewardValue: event.target.value }))
+                }
+              />
+            </div>
+            <div>
+              <label>Reward label</label>
+              <input
+                value={rewardProgram.rewardLabel}
+                onChange={(event) =>
+                  setRewardProgram((prev) => ({ ...prev, rewardLabel: event.target.value }))
+                }
+              />
+            </div>
+          </div>
+          <div className="form-grid" style={{ marginTop: "0.75rem" }}>
+            <div>
+              <label>Reward message EN</label>
+              <textarea
+                value={rewardProgram.messageEn ?? ""}
+                onChange={(event) =>
+                  setRewardProgram((prev) => ({ ...prev, messageEn: event.target.value }))
+                }
+              />
+            </div>
+            <div>
+              <label>Reward message PT</label>
+              <textarea
+                value={rewardProgram.messagePt ?? ""}
+                onChange={(event) =>
+                  setRewardProgram((prev) => ({ ...prev, messagePt: event.target.value }))
+                }
+              />
+            </div>
+          </div>
+          <p className="footer-note" style={{ marginTop: "0.35rem" }}>
+            You can use <code>{"{code}"}</code> and <code>{"{rewardLabel}"}</code> in reward messages.
+          </p>
+          <div style={{ marginTop: "0.8rem" }}>
+            <button
+              className="btn btn-primary"
+              type="button"
+              disabled={actionKey !== null}
+              onClick={saveRewardProgramConfiguration}
+            >
+              {actionKey === "save-reward-program" ? "Saving..." : "Save reward program"}
+            </button>
+          </div>
+          <div className="admin-reward-codes-grid">
+            <article className="card admin-chart-card">
+              <div className="admin-chart-head">
+                <h4>Find promo code</h4>
+                <p className="footer-note admin-chart-subtitle">
+                  Search by code and see who it was generated for.
+                </p>
+              </div>
+              <div className="admin-reward-actions">
+                <input
+                  placeholder="Enter promo code"
+                  value={rewardLookupCode}
+                  onChange={(event) => setRewardLookupCode(event.target.value.toUpperCase())}
+                />
+                <button className="btn btn-secondary" type="button" onClick={lookupRewardCode}>
+                  Find code
+                </button>
+                <button
+                  className="btn btn-secondary"
+                  type="button"
+                  disabled={actionKey !== null || !rewardLookupResult || rewardLookupResult.status !== "active"}
+                  onClick={() => void redeemLookupRewardCode()}
+                >
+                  {actionKey === "redeem-reward-lookup" ? "Redeeming..." : "Redeem"}
+                </button>
+              </div>
+              {rewardLookupFeedback ? (
+                <p className="footer-note" style={{ marginTop: "0.35rem" }}>
+                  {rewardLookupFeedback}
+                </p>
+              ) : null}
+              {rewardLookupResult ? (
+                <div className="card admin-reward-card" style={{ marginTop: "0.6rem" }}>
+                  <div className="admin-reward-head">
+                    <strong>{rewardLookupResult.code}</strong>
+                    <span className="pill reservation-locale-chip">{rewardLookupResult.status}</span>
+                  </div>
+                  <p className="footer-note" style={{ marginTop: "0.2rem" }}>
+                    <strong>Guest:</strong> {rewardLookupResult.guestName || "-"}
+                  </p>
+                  <p className="footer-note" style={{ marginTop: "0.2rem" }}>
+                    <strong>Email key:</strong> {rewardLookupResult.emailKey || "-"}
+                  </p>
+                  <p className="footer-note" style={{ marginTop: "0.2rem" }}>
+                    <strong>Phone key:</strong> {rewardLookupResult.phoneKey || "-"}
+                  </p>
+                  <p className="footer-note" style={{ marginTop: "0.2rem" }}>
+                    <strong>Reward:</strong> {rewardLookupResult.rewardLabel}
+                  </p>
+                  <p className="footer-note" style={{ marginTop: "0.2rem" }}>
+                    <strong>Generated after:</strong> {rewardLookupResult.generatedAfterConfirmedCount} confirmed visits
+                  </p>
+                  <p className="footer-note" style={{ marginTop: "0.2rem" }}>
+                    <strong>Created:</strong> {rewardLookupResult.createdAt.slice(0, 10)}
+                  </p>
+                  {rewardLookupResult.usedAt ? (
+                    <p className="footer-note" style={{ marginTop: "0.2rem" }}>
+                      <strong>Used:</strong> {rewardLookupResult.usedAt.slice(0, 10)}
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
+            </article>
+
+            <article className="card admin-chart-card">
+              <div className="admin-chart-head">
+                <h4>Active reward codes</h4>
+              </div>
+              {rewardCodes.filter((code) => code.status === "active").length === 0 ? (
+                <p className="footer-note" style={{ marginTop: 0 }}>
+                  No active reward codes yet.
+                </p>
+              ) : (
+                <div className="admin-chart-list">
+                  {rewardCodes
+                    .filter((code) => code.status === "active")
+                    .slice(0, 6)
+                    .map((code) => (
+                      <div className="admin-reward-code-row" key={code.id}>
+                        <strong>{code.code}</strong>
+                        <span>{code.rewardLabel}</span>
+                        <span className="footer-note">{code.guestName ?? code.emailKey ?? code.phoneKey}</span>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </article>
+
+            <article className="card admin-chart-card">
+              <div className="admin-chart-head">
+                <h4>Recently redeemed</h4>
+              </div>
+              {rewardCodes.filter((code) => code.status === "used").length === 0 ? (
+                <p className="footer-note" style={{ marginTop: 0 }}>
+                  No redeemed reward codes yet.
+                </p>
+              ) : (
+                <div className="admin-chart-list">
+                  {rewardCodes
+                    .filter((code) => code.status === "used")
+                    .slice(0, 6)
+                    .map((code) => (
+                      <div className="admin-reward-code-row" key={code.id}>
+                        <strong>{code.code}</strong>
+                        <span>{code.rewardLabel}</span>
+                        <span className="footer-note">
+                          {code.usedAt ? `Redeemed ${code.usedAt.slice(0, 10)}` : "Redeemed"}
+                        </span>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </article>
+          </div>
+        </section>
       ) : null}
 
       {activeTab === "calendar" ? (
@@ -1946,6 +2837,36 @@ export default function AdminBackOffice() {
                           {reservation.email}
                         </a>
                       </p>
+                      {(() => {
+                        const activeRewardCode = getActiveRewardCodeForReservation(reservation, rewardCodes);
+                        return activeRewardCode ? (
+                          <div className="card admin-reward-card">
+                            <div className="admin-reward-head">
+                              <strong>Returning guest reward</strong>
+                              <span className="pill reservation-locale-chip">{activeRewardCode.status}</span>
+                            </div>
+                            <p className="footer-note" style={{ marginTop: "0.25rem" }}>
+                              <strong>{activeRewardCode.code}</strong> · {activeRewardCode.rewardLabel}
+                            </p>
+                            <div style={{ display: "flex", gap: "0.45rem", flexWrap: "wrap", marginTop: "0.5rem" }}>
+                              <a
+                                className="btn btn-secondary"
+                                href={toRewardWhatsAppUrl(reservation.phone, activeRewardCode, reservation.locale)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                Send reward WhatsApp
+                              </a>
+                              <a
+                                className="btn btn-secondary"
+                                href={toRewardEmailUrl(reservation.email, activeRewardCode, reservation.locale)}
+                              >
+                                Send reward email
+                              </a>
+                            </div>
+                          </div>
+                        ) : null;
+                      })()}
                       {hasReservationExtraDetails(reservation) ? (
                         <details className="reservation-extra-details">
                           <summary>More details</summary>
@@ -1986,6 +2907,16 @@ export default function AdminBackOffice() {
                           {actionKey === `reservation-${reservation.id}-cancelled`
                             ? "Updating..."
                             : "Cancelled"}
+                        </button>
+                        <button
+                          className="btn btn-secondary"
+                          type="button"
+                          disabled={actionKey !== null}
+                          onClick={() => changeReservationStatus(reservation.id, "no_show")}
+                        >
+                          {actionKey === `reservation-${reservation.id}-no_show`
+                            ? "Updating..."
+                            : "No show"}
                         </button>
                       </div>
                     </article>
@@ -2471,9 +3402,9 @@ export default function AdminBackOffice() {
       {activeTab === "security" ? (
         <div style={{ display: "grid", gap: "1rem" }}>
           <section className="card">
-            <h3 style={{ marginBottom: "0.7rem" }}>Tutorial Demo Contact</h3>
+            <h3 style={{ marginBottom: "0.7rem" }}>Business Contact</h3>
             <p className="footer-note" style={{ marginTop: 0 }}>
-              Used by tutorial dummy card for WhatsApp and email actions.
+              Used for the tutorial demo card and the homepage contact details so the owner can update it later.
             </p>
             <div className="form-grid" style={{ marginTop: "0.7rem" }}>
               <input
@@ -2497,7 +3428,7 @@ export default function AdminBackOffice() {
                 disabled={actionKey !== null}
                 onClick={saveTutorialSettingsConfiguration}
               >
-                {actionKey === "save-tutorial-settings" ? "Saving..." : "Save tutorial contact"}
+                {actionKey === "save-tutorial-settings" ? "Saving..." : "Save business contact"}
               </button>
             </div>
           </section>

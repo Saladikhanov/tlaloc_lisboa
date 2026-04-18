@@ -123,7 +123,7 @@ export const getMessageTemplateForReservation = (
   const key =
     reservation.status === "confirmed"
       ? "reservation_confirmed"
-      : reservation.status === "cancelled"
+      : reservation.status === "cancelled" || reservation.status === "no_show"
         ? "reservation_cancelled"
         : "reservation_new";
 

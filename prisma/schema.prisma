@@ -10,6 +10,20 @@ enum ReservationStatus {
   new
   confirmed
   cancelled
+  no_show
+}
+
+enum RewardType {
+  percent
+  fixed_amount
+  free_item
+  custom
+}
+
+enum RewardCodeStatus {
+  active
+  used
+  cancelled
 }
 
 enum Locale {
@@ -144,4 +158,44 @@ model TutorialSettings {
   businessEmail String
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+}
+
+model RewardProgramSettings {
+  id             String     @id @default("default")
+  isEnabled      Boolean    @default(false)
+  visitThreshold Int        @default(3)
+  rewardType     RewardType @default(percent)
+  rewardValue    String     @default("10")
+  rewardLabel    String     @default("10% off")
+  messageEn      String?
+  messagePt      String?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+}
+
+model RewardCode {
+  id                          String           @id @default(cuid())
+  code                        String           @unique
+  status                      RewardCodeStatus @default(active)
+  phoneKey                    String?
+  emailKey                    String?
+  guestName                   String?
+  rewardType                  RewardType
+  rewardValue                 String
+  rewardLabel                 String
+  messageEn                   String?
+  messagePt                   String?
+  generatedAfterConfirmedCount Int
+  originReservationId         String?
+  originReservationVersion    String?
+  usedByReservationId         String?
+  usedByReservationVersion    String?
+  usedAt                      DateTime?
+  cancelledAt                 DateTime?
+  createdAt                   DateTime         @default(now())
+  updatedAt                   DateTime         @updatedAt
+
+  @@index([status, createdAt(sort: Desc)])
+  @@index([phoneKey, status])
+  @@index([emailKey, status])
 }

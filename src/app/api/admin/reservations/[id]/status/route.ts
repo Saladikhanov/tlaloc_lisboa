@@ -18,7 +18,7 @@ export async function PATCH(
   const payload = (await request.json().catch(() => null)) as Payload | null;
   const status = payload?.status;
 
-  if (status !== "new" && status !== "confirmed" && status !== "cancelled") {
+  if (status !== "new" && status !== "confirmed" && status !== "cancelled" && status !== "no_show") {
     return NextResponse.json({ error: "Invalid status." }, { status: 400 });
   }
 

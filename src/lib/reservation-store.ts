@@ -1,5 +1,6 @@
 import type { Reservation } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { syncRewardCodesForReservation } from "@/lib/reward-store";
 import type { ReservationPayload, ReservationRecord } from "@/lib/types";
 
 const getPrisma = () => {
@@ -66,6 +67,8 @@ export const updateReservationStatus = async (
     where: { id },
     data: { status, isRead: status === "new" ? false : undefined },
   });
+
+  await syncRewardCodesForReservation("v1", id);
 
   return toReservationRecord(reservation);
 };
