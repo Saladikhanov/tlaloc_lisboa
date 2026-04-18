@@ -1371,18 +1371,24 @@ export default function AdminBackOffice() {
     }
   }, []);
 
-  const playAdminNotificationSound = useCallback(() => {
+  const getAudioContextClass = useCallback(() => {
     if (typeof window === "undefined") {
-      return;
+      return null;
     }
 
     const browserWindow = window as Window &
       typeof globalThis & {
       webkitAudioContext?: typeof AudioContext;
     };
-    const AudioContextClass =
+    return (
       (typeof globalThis.AudioContext !== "undefined" ? globalThis.AudioContext : undefined) ??
-      browserWindow.webkitAudioContext;
+      browserWindow.webkitAudioContext ??
+      null
+    );
+  }, []);
+
+  const playAdminNotificationSound = useCallback(() => {
+    const AudioContextClass = getAudioContextClass();
     if (!AudioContextClass) {
       return;
     }
@@ -1405,7 +1411,7 @@ export default function AdminBackOffice() {
     oscillator.onended = () => {
       void audioContext.close();
     };
-  }, []);
+  }, [getAudioContextClass]);
 
   const pushAdminToast = useCallback((title: string, message: string) => {
     const toastId = toastIdRef.current + 1;
@@ -1473,6 +1479,24 @@ export default function AdminBackOffice() {
     setStatusMessage("");
   }, [statusMessage]);
 
+  const handleSoundAlertToggle = useCallback(
+    (nextValue: boolean) => {
+      if (!nextValue) {
+        setAdminRealtimeSettings((current) => ({ ...current, soundEnabled: false }));
+        return;
+      }
+
+      if (!getAudioContextClass()) {
+        setAdminRealtimeSettings((current) => ({ ...current, soundEnabled: false }));
+        setStatusMessage("Sound unavailable.");
+        return;
+      }
+
+      setAdminRealtimeSettings((current) => ({ ...current, soundEnabled: true }));
+    },
+    [getAudioContextClass],
+  );
+
   const handleDesktopNotificationToggle = useCallback(async (nextValue: boolean) => {
     if (!nextValue) {
       setAdminRealtimeSettings((current) => ({ ...current, desktopEnabled: false }));
@@ -1481,7 +1505,7 @@ export default function AdminBackOffice() {
 
     if (typeof window === "undefined" || !("Notification" in window)) {
       setNativeNotificationPermission("unsupported");
-      setStatusMessage("Browser notifications are not supported on this device.");
+      setStatusMessage("Browser notifications unsupported.");
       return;
     }
 
@@ -1495,12 +1519,11 @@ export default function AdminBackOffice() {
     setNativeNotificationPermission(permission);
     if (permission === "granted") {
       setAdminRealtimeSettings((current) => ({ ...current, desktopEnabled: true }));
-      setStatusMessage("Browser notifications enabled.");
       return;
     }
 
     setAdminRealtimeSettings((current) => ({ ...current, desktopEnabled: false }));
-    setStatusMessage("Browser notifications were blocked.");
+    setStatusMessage("Browser notifications blocked.");
   }, []);
 
   useEffect(() => {
@@ -1536,6 +1559,14 @@ export default function AdminBackOffice() {
 
     window.localStorage.setItem("tlaloc-admin-realtime-settings", JSON.stringify(adminRealtimeSettings));
   }, [adminRealtimeSettings]);
+
+  useEffect(() => {
+    if (nativeNotificationPermission === "denied" || nativeNotificationPermission === "unsupported") {
+      setAdminRealtimeSettings((current) =>
+        current.desktopEnabled ? { ...current, desktopEnabled: false } : current,
+      );
+    }
+  }, [nativeNotificationPermission]);
 
   useEffect(() => {
     if (!hasLoadedRealtimeSettings || hasShownRealtimeSelfTestRef.current) {
@@ -4267,12 +4298,7 @@ export default function AdminBackOffice() {
                   className="ios-switch-input"
                   type="checkbox"
                   checked={adminRealtimeSettings.soundEnabled}
-                  onChange={(event) =>
-                    setAdminRealtimeSettings((current) => ({
-                      ...current,
-                      soundEnabled: event.target.checked,
-                    }))
-                  }
+                  onChange={(event) => handleSoundAlertToggle(event.target.checked)}
                 />
                 <span className="ios-switch" aria-hidden="true" />
                 <span>Sound alerts</span>
@@ -4290,15 +4316,6 @@ export default function AdminBackOffice() {
                   <span className="ios-switch" aria-hidden="true" />
                   <span>Native browser notifications</span>
                 </label>
-                {nativeNotificationPermission !== "granted" ? (
-                  <p className="footer-note" style={{ marginTop: 0 }}>
-                    {nativeNotificationPermission === "denied"
-                      ? "Browser permission blocked. Re-enable it in browser settings."
-                      : nativeNotificationPermission === "unsupported"
-                        ? "This browser does not support native notifications."
-                        : "Click to show the browser permission prompt."}
-                  </p>
-                ) : null}
               </div>
             </div>
           </section>

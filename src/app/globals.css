@@ -2481,6 +2481,7 @@ input[type="time"] {
 
 .admin-realtime-settings-row {
   display: flex;
+  align-items: flex-start;
   flex-wrap: wrap;
   gap: 1rem;
 }
