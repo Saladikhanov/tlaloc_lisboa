@@ -309,6 +309,35 @@ a {
   transform: translateX(0) skewX(-18deg);
 }
 
+.admin-toast-stack {
+  position: fixed;
+  top: calc(var(--header-h) + 0.75rem);
+  right: 0.9rem;
+  z-index: 92;
+  display: grid;
+  gap: 0.6rem;
+  width: min(360px, calc(100vw - 1.8rem));
+}
+
+.admin-toast {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.7rem;
+  padding: 0.8rem 0.9rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 209, 102, 0.24);
+  background:
+    radial-gradient(circle at top left, rgba(255, 209, 102, 0.14), transparent 38%),
+    linear-gradient(180deg, rgba(58, 31, 11, 0.96), rgba(42, 21, 5, 0.96));
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(12px);
+}
+
+.admin-toast .btn {
+  flex-shrink: 0;
+}
+
 .card.tutorial-mode-card {
   border-color: rgba(255, 255, 255, 0.68);
   background:
@@ -391,6 +420,34 @@ a {
 
 .reservation-anchor-card {
   position: relative;
+  transition:
+    border-color 0.35s ease,
+    box-shadow 0.35s ease,
+    transform 0.35s ease;
+}
+
+.reservation-card-fresh {
+  border-color: rgba(255, 209, 102, 0.76);
+  box-shadow:
+    0 0 0 1px rgba(255, 209, 102, 0.22),
+    0 18px 30px rgba(245, 166, 35, 0.12);
+  animation: reservation-fresh-pulse 1.7s ease-in-out 3;
+}
+
+@keyframes reservation-fresh-pulse {
+  0%,
+  100% {
+    transform: translateY(0);
+    box-shadow:
+      0 0 0 1px rgba(255, 209, 102, 0.22),
+      0 18px 30px rgba(245, 166, 35, 0.12);
+  }
+  50% {
+    transform: translateY(-2px);
+    box-shadow:
+      0 0 0 1px rgba(255, 209, 102, 0.38),
+      0 22px 36px rgba(245, 166, 35, 0.18);
+  }
 }
 
 .reservation-anchor-layer {
@@ -2150,6 +2207,17 @@ input[type="time"] {
   cursor: pointer;
   user-select: none;
   color: var(--muted);
+}
+
+.admin-realtime-settings-card {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.admin-realtime-settings-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
 .ios-switch-input {

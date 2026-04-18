@@ -2,6 +2,8 @@
 
 import { FormEvent, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import type { AdminEvent } from "@/lib/admin-events";
 import type {
   ReservationLifecycleStatus,
   ReservationRecord,
@@ -85,6 +87,17 @@ type AdminTutorialSettings = {
   businessEmail: string;
 };
 
+type AdminRealtimeSettings = {
+  soundEnabled: boolean;
+  desktopEnabled: boolean;
+};
+
+type AdminToast = {
+  id: number;
+  title: string;
+  message: string;
+};
+
 const defaultRewardProgram: RewardProgramSettingsRecord = {
   id: "default",
   isEnabled: false,
@@ -98,6 +111,11 @@ const defaultRewardProgram: RewardProgramSettingsRecord = {
     "Obrigado por voltar ao Tlaloc Restaurant. Use o codigo {code} para {rewardLabel} na sua proxima visita.",
   createdAt: new Date(0).toISOString(),
   updatedAt: new Date(0).toISOString(),
+};
+
+const defaultAdminRealtimeSettings: AdminRealtimeSettings = {
+  soundEnabled: false,
+  desktopEnabled: false,
 };
 
 type TabId = "reservations" | "metrics" | "rewards" | "calendar" | "menu" | "hours" | "security";
@@ -116,6 +134,20 @@ type ReservationTutorialHintMode = "contact" | "status" | "clean";
 const weekdayLabels = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const mondayFirstOrder: number[] = [1, 2, 3, 4, 5, 6, 0];
 const weekdayShortMondayFirst = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const adminTabIds: TabId[] = [
+  "reservations",
+  "calendar",
+  "metrics",
+  "rewards",
+  "menu",
+  "security",
+  "hours",
+];
+
+const getTabFromSearchParams = (searchParams: URLSearchParams | ReadonlyURLSearchParams): TabId | null => {
+  const tab = searchParams.get("tab");
+  return tab && adminTabIds.includes(tab as TabId) ? (tab as TabId) : null;
+};
 
 const getLisbonTodayIso = (): string => {
   const formatter = new Intl.DateTimeFormat("en-CA", {
@@ -556,7 +588,10 @@ function ReservationAnchorHints({
 }
 
 export default function AdminBackOffice() {
-  const [activeTab, setActiveTab] = useState<TabId>("reservations");
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [activeTab, setActiveTab] = useState<TabId>(() => getTabFromSearchParams(searchParams) ?? "reservations");
   const [isMenuEditMode, setIsMenuEditMode] = useState(false);
   const [expandedSectionId, setExpandedSectionId] = useState<string | null>(null);
   const [reservations, setReservations] = useState<AdminReservationRecord[]>([]);
@@ -598,11 +633,19 @@ export default function AdminBackOffice() {
   const [tutorialDemoStatus, setTutorialDemoStatus] =
     useState<AdminReservationRecord["status"]>("new");
   const [tutorialDemoIsRead, setTutorialDemoIsRead] = useState(false);
+  const [adminRealtimeSettings, setAdminRealtimeSettings] = useState<AdminRealtimeSettings>(
+    defaultAdminRealtimeSettings,
+  );
+  const [adminToasts, setAdminToasts] = useState<AdminToast[]>([]);
+  const [highlightedReservationIds, setHighlightedReservationIds] = useState<string[]>([]);
   const [showReadInPending, setShowReadInPending] = useState(false);
   const [actionKey, setActionKey] = useState<string | null>(null);
   const [deleteReservationModal, setDeleteReservationModal] =
     useState<DeleteReservationModalState>(null);
   const tutorialStepRefs = useRef<Array<HTMLElement | null>>([]);
+  const toastTimeoutsRef = useRef<number[]>([]);
+  const highlightTimeoutsRef = useRef<Record<string, number>>({});
+  const toastIdRef = useRef(0);
 
   const [newSection, setNewSection] = useState({
     slug: "",
@@ -1116,9 +1159,234 @@ export default function AdminBackOffice() {
     }
   }, []);
 
+  const playAdminNotificationSound = useCallback(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const browserWindow = window as Window & {
+      webkitAudioContext?: typeof AudioContext;
+    };
+    const AudioContextClass = browserWindow.AudioContext ?? browserWindow.webkitAudioContext;
+    if (!AudioContextClass) {
+      return;
+    }
+
+    const audioContext = new AudioContextClass();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+
+    oscillator.type = "sine";
+    oscillator.frequency.setValueAtTime(880, audioContext.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(660, audioContext.currentTime + 0.22);
+    gainNode.gain.setValueAtTime(0.0001, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.12, audioContext.currentTime + 0.02);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.32);
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    oscillator.start();
+    oscillator.stop(audioContext.currentTime + 0.32);
+    oscillator.onended = () => {
+      void audioContext.close();
+    };
+  }, []);
+
+  const pushAdminToast = useCallback((title: string, message: string) => {
+    const toastId = toastIdRef.current + 1;
+    toastIdRef.current = toastId;
+    setAdminToasts((current) => [...current, { id: toastId, title, message }]);
+    const timeoutId = window.setTimeout(() => {
+      setAdminToasts((current) => current.filter((toast) => toast.id !== toastId));
+      toastTimeoutsRef.current = toastTimeoutsRef.current.filter((id) => id !== timeoutId);
+    }, 5000);
+    toastTimeoutsRef.current.push(timeoutId);
+  }, []);
+
+  const highlightReservationCard = useCallback((reservationId: string) => {
+    setHighlightedReservationIds((current) =>
+      current.includes(reservationId) ? current : [...current, reservationId],
+    );
+
+    const existingTimeout = highlightTimeoutsRef.current[reservationId];
+    if (existingTimeout) {
+      clearTimeout(existingTimeout);
+    }
+
+    highlightTimeoutsRef.current[reservationId] = window.setTimeout(() => {
+      setHighlightedReservationIds((current) => current.filter((id) => id !== reservationId));
+      delete highlightTimeoutsRef.current[reservationId];
+    }, 20000);
+  }, []);
+
+  const showDesktopReservationNotification = useCallback((event: AdminEvent) => {
+    if (typeof window === "undefined" || !("Notification" in window)) {
+      return;
+    }
+
+    if (Notification.permission !== "granted") {
+      return;
+    }
+
+    const title = "New reservation";
+    const body = `${event.guestName} · ${formatEuropeanDate(event.date)} at ${event.time}`;
+    const notification = new Notification(title, { body, tag: `reservation-${event.reservationId}` });
+    window.setTimeout(() => notification.close(), 7000);
+  }, []);
+
+  const dismissAdminToast = useCallback((toastId: number) => {
+    setAdminToasts((current) => current.filter((toast) => toast.id !== toastId));
+  }, []);
+
+  const handleDesktopNotificationToggle = useCallback(async (nextValue: boolean) => {
+    if (!nextValue) {
+      setAdminRealtimeSettings((current) => ({ ...current, desktopEnabled: false }));
+      return;
+    }
+
+    if (typeof window === "undefined" || !("Notification" in window)) {
+      setStatusMessage("Browser notifications are not supported on this device.");
+      return;
+    }
+
+    if (Notification.permission === "granted") {
+      setAdminRealtimeSettings((current) => ({ ...current, desktopEnabled: true }));
+      return;
+    }
+
+    const permission = await Notification.requestPermission();
+    if (permission === "granted") {
+      setAdminRealtimeSettings((current) => ({ ...current, desktopEnabled: true }));
+      setStatusMessage("Browser notifications enabled.");
+      return;
+    }
+
+    setAdminRealtimeSettings((current) => ({ ...current, desktopEnabled: false }));
+    setStatusMessage("Browser notifications were blocked.");
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const storedValue = window.localStorage.getItem("tlaloc-admin-realtime-settings");
+    if (!storedValue) {
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(storedValue) as Partial<AdminRealtimeSettings>;
+      setAdminRealtimeSettings({
+        soundEnabled: Boolean(parsed.soundEnabled),
+        desktopEnabled: Boolean(parsed.desktopEnabled),
+      });
+    } catch {
+      window.localStorage.removeItem("tlaloc-admin-realtime-settings");
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    window.localStorage.setItem("tlaloc-admin-realtime-settings", JSON.stringify(adminRealtimeSettings));
+  }, [adminRealtimeSettings]);
+
+  useEffect(() => {
+    const toastTimeoutsRefCurrent = toastTimeoutsRef;
+    const highlightTimeoutsRefCurrent = highlightTimeoutsRef;
+
+    return () => {
+      const toastTimeouts = toastTimeoutsRefCurrent.current;
+      const highlightTimeouts = highlightTimeoutsRefCurrent.current;
+
+      for (const timeoutId of toastTimeouts) {
+        clearTimeout(timeoutId);
+      }
+      for (const timeoutId of Object.values(highlightTimeouts)) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, []);
+
   useEffect(() => {
     void loadAll(true);
   }, [loadAll]);
+
+  useEffect(() => {
+    const nextTab = getTabFromSearchParams(searchParams) ?? "reservations";
+    setActiveTab((currentTab) => (currentTab === nextTab ? currentTab : nextTab));
+  }, [searchParams]);
+
+  useEffect(() => {
+    const currentTab = getTabFromSearchParams(searchParams) ?? "reservations";
+    if (currentTab === activeTab) {
+      return;
+    }
+
+    const nextSearchParams = new URLSearchParams(searchParams.toString());
+    nextSearchParams.set("tab", activeTab);
+    router.replace(`${pathname}?${nextSearchParams.toString()}`, { scroll: false });
+  }, [activeTab, pathname, router, searchParams]);
+
+  useEffect(() => {
+    let eventSource: EventSource | null = null;
+    let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+    let isDisposed = false;
+
+    const handleReservationCreated = (message: Event) => {
+      const event = JSON.parse((message as MessageEvent<string>).data) as AdminEvent;
+      setStatusMessage("New reservation received.");
+      pushAdminToast(
+        "New reservation",
+        `${event.guestName} · ${formatEuropeanDate(event.date)} at ${event.time}`,
+      );
+      highlightReservationCard(event.reservationId);
+      if (adminRealtimeSettings.soundEnabled) {
+        playAdminNotificationSound();
+      }
+      if (adminRealtimeSettings.desktopEnabled) {
+        showDesktopReservationNotification(event);
+      }
+      void loadAll();
+    };
+
+    const connect = () => {
+      if (isDisposed) {
+        return;
+      }
+
+      eventSource = new EventSource("/api/admin/reservations/stream");
+      eventSource.addEventListener("reservation_created", handleReservationCreated);
+      eventSource.onerror = () => {
+        eventSource?.close();
+        if (!isDisposed) {
+          reconnectTimer = setTimeout(connect, 3000);
+        }
+      };
+    };
+
+    connect();
+
+    return () => {
+      isDisposed = true;
+      if (reconnectTimer) {
+        clearTimeout(reconnectTimer);
+      }
+      eventSource?.removeEventListener("reservation_created", handleReservationCreated);
+      eventSource?.close();
+    };
+  }, [
+    adminRealtimeSettings.desktopEnabled,
+    adminRealtimeSettings.soundEnabled,
+    highlightReservationCard,
+    loadAll,
+    playAdminNotificationSound,
+    pushAdminToast,
+    showDesktopReservationNotification,
+  ]);
 
   useEffect(() => {
     if (selectedCalendarDay === null) {
@@ -1734,6 +2002,31 @@ export default function AdminBackOffice() {
       {statusMessage ? <p className="footer-note">{statusMessage}</p> : null}
       {isLoading ? <p className="footer-note db-loader">Loading data...</p> : null}
       <AnimatePresence>
+        {adminToasts.length > 0 ? (
+          <div className="admin-toast-stack" aria-live="polite" aria-atomic="true">
+            {adminToasts.map((toast) => (
+              <motion.div
+                key={toast.id}
+                className="admin-toast"
+                initial={{ opacity: 0, y: -10, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -8, scale: 0.98 }}
+              >
+                <div>
+                  <strong>{toast.title}</strong>
+                  <p className="footer-note" style={{ marginTop: "0.25rem" }}>
+                    {toast.message}
+                  </p>
+                </div>
+                <button className="btn btn-secondary btn-icon" type="button" onClick={() => dismissAdminToast(toast.id)}>
+                  x
+                </button>
+              </motion.div>
+            ))}
+          </div>
+        ) : null}
+      </AnimatePresence>
+      <AnimatePresence>
         {isRefreshing ? (
           <motion.div
             className="sync-overlay-badge"
@@ -2006,7 +2299,13 @@ export default function AdminBackOffice() {
             <div className="card">No reservations in inbox.</div>
           ) : (
             reservationsToRender.map((reservation) => (
-              <article className="card reservation-anchor-card" key={reservation.id} id={`reservation-card-${reservation.id}`}>
+              <article
+                className={`card reservation-anchor-card ${
+                  highlightedReservationIds.includes(reservation.id) ? "reservation-card-fresh" : ""
+                }`}
+                key={reservation.id}
+                id={`reservation-card-${reservation.id}`}
+              >
                 <div className="reservation-card-actions">
                   <button
                     className={`icon-btn reservation-delete-corner-btn ${reservation.isRead ? "read-icon-btn" : ""}`}
@@ -3438,6 +3737,44 @@ export default function AdminBackOffice() {
 
       {activeTab === "security" ? (
         <div style={{ display: "grid", gap: "1rem" }}>
+          <section className="card admin-realtime-settings-card">
+            <div className="admin-chart-head">
+              <h3>Realtime notifications</h3>
+              <p className="footer-note admin-chart-subtitle">
+                Toast and card highlight are always on. Sound and browser notifications are optional.
+              </p>
+            </div>
+            <div className="admin-realtime-settings-row">
+              <label className="ios-switch-field" style={{ marginBottom: 0 }}>
+                <input
+                  className="ios-switch-input"
+                  type="checkbox"
+                  checked={adminRealtimeSettings.soundEnabled}
+                  onChange={(event) =>
+                    setAdminRealtimeSettings((current) => ({
+                      ...current,
+                      soundEnabled: event.target.checked,
+                    }))
+                  }
+                />
+                <span className="ios-switch" aria-hidden="true" />
+                <span>Sound alerts</span>
+              </label>
+              <label className="ios-switch-field" style={{ marginBottom: 0 }}>
+                <input
+                  className="ios-switch-input"
+                  type="checkbox"
+                  checked={adminRealtimeSettings.desktopEnabled}
+                  onChange={(event) => {
+                    void handleDesktopNotificationToggle(event.target.checked);
+                  }}
+                />
+                <span className="ios-switch" aria-hidden="true" />
+                <span>Browser notifications</span>
+              </label>
+            </div>
+          </section>
+
           <section className="card">
             <h3 style={{ marginBottom: "0.7rem" }}>Business Contact</h3>
             <p className="footer-note" style={{ marginTop: 0 }}>
