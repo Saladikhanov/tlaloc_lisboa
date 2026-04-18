@@ -92,6 +92,8 @@ type AdminRealtimeSettings = {
   desktopEnabled: boolean;
 };
 
+type NativeNotificationPermission = NotificationPermission | "unsupported";
+
 type AdminToast = {
   id: number;
   title: string;
@@ -725,6 +727,9 @@ export default function AdminBackOffice() {
   const [adminRealtimeSettings, setAdminRealtimeSettings] = useState<AdminRealtimeSettings>(
     defaultAdminRealtimeSettings,
   );
+  const [nativeNotificationPermission, setNativeNotificationPermission] =
+    useState<NativeNotificationPermission>("default");
+  const [hasLoadedRealtimeSettings, setHasLoadedRealtimeSettings] = useState(false);
   const [adminToasts, setAdminToasts] = useState<AdminToast[]>([]);
   const [highlightedReservationIds, setHighlightedReservationIds] = useState<string[]>([]);
   const [showReadInPending, setShowReadInPending] = useState(false);
@@ -735,6 +740,7 @@ export default function AdminBackOffice() {
   const toastTimeoutsRef = useRef<number[]>([]);
   const highlightTimeoutsRef = useRef<Record<string, number>>({});
   const toastIdRef = useRef(0);
+  const hasShownRealtimeSelfTestRef = useRef(false);
 
   const [newSection, setNewSection] = useState({
     slug: "",
@@ -1421,16 +1427,19 @@ export default function AdminBackOffice() {
     }
 
     if (typeof window === "undefined" || !("Notification" in window)) {
+      setNativeNotificationPermission("unsupported");
       setStatusMessage("Browser notifications are not supported on this device.");
       return;
     }
 
     if (Notification.permission === "granted") {
+      setNativeNotificationPermission("granted");
       setAdminRealtimeSettings((current) => ({ ...current, desktopEnabled: true }));
       return;
     }
 
     const permission = await Notification.requestPermission();
+    setNativeNotificationPermission(permission);
     if (permission === "granted") {
       setAdminRealtimeSettings((current) => ({ ...current, desktopEnabled: true }));
       setStatusMessage("Browser notifications enabled.");
@@ -1446,8 +1455,11 @@ export default function AdminBackOffice() {
       return;
     }
 
+    setNativeNotificationPermission("Notification" in window ? Notification.permission : "unsupported");
+
     const storedValue = window.localStorage.getItem("tlaloc-admin-realtime-settings");
     if (!storedValue) {
+      setHasLoadedRealtimeSettings(true);
       return;
     }
 
@@ -1459,6 +1471,8 @@ export default function AdminBackOffice() {
       });
     } catch {
       window.localStorage.removeItem("tlaloc-admin-realtime-settings");
+    } finally {
+      setHasLoadedRealtimeSettings(true);
     }
   }, []);
 
@@ -1469,6 +1483,36 @@ export default function AdminBackOffice() {
 
     window.localStorage.setItem("tlaloc-admin-realtime-settings", JSON.stringify(adminRealtimeSettings));
   }, [adminRealtimeSettings]);
+
+  useEffect(() => {
+    if (!hasLoadedRealtimeSettings || hasShownRealtimeSelfTestRef.current) {
+      return;
+    }
+
+    hasShownRealtimeSelfTestRef.current = true;
+
+    if (adminRealtimeSettings.soundEnabled) {
+      playAdminNotificationSound();
+    }
+
+    if (adminRealtimeSettings.desktopEnabled) {
+      showDesktopReservationNotification({
+        type: "reservation_created",
+        reservationId: "self-test",
+        reservationVersion: "v2",
+        guestName: "Notification test",
+        date: getLisbonTodayIso(),
+        time: getLisbonCurrentTimeLabel(),
+        createdAt: new Date().toISOString(),
+      });
+    }
+  }, [
+    adminRealtimeSettings.desktopEnabled,
+    adminRealtimeSettings.soundEnabled,
+    hasLoadedRealtimeSettings,
+    playAdminNotificationSound,
+    showDesktopReservationNotification,
+  ]);
 
   useEffect(() => {
     const toastTimeoutsRefCurrent = toastTimeoutsRef;
@@ -4144,7 +4188,7 @@ export default function AdminBackOffice() {
             <div className="admin-chart-head">
               <h3>Realtime notifications</h3>
               <p className="footer-note admin-chart-subtitle">
-                Toast and card highlight are always on. Sound and browser notifications are optional.
+                Card highlight is automatic. Sound is optional. Native browser notifications require permission.
               </p>
             </div>
             <div className="admin-realtime-settings-row">
@@ -4163,18 +4207,29 @@ export default function AdminBackOffice() {
                 <span className="ios-switch" aria-hidden="true" />
                 <span>Sound alerts</span>
               </label>
-              <label className="ios-switch-field" style={{ marginBottom: 0 }}>
-                <input
-                  className="ios-switch-input"
-                  type="checkbox"
-                  checked={adminRealtimeSettings.desktopEnabled}
-                  onChange={(event) => {
-                    void handleDesktopNotificationToggle(event.target.checked);
-                  }}
-                />
-                <span className="ios-switch" aria-hidden="true" />
-                <span>Browser notifications</span>
-              </label>
+              <div style={{ display: "grid", gap: "0.35rem", alignItems: "start" }}>
+                <label className="ios-switch-field" style={{ marginBottom: 0 }}>
+                  <input
+                    className="ios-switch-input"
+                    type="checkbox"
+                    checked={adminRealtimeSettings.desktopEnabled}
+                    onChange={(event) => {
+                      void handleDesktopNotificationToggle(event.target.checked);
+                    }}
+                  />
+                  <span className="ios-switch" aria-hidden="true" />
+                  <span>Native browser notifications</span>
+                </label>
+                {nativeNotificationPermission !== "granted" ? (
+                  <p className="footer-note" style={{ marginTop: 0 }}>
+                    {nativeNotificationPermission === "denied"
+                      ? "Browser permission blocked. Re-enable it in browser settings."
+                      : nativeNotificationPermission === "unsupported"
+                        ? "This browser does not support native notifications."
+                        : "Click to show the browser permission prompt."}
+                  </p>
+                ) : null}
+              </div>
             </div>
           </section>
 
