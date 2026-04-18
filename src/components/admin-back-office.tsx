@@ -854,7 +854,7 @@ export default function AdminBackOffice() {
       cards: [
         ...reservationMetrics,
         {
-          label: "Returning guests",
+          label: "Guest reward",
           value: String(returningGuests.length),
           note:
             guestList.length > 0
@@ -1463,22 +1463,19 @@ export default function AdminBackOffice() {
     });
   }
 
-  async function saveRewardProgramConfiguration(
-    nextRewardProgram: RewardProgramSettingsRecord = rewardProgram,
-  ): Promise<boolean> {
-    let didSave = false;
+  async function saveRewardProgramConfiguration() {
     await runAction("save-reward-program", async () => {
       const response = await fetch("/api/admin/reward-program", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          isEnabled: nextRewardProgram.isEnabled,
-          visitThreshold: nextRewardProgram.visitThreshold,
-          rewardType: nextRewardProgram.rewardType,
-          rewardValue: nextRewardProgram.rewardValue,
-          rewardLabel: nextRewardProgram.rewardLabel,
-          messageEn: nextRewardProgram.messageEn,
-          messagePt: nextRewardProgram.messagePt,
+          isEnabled: rewardProgram.isEnabled,
+          visitThreshold: rewardProgram.visitThreshold,
+          rewardType: rewardProgram.rewardType,
+          rewardValue: rewardProgram.rewardValue,
+          rewardLabel: rewardProgram.rewardLabel,
+          messageEn: rewardProgram.messageEn,
+          messagePt: rewardProgram.messagePt,
         }),
       });
 
@@ -1488,22 +1485,9 @@ export default function AdminBackOffice() {
         return;
       }
 
-      didSave = true;
       setStatusMessage("Reward program updated.");
       await loadAll();
     });
-    return didSave;
-  }
-
-  async function handleRewardProgramToggle(isEnabled: boolean) {
-    const previousRewardProgram = rewardProgram;
-    const nextRewardProgram = { ...rewardProgram, isEnabled };
-    setRewardProgram(nextRewardProgram);
-
-    const didSave = await saveRewardProgramConfiguration(nextRewardProgram);
-    if (!didSave) {
-      setRewardProgram(previousRewardProgram);
-    }
   }
 
   function lookupRewardCode() {
@@ -2135,7 +2119,7 @@ export default function AdminBackOffice() {
                   return activeRewardCode ? (
                     <div className="card admin-reward-card">
                       <div className="admin-reward-head">
-                        <strong>Returning guest reward</strong>
+                        <strong>Guest reward</strong>
                         <span className="pill reservation-locale-chip">{activeRewardCode.status}</span>
                       </div>
                       <p className="footer-note" style={{ marginTop: "0.25rem" }}>
@@ -2309,14 +2293,14 @@ export default function AdminBackOffice() {
 
             <article className="card admin-chart-card">
               <div className="admin-chart-head">
-                <h3>Returning guests</h3>
+                <h3>Guest reward</h3>
                 <p className="footer-note admin-chart-subtitle">
                   Matched by phone or email across reservation history
                 </p>
               </div>
               {reservationDashboard.topReturningGuests.length === 0 ? (
                 <p className="footer-note" style={{ marginTop: 0 }}>
-                  No returning guests identified yet.
+                  No guest reward identified yet.
                 </p>
               ) : (
                 <div className="admin-chart-list">
@@ -2430,7 +2414,7 @@ export default function AdminBackOffice() {
           <div className="admin-chart-head">
             <h3>Reward program</h3>
             <p className="footer-note admin-chart-subtitle">
-              Generate one active code per returning guest after enough confirmed visits.
+              Generate one active code per guest after enough confirmed visits.
             </p>
           </div>
           <div className="form-grid" style={{ marginTop: "0.6rem" }}>
@@ -2439,10 +2423,9 @@ export default function AdminBackOffice() {
                 className="ios-switch-input"
                 type="checkbox"
                 checked={rewardProgram.isEnabled}
-                disabled={actionKey === "save-reward-program"}
-                onChange={(event) => {
-                  void handleRewardProgramToggle(event.target.checked);
-                }}
+                onChange={(event) =>
+                  setRewardProgram((prev) => ({ ...prev, isEnabled: event.target.checked }))
+                }
               />
               <span className="ios-switch" aria-hidden="true" />
               Reward program enabled
