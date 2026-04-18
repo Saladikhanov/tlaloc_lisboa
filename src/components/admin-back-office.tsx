@@ -1337,10 +1337,13 @@ export default function AdminBackOffice() {
       return;
     }
 
-    const browserWindow = window as Window & {
+    const browserWindow = window as Window &
+      typeof globalThis & {
       webkitAudioContext?: typeof AudioContext;
     };
-    const AudioContextClass = browserWindow.AudioContext ?? browserWindow.webkitAudioContext;
+    const AudioContextClass =
+      (typeof globalThis.AudioContext !== "undefined" ? globalThis.AudioContext : undefined) ??
+      browserWindow.webkitAudioContext;
     if (!AudioContextClass) {
       return;
     }
