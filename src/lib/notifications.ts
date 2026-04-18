@@ -255,7 +255,7 @@ export const sendReservationV2Emails = async (
     ? `Ola ${reservation.fullName},\n\nRecebemos o seu pedido de reserva. Em breve entraremos em contacto para confirmar.\n\n${reservationV2Summary(reservation, locale)}`
     : `Hi ${reservation.fullName},\n\nWe received your reservation request. We will confirm it shortly.\n\n${reservationV2Summary(reservation, locale)}`;
 
-  const subjectTeam = "New reservation v2 request";
+  const subjectTeam = "New reservation request";
   const teamText = reservationV2Summary(reservation, "en");
 
   if (reservation.email) {
@@ -296,7 +296,7 @@ export const sendReservationV2WhatsApp = async (
     const guestBody = isPt(locale)
       ? `Tláloc Restaurant: pedido de reserva recebido para ${reservation.date} às ${reservation.time}. Vamos confirmar em breve.`
       : `Tláloc Restaurant: reservation request received for ${reservation.date} at ${reservation.time}. We will confirm shortly.`;
-    const teamBody = `New reservation v2 from ${reservation.fullName} on ${reservation.date} ${reservation.time} for ${reservation.guests} guests.`;
+    const teamBody = `New reservation from ${reservation.fullName} on ${reservation.date} ${reservation.time} for ${reservation.guests} guests.`;
 
     const guestTo = reservation.phone.startsWith("whatsapp:")
       ? reservation.phone
@@ -322,3 +322,6 @@ export const sendReservationV2WhatsApp = async (
     };
   }
 };
+
+export const sendReservationRequestEmails = sendReservationV2Emails;
+export const sendReservationRequestWhatsApp = sendReservationV2WhatsApp;

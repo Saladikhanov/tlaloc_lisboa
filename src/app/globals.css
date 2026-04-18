@@ -1593,18 +1593,18 @@ a {
   min-width: 120px;
 }
 
-.reserve-v2-steps {
+.reserve-flow-steps {
   margin-top: 0.8rem;
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
 }
 
-.reserve-v2-progress {
+.reserve-flow-progress {
   margin-top: 1rem;
 }
 
-.reserve-v2-progress-track {
+.reserve-flow-progress-track {
   position: relative;
   height: 14px;
   border-radius: 999px;
@@ -1613,14 +1613,14 @@ a {
   border: 1px solid var(--line);
 }
 
-.reserve-v2-progress-fill {
+.reserve-flow-progress-fill {
   height: 100%;
   border-radius: 999px;
   background: linear-gradient(90deg, var(--accent-soft), var(--accent));
   box-shadow: 0 0 18px rgba(245, 166, 35, 0.28);
 }
 
-.reserve-v2-progress-icon {
+.reserve-flow-progress-icon {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
@@ -1634,61 +1634,61 @@ a {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.32);
 }
 
-.reserve-v2-progress-icon-glyph {
+.reserve-flow-progress-icon-glyph {
   display: block;
   font-size: 1.05rem;
   line-height: 1;
 }
 
-.reserve-v2-step-chip {
+.reserve-flow-step-chip {
   opacity: 0.65;
 }
 
-.reserve-v2-step-chip.active {
+.reserve-flow-step-chip.active {
   opacity: 1;
   border-color: var(--accent);
   color: var(--accent);
 }
 
-.reserve-v2-card {
+.reserve-flow-card {
   margin-top: 1rem;
 }
 
-.reserve-v2-step-panel {
+.reserve-flow-step-panel {
   overflow: hidden;
 }
 
-.reserve-v2-nav {
+.reserve-flow-nav {
   margin-bottom: 0.8rem;
   display: flex;
   justify-content: flex-start;
 }
 
-.reserve-v2-calendar-grid {
+.reserve-flow-calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 0.35rem;
 }
 
-.reserve-v2-calendar-weekday,
-.reserve-v2-calendar-empty,
-.reserve-v2-calendar-day {
+.reserve-flow-calendar-weekday,
+.reserve-flow-calendar-empty,
+.reserve-flow-calendar-day {
   min-height: 46px;
   border-radius: 10px;
 }
 
-.reserve-v2-calendar-weekday {
+.reserve-flow-calendar-weekday {
   display: grid;
   place-items: center;
   font-size: 0.84rem;
   color: var(--muted);
 }
 
-.reserve-v2-calendar-empty {
+.reserve-flow-calendar-empty {
   border: 1px dashed rgba(255, 255, 255, 0.06);
 }
 
-.reserve-v2-calendar-day {
+.reserve-flow-calendar-day {
   border: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.02);
   color: var(--text);
@@ -1696,36 +1696,36 @@ a {
   cursor: pointer;
 }
 
-.reserve-v2-calendar-day:hover:not(:disabled) {
+.reserve-flow-calendar-day:hover:not(:disabled) {
   border-color: var(--accent);
   color: var(--accent);
 }
 
-.reserve-v2-calendar-day.active {
+.reserve-flow-calendar-day.active {
   border-color: transparent;
   background: linear-gradient(135deg, var(--accent-soft), var(--accent));
   color: #130800;
 }
 
-.reserve-v2-calendar-day:disabled {
+.reserve-flow-calendar-day:disabled {
   opacity: 0.35;
   cursor: not-allowed;
 }
 
-.reserve-v2-option-grid {
+.reserve-flow-option-grid {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
 }
 
-.reserve-v2-summary {
+.reserve-flow-summary {
   margin-top: 0.5rem;
   display: flex;
   gap: 0.75rem;
   flex-wrap: wrap;
 }
 
-.reserve-v2-success-block {
+.reserve-flow-success-block {
   margin-top: 0.9rem;
   border: 1px solid var(--line);
   border-radius: 12px;
@@ -1734,7 +1734,7 @@ a {
   text-align: left;
 }
 
-.reserve-v2-success-grid {
+.reserve-flow-success-grid {
   margin-top: 0.5rem;
   display: grid;
   gap: 0.4rem;

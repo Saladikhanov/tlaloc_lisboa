@@ -59,3 +59,6 @@ export type ReservationV2Record = ReservationV2Payload & {
   createdAt: string;
   updatedAt: string;
 };
+
+export type ReservationRequestPayload = ReservationV2Payload;
+export type ReservationRequestRecord = ReservationV2Record;
