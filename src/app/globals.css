@@ -334,8 +334,64 @@ a {
   backdrop-filter: blur(12px);
 }
 
+.admin-toast-theme-green {
+  border: 1px solid rgba(101, 217, 137, 0.36);
+  background:
+    radial-gradient(circle at top left, rgba(101, 217, 137, 0.16), transparent 38%),
+    linear-gradient(180deg, rgba(16, 63, 31, 0.96), rgba(11, 45, 21, 0.96));
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(101, 217, 137, 0.06) inset;
+}
+
+.admin-toast-theme-orange {
+  border: 1px solid rgba(255, 209, 102, 0.34);
+  background:
+    radial-gradient(circle at top left, rgba(255, 209, 102, 0.16), transparent 38%),
+    linear-gradient(180deg, rgba(58, 31, 11, 0.96), rgba(42, 21, 5, 0.96));
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(255, 209, 102, 0.06) inset;
+}
+
+.admin-toast-theme-neutral {
+  border: 1px solid rgba(208, 216, 226, 0.26);
+  background:
+    radial-gradient(circle at top left, rgba(208, 216, 226, 0.14), transparent 38%),
+    linear-gradient(180deg, rgba(38, 43, 51, 0.96), rgba(24, 28, 35, 0.96));
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(208, 216, 226, 0.05) inset;
+}
+
 .admin-toast .btn {
   flex-shrink: 0;
+}
+
+.admin-toast-close-reservation {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  border-radius: 999px;
+  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(244, 255, 247, 0.92);
+  font-size: 1.15rem;
+  font-weight: 500;
+  line-height: 1;
+  backdrop-filter: blur(10px);
+}
+
+.admin-toast-close-reservation:hover {
+  border-color: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+}
+
+.admin-toast-theme-green .admin-toast-close-reservation {
+  color: rgba(244, 255, 247, 0.92);
+}
+
+.admin-toast-theme-orange .admin-toast-close-reservation {
+  color: rgba(255, 245, 223, 0.92);
+}
+
+.admin-toast-theme-neutral .admin-toast-close-reservation {
+  color: rgba(239, 244, 248, 0.92);
 }
 
 .admin-status-toast-wrap {
@@ -2216,6 +2272,11 @@ a {
 
 .admin-manual-choice-grid-language {
   max-width: 140px;
+}
+
+.admin-manual-choice-grid-theme {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  max-width: 320px;
 }
 
 .admin-manual-choice {

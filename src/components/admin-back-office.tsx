@@ -90,6 +90,7 @@ type AdminTutorialSettings = {
 type AdminRealtimeSettings = {
   soundEnabled: boolean;
   desktopEnabled: boolean;
+  notificationTheme: "green" | "orange" | "neutral";
 };
 
 type NativeNotificationPermission = NotificationPermission | "unsupported";
@@ -98,6 +99,8 @@ type AdminToast = {
   id: number;
   title: string;
   message: string;
+  kind?: "default" | "reservation";
+  theme?: AdminRealtimeSettings["notificationTheme"];
 };
 
 type AdminStatusToast = {
@@ -133,6 +136,7 @@ const defaultRewardProgram: RewardProgramSettingsRecord = {
 const defaultAdminRealtimeSettings: AdminRealtimeSettings = {
   soundEnabled: false,
   desktopEnabled: false,
+  notificationTheme: "green",
 };
 
 const defaultManualReservationForm: AdminManualReservationForm = {
@@ -168,6 +172,15 @@ const manualReservationTimeOptions = [
   "21:00",
   "21:30",
   "22:00",
+];
+
+const adminNotificationThemeOptions: Array<{
+  value: AdminRealtimeSettings["notificationTheme"];
+  label: string;
+}> = [
+  { value: "green", label: "Green" },
+  { value: "orange", label: "Orange" },
+  { value: "neutral", label: "Neutral" },
 ];
 
 type TabId = "reservations" | "today" | "metrics" | "rewards" | "calendar" | "menu" | "hours" | "security";
@@ -1287,10 +1300,10 @@ export default function AdminBackOffice() {
     setManualReservationForm(defaultManualReservationForm);
   }, [selectedCalendarDate]);
 
-  const loadAll = useCallback(async (showFullLoader = false) => {
+  const loadAll = useCallback(async (showFullLoader = false, silentRefresh = false) => {
     if (showFullLoader) {
       setIsLoading(true);
-    } else {
+    } else if (!silentRefresh) {
       setIsRefreshing(true);
     }
     setStatusMessage("");
@@ -1367,7 +1380,9 @@ export default function AdminBackOffice() {
       setStatusMessage("Could not load back office data.");
     } finally {
       setIsLoading(false);
-      setIsRefreshing(false);
+      if (!silentRefresh) {
+        setIsRefreshing(false);
+      }
     }
   }, []);
 
@@ -1413,16 +1428,24 @@ export default function AdminBackOffice() {
     };
   }, [getAudioContextClass]);
 
-  const pushAdminToast = useCallback((title: string, message: string) => {
-    const toastId = toastIdRef.current + 1;
-    toastIdRef.current = toastId;
-    setAdminToasts((current) => [...current, { id: toastId, title, message }]);
-    const timeoutId = window.setTimeout(() => {
-      setAdminToasts((current) => current.filter((toast) => toast.id !== toastId));
-      toastTimeoutsRef.current = toastTimeoutsRef.current.filter((id) => id !== timeoutId);
-    }, 5000);
-    toastTimeoutsRef.current.push(timeoutId);
-  }, []);
+  const pushAdminToast = useCallback(
+    (
+      title: string,
+      message: string,
+      kind: AdminToast["kind"] = "default",
+      theme: AdminToast["theme"] = "orange",
+    ) => {
+      const toastId = toastIdRef.current + 1;
+      toastIdRef.current = toastId;
+      setAdminToasts((current) => [...current, { id: toastId, title, message, kind, theme }]);
+      const timeoutId = window.setTimeout(() => {
+        setAdminToasts((current) => current.filter((toast) => toast.id !== toastId));
+        toastTimeoutsRef.current = toastTimeoutsRef.current.filter((id) => id !== timeoutId);
+      }, 5000);
+      toastTimeoutsRef.current.push(timeoutId);
+    },
+    [],
+  );
 
   const highlightReservationCard = useCallback((reservationId: string) => {
     setHighlightedReservationIds((current) =>
@@ -1544,6 +1567,12 @@ export default function AdminBackOffice() {
       setAdminRealtimeSettings({
         soundEnabled: Boolean(parsed.soundEnabled),
         desktopEnabled: Boolean(parsed.desktopEnabled),
+        notificationTheme:
+          parsed.notificationTheme === "green" ||
+          parsed.notificationTheme === "orange" ||
+          parsed.notificationTheme === "neutral"
+            ? parsed.notificationTheme
+            : defaultAdminRealtimeSettings.notificationTheme,
       });
     } catch {
       window.localStorage.removeItem("tlaloc-admin-realtime-settings");
@@ -1634,7 +1663,12 @@ export default function AdminBackOffice() {
 
     const handleReservationCreated = (message: Event) => {
       const event = JSON.parse((message as MessageEvent<string>).data) as AdminEvent;
-      pushAdminToast("New reservation", `${event.guestName} · ${formatEuropeanDate(event.date)} at ${event.time}`);
+      pushAdminToast(
+        "New reservation",
+        `${event.guestName} · ${formatEuropeanDate(event.date)} at ${event.time}`,
+        "reservation",
+        adminRealtimeSettings.notificationTheme,
+      );
       highlightReservationCard(event.reservationId);
       if (adminRealtimeSettings.soundEnabled) {
         playAdminNotificationSound();
@@ -1642,7 +1676,7 @@ export default function AdminBackOffice() {
       if (adminRealtimeSettings.desktopEnabled) {
         showDesktopReservationNotification(event);
       }
-      void loadAll();
+      void loadAll(false, true);
     };
 
     const connect = () => {
@@ -1672,6 +1706,7 @@ export default function AdminBackOffice() {
     };
   }, [
     adminRealtimeSettings.desktopEnabled,
+    adminRealtimeSettings.notificationTheme,
     adminRealtimeSettings.soundEnabled,
     highlightReservationCard,
     loadAll,
@@ -2368,7 +2403,9 @@ export default function AdminBackOffice() {
             {adminToasts.map((toast) => (
               <motion.div
                 key={toast.id}
-                className="admin-toast"
+                className={`admin-toast ${
+                  toast.kind === "reservation" ? `admin-toast-theme-${toast.theme ?? "orange"}` : ""
+                }`}
                 initial={{ opacity: 0, y: -10, scale: 0.98 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -8, scale: 0.98 }}
@@ -2379,8 +2416,13 @@ export default function AdminBackOffice() {
                     {toast.message}
                   </p>
                 </div>
-                <button className="btn btn-secondary btn-icon" type="button" onClick={() => dismissAdminToast(toast.id)}>
-                  x
+                <button
+                  className={`btn btn-secondary btn-icon ${toast.kind === "reservation" ? "admin-toast-close-reservation" : ""}`}
+                  type="button"
+                  aria-label="Dismiss notification"
+                  onClick={() => dismissAdminToast(toast.id)}
+                >
+                  ×
                 </button>
               </motion.div>
             ))}
@@ -4316,6 +4358,28 @@ export default function AdminBackOffice() {
                   <span className="ios-switch" aria-hidden="true" />
                   <span>Native browser notifications</span>
                 </label>
+              </div>
+            </div>
+            <div className="admin-manual-choice-section">
+              <label>Notification theme</label>
+              <div className="admin-manual-choice-grid admin-manual-choice-grid-theme">
+                {adminNotificationThemeOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    className={`admin-manual-choice ${
+                      adminRealtimeSettings.notificationTheme === option.value ? "active" : ""
+                    }`}
+                    onClick={() =>
+                      setAdminRealtimeSettings((current) => ({
+                        ...current,
+                        notificationTheme: option.value,
+                      }))
+                    }
+                  >
+                    {option.label}
+                  </button>
+                ))}
               </div>
             </div>
           </section>
