@@ -31,25 +31,25 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const keywords =
     activeLocale === "pt"
       ? [
-          "restaurante mexicano Lisboa",
-          "comida mexicana Lisboa",
-          "Alcântara restaurante",
-          "melhores tacos Lisboa",
-          "melhores margaritas Lisboa",
-          "tacos Lisboa",
-          "margaritas Lisboa",
-          "Tláloc",
-        ]
+        "restaurante mexicano Lisboa",
+        "comida mexicana Lisboa",
+        "Alcântara restaurante",
+        "melhores tacos Lisboa",
+        "melhores margaritas Lisboa",
+        "tacos Lisboa",
+        "margaritas Lisboa",
+        "Tláloc",
+      ]
       : [
-          "Mexican restaurant Lisbon",
-          "Mexican food Lisbon",
-          "Alcântara restaurant",
-          "best tacos Lisbon",
-          "best margaritas Lisbon",
-          "tacos Lisbon",
-          "margaritas Lisbon",
-          "Tláloc",
-        ];
+        "Mexican restaurant Lisbon",
+        "Mexican food Lisbon",
+        "Alcântara restaurant",
+        "best tacos Lisbon",
+        "best margaritas Lisbon",
+        "tacos Lisbon",
+        "margaritas Lisbon",
+        "Tláloc",
+      ];
 
   return {
     title: t("metaTitle"),
@@ -258,7 +258,7 @@ export default async function HomePage({ params }: Props) {
           </section>
         </div>
 
-        <section className="home-discount-banner" aria-label={t("discountBannerHeadline")}>
+        {/* <section className="home-discount-banner" aria-label={t("discountBannerHeadline")}>
           <div className="offer-block">
             <div className="offer-pct">20%</div>
             <div className="offer-label">{t("discountBannerHeadline")}</div>
@@ -267,7 +267,7 @@ export default async function HomePage({ params }: Props) {
               <span className="btn-cta-shine-label">{t("discountBannerCta")}</span>
             </Link>
           </div>
-        </section>
+        </section> */}
 
         <section className="card home-hours-card">
           <p className="home-section-kicker">🕐 {isPortuguese ? "HORARIO" : "OPENING HOURS"}</p>
