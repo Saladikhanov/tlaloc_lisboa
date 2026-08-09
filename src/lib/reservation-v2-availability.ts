@@ -1,4 +1,7 @@
-import { listReservationClosuresForDate } from "@/lib/reservation-closure-store";
+import {
+  listReservationClosuresForDate,
+  listReservationClosuresForMonth,
+} from "@/lib/reservation-closure-store";
 import { listWorkingHours } from "@/lib/working-hours-store";
 
 const datePattern = /^\d{4}-\d{2}-\d{2}$/;
@@ -112,4 +115,79 @@ export const listAvailableReservationV2Slots = async (date: string): Promise<str
   }
 
   return slots;
+};
+
+const monthPattern = /^\d{4}-\d{2}$/;
+
+export const listAvailableReservationV2MonthAvailability = async (
+  month: string,
+): Promise<Record<string, boolean>> => {
+  if (!monthPattern.test(month)) {
+    return {};
+  }
+
+  const [hours, closures] = await Promise.all([
+    listWorkingHours(),
+    listReservationClosuresForMonth(month),
+  ]);
+
+  const [year, monthNumber] = month.split("-").map(Number);
+  const daysInMonth = new Date(year, monthNumber, 0).getDate();
+  const availability: Record<string, boolean> = {};
+
+  const getBlockedSlot = (value: number, closuresForDate: typeof closures) =>
+    closuresForDate.some((closure) => {
+      const start = toMinutes(closure.startTime);
+      const end = toMinutes(closure.endTime);
+      return value >= start && value < end;
+    });
+
+  for (let day = 1; day <= daysInMonth; day += 1) {
+    const isoDate = `${year}-${String(monthNumber).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    const weekday = getWeekday(isoDate);
+    const dayHours = weekday === null ? null : hours.find((entry) => entry.weekday === weekday);
+
+    if (!dayHours || dayHours.isClosed) {
+      availability[isoDate] = false;
+      continue;
+    }
+
+    const dateClosures = closures.filter((closure) => closure.date === isoDate);
+    const earliestSameDaySlotMinutes = getEarliestSameDaySlotMinutes(isoDate);
+    let hasAvailableSlot = false;
+
+    for (const [open, close] of [
+      [dayHours.lunchOpen, dayHours.lunchClose],
+      [dayHours.dinnerOpen, dayHours.dinnerClose],
+    ] as Array<[string | null, string | null]>) {
+      if (!open || !close) {
+        continue;
+      }
+
+      const openMinutes = toMinutes(open);
+      const closeMinutes = toMinutes(close);
+      if (openMinutes >= closeMinutes) {
+        continue;
+      }
+
+      for (let value = openMinutes; value < closeMinutes; value += 30) {
+        if (earliestSameDaySlotMinutes !== null && value < earliestSameDaySlotMinutes) {
+          continue;
+        }
+
+        if (!getBlockedSlot(value, dateClosures)) {
+          hasAvailableSlot = true;
+          break;
+        }
+      }
+
+      if (hasAvailableSlot) {
+        break;
+      }
+    }
+
+    availability[isoDate] = hasAvailableSlot;
+  }
+
+  return availability;
 };

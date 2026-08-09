@@ -74,6 +74,29 @@ export const listReservationClosuresForDate = async (
   return rows.map(toRecord);
 };
 
+export const listReservationClosuresForMonth = async (
+  month: string,
+): Promise<ReservationClosureRecord[]> => {
+  if (!prisma) {
+    return [];
+  }
+  const normalizedMonth = month.trim();
+  if (!/^[0-9]{4}-[0-9]{2}$/.test(normalizedMonth)) {
+    return [];
+  }
+
+  const rows = await prisma.reservationClosure.findMany({
+    where: {
+      date: {
+        startsWith: `${normalizedMonth}-`,
+      },
+    },
+    orderBy: [{ date: "asc" }, { startTime: "asc" }],
+  });
+
+  return rows.map(toRecord);
+};
+
 export const createReservationClosure = async (payload: {
   date: string;
   startTime: string;

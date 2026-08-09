@@ -348,6 +348,7 @@ export default function ReserveFlow() {
   const [workingHours, setWorkingHours] = useState<WorkingHoursEntry[]>([]);
   const [selectedDate, setSelectedDate] = useState("");
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
+  const [dailyAvailability, setDailyAvailability] = useState<Record<string, boolean>>({});
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
   const [selectedTime, setSelectedTime] = useState("");
   const [selectedGuests, setSelectedGuests] = useState("");
@@ -394,6 +395,32 @@ export default function ReserveFlow() {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    let active = true;
+    const loadMonthAvailability = async () => {
+      try {
+        const response = await fetch(`/api/reservations/availability?month=${calendarMonth}`, {
+          cache: "no-store",
+        });
+        const json = (await response.json()) as { data?: Record<string, boolean> };
+        if (!active) {
+          return;
+        }
+
+        setDailyAvailability(json.data ?? {});
+      } catch {
+        if (active) {
+          setDailyAvailability({});
+        }
+      }
+    };
+
+    void loadMonthAvailability();
+    return () => {
+      active = false;
+    };
+  }, [calendarMonth]);
 
   const calendarCells = useMemo(() => {
     const startWeekdayMondayFirst = (calendarMonthDate.getDay() + 6) % 7;
@@ -641,7 +668,10 @@ export default function ReserveFlow() {
                 const dayHours =
                   weekday === null ? null : workingHours.find((entry) => entry.weekday === weekday);
                 const isPast = isoDate < todayIso;
-                const isDisabled = isPast || Boolean(dayHours?.isClosed);
+                const isFullDayUnavailable =
+                  Object.prototype.hasOwnProperty.call(dailyAvailability, isoDate) &&
+                  dailyAvailability[isoDate] === false;
+                const isDisabled = isPast || Boolean(dayHours?.isClosed) || isFullDayUnavailable;
 
                 return (
                   <button
@@ -650,6 +680,13 @@ export default function ReserveFlow() {
                     className={`reserve-flow-calendar-day ${selectedDate === isoDate ? "active" : ""}`}
                     disabled={isDisabled}
                     onClick={() => void loadAvailability(isoDate)}
+                    title={
+                      isFullDayUnavailable
+                        ? isPortuguese
+                          ? "Sem vagas neste dia"
+                          : "Fully booked"
+                        : undefined
+                    }
                   >
                     {cell.day}
                   </button>
