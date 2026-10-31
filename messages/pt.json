@@ -87,5 +87,18 @@
     "successModalTitle": "Reserva Enviada",
     "successModalClose": "Fechar",
     "success": "Pedido de reserva enviado. Vamos entrar em contacto por WhatsApp ou email."
+  },
+  "NotFound": {
+    "title": "Não encontrámos essa página",
+    "body": "A ligação pode ser antiga ou a página mudou de sítio. O menu e a página de reservas estão a um toque.",
+    "home": "Voltar ao início",
+    "menu": "Ver o menu",
+    "reserve": "Reservar mesa"
+  },
+  "Error": {
+    "title": "Algo correu mal",
+    "body": "Não conseguimos carregar esta página. Tente novamente ou reserve por telefone para +351 21 809 3388.",
+    "retry": "Tentar novamente",
+    "home": "Voltar ao início"
   }
 }

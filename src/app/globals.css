@@ -2428,6 +2428,65 @@ textarea {
   }
 }
 
+/* Status pages: not found and error */
+.status-band {
+  display: grid;
+  align-items: center;
+  margin-top: calc(var(--header-h) * -1);
+  padding: calc(var(--header-h) + var(--space-6)) 0 calc(var(--space-7) + 2.2rem);
+  margin-bottom: -2.2rem;
+  min-height: min(680px, 100svh);
+  background: var(--lime);
+  color: var(--teal);
+}
+
+.status-inner {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-4);
+  width: min(1120px, 100% - 2rem);
+  margin: 0 auto;
+}
+
+.status-inner h1 {
+  max-width: 14ch;
+  font-family: var(--font-display);
+  font-size: clamp(2.6rem, 7vw, 4.8rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+
+.status-inner p {
+  max-width: 32rem;
+  font-size: 1.1rem;
+  line-height: 1.5;
+}
+
+.status-mascot {
+  border-radius: 50%;
+}
+
+.status-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+@media (max-width: 560px) {
+  .status-actions {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+}
+
+.home-open-status-mascot {
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
 /* Reservation: lime color field with a liquid glass booking sheet */
 .reserve-band {
   margin-top: calc(var(--header-h) * -1);
