@@ -1,8 +1,9 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import Image from "next/image";
 import { useLocale } from "next-intl";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Locale } from "@/lib/types";
 
 type WorkingHoursEntry = {
@@ -65,12 +66,15 @@ type ReserveText = {
   requiredError: string;
   previousMonth: string;
   nextMonth: string;
+  guestOne: string;
+  nameError: string;
+  phoneError: string;
+  fullyBooked: string;
+  stepsLabel: string;
 };
 
-type StepIconName = "date" | "time" | "guests" | "details";
-
 const weekdayShortMondayFirst = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-const weekdayShortMondayFirstPt = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sab", "Dom"];
+const weekdayShortMondayFirstPt = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 const monthNamesEn = [
   "January",
   "February",
@@ -88,7 +92,7 @@ const monthNamesEn = [
 const monthNamesPt = [
   "Janeiro",
   "Fevereiro",
-  "Marco",
+  "Março",
   "Abril",
   "Maio",
   "Junho",
@@ -133,28 +137,30 @@ const formatEuroDate = (value: string): string => {
 
 const texts = {
   en: {
-    title: "Reservation",
-    subtitle: "Pick a day, choose a slot, then finish your details.",
-    steps: ["Date", "Time slot", "Guests", "Details"],
+    title: "Book a table",
+    subtitle: "Pick a day, choose a time, then tell us who is coming.",
+    steps: ["Date", "Time", "Guests", "Details"],
+    stepsLabel: "Booking steps",
     back: "Back",
-    selectDate: "1. Choose your date",
-    selectTime: "2. Choose a time slot",
-    selectGuests: "3. How many guests?",
-    yourDetails: "4. Your details",
-    noSlots: "No slots available for this date.",
-    loadingSlots: "Loading available slots...",
+    selectDate: "Choose your date",
+    selectTime: "Choose a time",
+    selectGuests: "How many guests?",
+    yourDetails: "Your details",
+    noSlots: "No times are available on this date.",
+    loadingSlots: "Loading available times…",
     chooseDifferentDate: "Choose a different day.",
-    fullName: "Full name *",
-    phone: "Phone / WhatsApp *",
+    fullName: "Full name",
+    phone: "Phone or WhatsApp",
     email: "Email",
-    emailHint: "Optional",
-    otherInfo: "Other information",
+    emailHint: "optional",
+    otherInfo: "Anything we should know?",
     guestsLabel: "guests",
+    guestOne: "guest",
     send: "Send reservation request",
-    sending: "Sending...",
-    successTitle: "Reservation Sent",
+    sending: "Sending…",
+    successTitle: "Reservation sent",
     successBody: "Your reservation request was sent. We will contact you soon.",
-    successSummaryTitle: "Reservation summary",
+    successSummaryTitle: "Your reservation",
     successNextTitle: "What happens next",
     successNextBody:
       "We will review your request and contact you soon on WhatsApp or by email to confirm the booking.",
@@ -162,41 +168,46 @@ const texts = {
     summaryTime: "Time",
     summaryGuests: "Guests",
     summaryName: "Name",
-    summaryPhone: "Phone / WhatsApp",
+    summaryPhone: "Phone or WhatsApp",
     close: "Close",
-    dayClosedTitle: "Day closed",
-    dayClosedBody: "This day is closed. Please choose another date.",
+    dayClosedTitle: "Closed that day",
+    dayClosedBody: "We are closed on this day. Please choose another date.",
     fullTitle: "Sorry, we're full",
-    fullBody: "There are no available reservation slots on that day.",
+    fullBody: "There are no available reservation times on that day.",
     selectDateFirst: "Pick a date first.",
-    selectTimeFirst: "Pick a time slot first.",
+    selectTimeFirst: "Pick a time first.",
     requiredError: "Please complete all required fields.",
+    nameError: "Enter your full name.",
+    phoneError: "Enter a phone or WhatsApp number so we can confirm your table.",
+    fullyBooked: "Fully booked",
     previousMonth: "Previous month",
     nextMonth: "Next month",
   },
   pt: {
-    title: "Reserva",
-    subtitle: "Escolha a data, selecione o horario e depois complete os seus dados.",
-    steps: ["Data", "Horario", "Pessoas", "Dados"],
+    title: "Reservar mesa",
+    subtitle: "Escolha o dia, a hora e diga-nos quem vem.",
+    steps: ["Data", "Hora", "Pessoas", "Dados"],
+    stepsLabel: "Passos da reserva",
     back: "Voltar",
-    selectDate: "1. Escolha a data",
-    selectTime: "2. Escolha o horario",
-    selectGuests: "3. Quantas pessoas?",
-    yourDetails: "4. Os seus dados",
-    noSlots: "Nao ha horarios disponiveis para esta data.",
-    loadingSlots: "A carregar horarios disponiveis...",
+    selectDate: "Escolha a data",
+    selectTime: "Escolha a hora",
+    selectGuests: "Quantas pessoas?",
+    yourDetails: "Os seus dados",
+    noSlots: "Não há horários disponíveis nesta data.",
+    loadingSlots: "A carregar horários disponíveis…",
     chooseDifferentDate: "Escolha outro dia.",
-    fullName: "Nome completo *",
-    phone: "Telefone / WhatsApp *",
+    fullName: "Nome completo",
+    phone: "Telefone ou WhatsApp",
     email: "Email",
-    emailHint: "Opcional",
-    otherInfo: "Outras informacoes",
+    emailHint: "opcional",
+    otherInfo: "Algo que devamos saber?",
     guestsLabel: "pessoas",
+    guestOne: "pessoa",
     send: "Enviar pedido de reserva",
-    sending: "A enviar...",
+    sending: "A enviar…",
     successTitle: "Reserva enviada",
     successBody: "O seu pedido de reserva foi enviado. Vamos entrar em contacto em breve.",
-    successSummaryTitle: "Resumo da reserva",
+    successSummaryTitle: "A sua reserva",
     successNextTitle: "O que acontece a seguir",
     successNextBody:
       "Vamos rever o seu pedido e entrar em contacto em breve por WhatsApp ou por email para confirmar a reserva.",
@@ -204,137 +215,43 @@ const texts = {
     summaryTime: "Hora",
     summaryGuests: "Pessoas",
     summaryName: "Nome",
-    summaryPhone: "Telefone / WhatsApp",
+    summaryPhone: "Telefone ou WhatsApp",
     close: "Fechar",
-    dayClosedTitle: "Dia fechado",
-    dayClosedBody: "Este dia esta fechado. Escolha outra data.",
+    dayClosedTitle: "Fechado nesse dia",
+    dayClosedBody: "Estamos fechados neste dia. Escolha outra data.",
     fullTitle: "Desculpe, estamos lotados",
-    fullBody: "Nao ha horarios de reserva disponiveis nesse dia.",
+    fullBody: "Não há horários de reserva disponíveis nesse dia.",
     selectDateFirst: "Escolha primeiro uma data.",
-    selectTimeFirst: "Escolha primeiro um horario.",
-    requiredError: "Preencha todos os campos obrigatorios.",
-    previousMonth: "Mes anterior",
-    nextMonth: "Mes seguinte",
+    selectTimeFirst: "Escolha primeiro uma hora.",
+    requiredError: "Preencha todos os campos obrigatórios.",
+    nameError: "Indique o seu nome completo.",
+    phoneError: "Indique um telefone ou WhatsApp para podermos confirmar a mesa.",
+    fullyBooked: "Sem vagas neste dia",
+    previousMonth: "Mês anterior",
+    nextMonth: "Mês seguinte",
   },
 } satisfies Record<Locale, ReserveText>;
 
-const stepIcons: StepIconName[] = ["date", "time", "guests", "details"];
-
-function ModalStatusIcon({ variant }: { variant: "success" | "full" | "closed" }) {
-  const isSuccess = variant === "success";
-
+function ModalStatusIcon({ variant }: { variant: "full" | "closed" }) {
   return (
     <motion.div
       className={`reservation-modal-icon reservation-modal-icon-${variant}`}
-      initial={{ scale: 0.82, opacity: 0, y: 10 }}
-      animate={{ scale: 1, opacity: 1, y: 0 }}
-      transition={{ duration: 0.28, ease: "easeOut" }}
+      initial={{ scale: 0.85, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
     >
-      <motion.div
-        className="reservation-modal-icon-glow"
-        animate={{ scale: [1, 1.08, 1], opacity: [0.28, 0.5, 0.28] }}
-        transition={{ duration: 1.8, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
-      />
       <svg viewBox="0 0 64 64" aria-hidden="true">
-        <circle className="reservation-modal-icon-ring" cx="32" cy="32" r="26" />
-        {isSuccess ? (
-          <motion.path
-            className="reservation-modal-icon-mark"
-            d="M20 33.5 L28 41.5 L44.5 24.5"
-            fill="none"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="5"
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{ duration: 0.38, delay: 0.12, ease: "easeOut" }}
-          />
-        ) : (
-          <>
-            <motion.path
-              className="reservation-modal-icon-mark"
-              d="M32 20v15"
-              fill="none"
-              strokeLinecap="round"
-              strokeWidth="5"
-              initial={{ pathLength: 0 }}
-              animate={{ pathLength: 1 }}
-              transition={{ duration: 0.28, delay: 0.1, ease: "easeOut" }}
-            />
-            <motion.circle
-              className="reservation-modal-icon-dot"
-              cx="32"
-              cy="41.5"
-              r="2.8"
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.22, delay: 0.32, ease: "easeOut" }}
-            />
-          </>
-        )}
+        <circle className="reservation-modal-icon-ring" cx="32" cy="32" r="28" />
+        <path
+          className="reservation-modal-icon-mark"
+          d="M32 19v18"
+          fill="none"
+          strokeLinecap="round"
+          strokeWidth="5"
+        />
+        <circle className="reservation-modal-icon-dot" cx="32" cy="45" r="3" />
       </svg>
     </motion.div>
-  );
-}
-
-function StepIcon({ name }: { name: StepIconName }) {
-  if (name === "date") {
-    return (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path
-          d="M7 3v3M17 3v3M4 9h16M6 5h12a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"
-          fill="none"
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="1.8"
-        />
-      </svg>
-    );
-  }
-
-  if (name === "time") {
-    return (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" strokeWidth="1.8" />
-        <path
-          d="M12 8v4l3 2"
-          fill="none"
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="1.8"
-        />
-      </svg>
-    );
-  }
-
-  if (name === "guests") {
-    return (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path
-          d="M8 11a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Zm8 1.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM3.5 18a4.5 4.5 0 0 1 9 0M12 18a4 4 0 0 1 8 0"
-          fill="none"
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="1.8"
-        />
-      </svg>
-    );
-  }
-
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path
-        d="M8 6h8M8 10h8M8 14h5M6 4h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"
-        fill="none"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1.8"
-      />
-    </svg>
   );
 }
 
@@ -361,6 +278,9 @@ export default function ReserveFlow() {
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [successSummary, setSuccessSummary] = useState<SuccessReservationSummary>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({ name: false, phone: false });
+  const nameInputRef = useRef<HTMLInputElement>(null);
+  const phoneInputRef = useRef<HTMLInputElement>(null);
 
   const todayIso = new Date().toISOString().slice(0, 10);
   const calendarMonthDate = useMemo(() => {
@@ -371,8 +291,24 @@ export default function ReserveFlow() {
     return new Date(parsed.year, parsed.month - 1, 1);
   }, [calendarMonth]);
   const monthLabel = `${(isPortuguese ? monthNamesPt : monthNamesEn)[calendarMonthDate.getMonth()]} ${calendarMonthDate.getFullYear()}`;
+  const reduceMotion = useReducedMotion();
   const progressPercent = (currentStep / t.steps.length) * 100;
-  const tacoProgressPercent = Math.min(progressPercent, 96);
+  const tacoPercent = Math.min(progressPercent, 94);
+  const guestWord = (count: string) => (count === "1" ? t.guestOne : t.guestsLabel);
+
+  useEffect(() => {
+    if (!availabilityModal && !isSuccessModalOpen) {
+      return;
+    }
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setAvailabilityModal(null);
+        setIsSuccessModalOpen(false);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [availabilityModal, isSuccessModalOpen]);
 
   useEffect(() => {
     let active = true;
@@ -495,7 +431,15 @@ export default function ReserveFlow() {
       setMessage(t.selectTimeFirst);
       return;
     }
-    if (!selectedGuests || !fullName.trim() || !phone.trim()) {
+    const nameMissing = !fullName.trim();
+    const phoneMissing = !phone.trim();
+    if (nameMissing || phoneMissing) {
+      setFieldErrors({ name: nameMissing, phone: phoneMissing });
+      setMessage("");
+      (nameMissing ? nameInputRef : phoneInputRef).current?.focus();
+      return;
+    }
+    if (!selectedGuests) {
       setMessage(t.requiredError);
       return;
     }
@@ -549,6 +493,7 @@ export default function ReserveFlow() {
       setEmail("");
       setOtherInfo("");
       setMessage("");
+      setFieldErrors({ name: false, phone: false });
       setCurrentStep(1);
       setIsSuccessModalOpen(true);
     } catch {
@@ -559,293 +504,411 @@ export default function ReserveFlow() {
   };
 
   return (
-    <main className="site-shell form-shell">
-      <h1>{t.title}</h1>
-      <p className="footer-note">{t.subtitle}</p>
-
-      <div className="reserve-flow-progress">
-        <div className="reserve-flow-progress-track">
-          <motion.div
-            className="reserve-flow-progress-fill"
-            initial={false}
-            animate={{ width: `${progressPercent}%` }}
-            transition={{ duration: 0.24, ease: "easeOut" }}
-          />
-          <motion.div
-            className="reserve-flow-progress-icon"
-            initial={false}
-            animate={{ left: `calc(${tacoProgressPercent}% - 18px)` }}
-            transition={{ duration: 0.24, ease: "easeOut" }}
-          >
-            <motion.span
-              className="reserve-flow-progress-icon-glyph"
-              animate={{ y: [0, -3, 0], rotate: [-4, 4, -4] }}
-              transition={{ duration: 1.8, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+    <main className="site-shell reserve-page">
+      <div className="reserve-band full-bleed">
+        <div className="reserve-page-inner">
+      <div className="reserve-intro">
+        <h1>{t.title}</h1>
+        <p className="reserve-subtitle">{t.subtitle}</p>
+        <div
+          className="reserve-progress"
+          role="progressbar"
+          aria-label={t.stepsLabel}
+          aria-valuemin={1}
+          aria-valuemax={t.steps.length}
+          aria-valuenow={currentStep}
+          aria-valuetext={`${currentStep} / ${t.steps.length}`}
+        >
+          <div className="reserve-progress-track">
+            <motion.div
+              className="reserve-progress-fill"
+              initial={false}
+              animate={{ width: `${progressPercent}%` }}
+              transition={{ duration: 0.24, ease: "easeOut" }}
+            />
+            <motion.div
+              className="reserve-progress-taco"
+              initial={false}
+              animate={{ left: `calc(${tacoPercent}% - 20px)` }}
+              transition={{ duration: 0.24, ease: "easeOut" }}
             >
-              🌮
-            </motion.span>
-          </motion.div>
+              <motion.span
+                aria-hidden="true"
+                animate={reduceMotion ? undefined : { y: [0, -3, 0], rotate: [-4, 4, -4] }}
+                transition={{ duration: 1.8, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+              >
+                🌮
+              </motion.span>
+            </motion.div>
+          </div>
         </div>
+        <ol className="reserve-steps" aria-label={t.stepsLabel}>
+          {t.steps.map((step, index) => {
+            const number = index + 1;
+            const state =
+              currentStep === number ? "current" : currentStep > number ? "done" : "todo";
+            return (
+              <li
+                key={step}
+                className={`reserve-step ${state}`}
+                aria-current={state === "current" ? "step" : undefined}
+              >
+                <span className="reserve-step-num" aria-hidden="true">
+                  {number}
+                </span>
+                <span className="reserve-step-label">{step}</span>
+              </li>
+            );
+          })}
+        </ol>
       </div>
 
-      <div className="reserve-flow-steps">
-        {t.steps.map((step, index) => (
-          <span
-            key={step}
-            className={`quick-chip reserve-flow-step-chip ${currentStep === index + 1 ? "active" : ""}`}
-            title={step}
-            aria-label={step}
-          >
-            <span className="reserve-flow-step-icon" aria-hidden="true">
-              <StepIcon name={stepIcons[index]} />
-            </span>
-          </span>
-        ))}
-      </div>
-
-      <AnimatePresence mode="wait">
-        {currentStep === 1 ? (
-          <motion.section
-            key="reserve-step-1"
-            className="card reserve-flow-card reserve-flow-step-panel"
-            initial={{ opacity: 0, x: 18 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -18 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
-          >
-            <div className="admin-calendar-head">
-              <h3>{t.selectDate}</h3>
-              <div style={{ display: "flex", gap: "0.45rem" }}>
-                <button
-                  className="btn btn-secondary"
-                  type="button"
-                  aria-label={t.previousMonth}
-                  onClick={() => {
-                    const prev = new Date(
-                      calendarMonthDate.getFullYear(),
-                      calendarMonthDate.getMonth() - 1,
-                      1,
-                    );
-                    setCalendarMonth(
-                      `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, "0")}`,
-                    );
-                  }}
-                >
-                  {"<"}
-                </button>
-                <button
-                  className="btn btn-secondary"
-                  type="button"
-                  aria-label={t.nextMonth}
-                  onClick={() => {
-                    const next = new Date(
-                      calendarMonthDate.getFullYear(),
-                      calendarMonthDate.getMonth() + 1,
-                      1,
-                    );
-                    setCalendarMonth(
-                      `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}`,
-                    );
-                  }}
-                >
-                  {">"}
-                </button>
-              </div>
-            </div>
-            <p className="footer-note">{monthLabel}</p>
-            <div className="reserve-flow-calendar-grid">
-              {(isPortuguese ? weekdayShortMondayFirstPt : weekdayShortMondayFirst).map((weekday) => (
-                <div key={weekday} className="reserve-flow-calendar-weekday">
-                  {weekday}
-                </div>
-              ))}
-              {calendarCells.map((cell, index) => {
-                if (!cell.isoDate || !cell.day) {
-                  return <div key={`empty-${index}`} className="reserve-flow-calendar-empty" />;
-                }
-                const isoDate = cell.isoDate;
-                const weekday = dayFromIsoDate(isoDate);
-                const dayHours =
-                  weekday === null ? null : workingHours.find((entry) => entry.weekday === weekday);
-                const isPast = isoDate < todayIso;
-                const isFullDayUnavailable =
-                  Object.prototype.hasOwnProperty.call(dailyAvailability, isoDate) &&
-                  dailyAvailability[isoDate] === false;
-                const isDisabled = isPast || Boolean(dayHours?.isClosed) || isFullDayUnavailable;
-
-                return (
+      <div className="reserve-panel-wrap">
+        <AnimatePresence mode="wait">
+          {currentStep === 1 ? (
+            <motion.section
+              key="reserve-step-1"
+              className="reserve-panel"
+              initial={{ opacity: 0, x: 18 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -18 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+            >
+              <div className="reserve-calendar-head">
+                <h2>{t.selectDate}</h2>
+                <div className="reserve-month-nav">
                   <button
-                    key={isoDate}
+                    className="btn btn-secondary reserve-month-btn"
                     type="button"
-                    className={`reserve-flow-calendar-day ${selectedDate === isoDate ? "active" : ""}`}
-                    disabled={isDisabled}
-                    onClick={() => void loadAvailability(isoDate)}
-                    title={
-                      isFullDayUnavailable
-                        ? isPortuguese
-                          ? "Sem vagas neste dia"
-                          : "Fully booked"
-                        : undefined
-                    }
-                  >
-                    {cell.day}
-                  </button>
-                );
-              })}
-            </div>
-          </motion.section>
-        ) : null}
-
-        {currentStep === 2 ? (
-          <motion.section
-            key="reserve-step-2"
-            className="card reserve-flow-card reserve-flow-step-panel"
-            initial={{ opacity: 0, x: 18 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -18 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
-          >
-            <div className="reserve-flow-nav">
-              <button className="btn btn-secondary" type="button" onClick={() => setCurrentStep(1)}>
-                {t.back}
-              </button>
-            </div>
-            <h3>{t.selectTime}</h3>
-            {!selectedDate ? (
-              <p className="footer-note">{t.selectDateFirst}</p>
-            ) : isLoadingSlots ? (
-              <p className="footer-note">{t.loadingSlots}</p>
-            ) : availableSlots.length === 0 ? (
-              <p className="footer-note">
-                {t.noSlots} {t.chooseDifferentDate}
-              </p>
-            ) : (
-              <div className="reserve-flow-option-grid">
-                {availableSlots.map((slot) => (
-                  <button
-                    key={slot}
-                    type="button"
-                    className={`btn ${selectedTime === slot ? "btn-primary" : "btn-secondary"}`}
+                    aria-label={t.previousMonth}
                     onClick={() => {
-                      setSelectedTime(slot);
-                      setCurrentStep(3);
+                      const prev = new Date(
+                        calendarMonthDate.getFullYear(),
+                        calendarMonthDate.getMonth() - 1,
+                        1,
+                      );
+                      setCalendarMonth(
+                        `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, "0")}`,
+                      );
                     }}
                   >
-                    {slot}
+                    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                      <path
+                        d="M15.5 5l-7 7 7 7"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                  <button
+                    className="btn btn-secondary reserve-month-btn"
+                    type="button"
+                    aria-label={t.nextMonth}
+                    onClick={() => {
+                      const next = new Date(
+                        calendarMonthDate.getFullYear(),
+                        calendarMonthDate.getMonth() + 1,
+                        1,
+                      );
+                      setCalendarMonth(
+                        `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}`,
+                      );
+                    }}
+                  >
+                    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                      <path
+                        d="M8.5 5l7 7-7 7"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <p className="reserve-month-label" aria-live="polite">
+                {monthLabel}
+              </p>
+              <div className="reserve-calendar-grid">
+                {(isPortuguese ? weekdayShortMondayFirstPt : weekdayShortMondayFirst).map(
+                  (weekday) => (
+                    <div key={weekday} className="reserve-calendar-weekday">
+                      {weekday}
+                    </div>
+                  ),
+                )}
+                {calendarCells.map((cell, index) => {
+                  if (!cell.isoDate || !cell.day) {
+                    return <div key={`empty-${index}`} className="reserve-calendar-empty" />;
+                  }
+                  const isoDate = cell.isoDate;
+                  const weekday = dayFromIsoDate(isoDate);
+                  const dayHours =
+                    weekday === null
+                      ? null
+                      : workingHours.find((entry) => entry.weekday === weekday);
+                  const isPast = isoDate < todayIso;
+                  const isFullDayUnavailable =
+                    Object.prototype.hasOwnProperty.call(dailyAvailability, isoDate) &&
+                    dailyAvailability[isoDate] === false;
+                  const isDisabled =
+                    isPast || Boolean(dayHours?.isClosed) || isFullDayUnavailable;
+                  const classNames = [
+                    "reserve-calendar-day",
+                    selectedDate === isoDate ? "active" : "",
+                    isoDate === todayIso ? "today" : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ");
+
+                  return (
+                    <button
+                      key={isoDate}
+                      type="button"
+                      className={classNames}
+                      disabled={isDisabled}
+                      aria-pressed={selectedDate === isoDate}
+                      aria-label={
+                        isFullDayUnavailable ? `${cell.day}, ${t.fullyBooked}` : undefined
+                      }
+                      onClick={() => void loadAvailability(isoDate)}
+                      title={isFullDayUnavailable ? t.fullyBooked : undefined}
+                    >
+                      {cell.day}
+                    </button>
+                  );
+                })}
+              </div>
+            </motion.section>
+          ) : null}
+
+          {currentStep === 2 ? (
+            <motion.section
+              key="reserve-step-2"
+              className="reserve-panel"
+              initial={{ opacity: 0, x: 18 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -18 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+            >
+              <div className="reserve-panel-head">
+                <button
+                  className="btn btn-secondary"
+                  type="button"
+                  onClick={() => setCurrentStep(1)}
+                >
+                  {t.back}
+                </button>
+                <h2>{t.selectTime}</h2>
+              </div>
+              {!selectedDate ? (
+                <p className="reserve-note">{t.selectDateFirst}</p>
+              ) : isLoadingSlots ? (
+                <p className="reserve-note" aria-live="polite">
+                  {t.loadingSlots}
+                </p>
+              ) : availableSlots.length === 0 ? (
+                <p className="reserve-note">
+                  {t.noSlots} {t.chooseDifferentDate}
+                </p>
+              ) : (
+                <div className="reserve-options">
+                  {availableSlots.map((slot) => (
+                    <button
+                      key={slot}
+                      type="button"
+                      className={`btn btn-secondary reserve-option${selectedTime === slot ? " selected" : ""}`}
+                      aria-pressed={selectedTime === slot}
+                      onClick={() => {
+                        setSelectedTime(slot);
+                        setCurrentStep(3);
+                      }}
+                    >
+                      {slot}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </motion.section>
+          ) : null}
+
+          {currentStep === 3 ? (
+            <motion.section
+              key="reserve-step-3"
+              className="reserve-panel"
+              initial={{ opacity: 0, x: 18 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -18 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+            >
+              <div className="reserve-panel-head">
+                <button
+                  className="btn btn-secondary"
+                  type="button"
+                  onClick={() => setCurrentStep(2)}
+                >
+                  {t.back}
+                </button>
+                <h2>{t.selectGuests}</h2>
+              </div>
+              <div className="reserve-options">
+                {guestOptions.map((guest) => (
+                  <button
+                    key={guest}
+                    type="button"
+                    className={`btn btn-secondary reserve-option${selectedGuests === guest ? " selected" : ""}`}
+                    aria-pressed={selectedGuests === guest}
+                    onClick={() => {
+                      setSelectedGuests(guest);
+                      setCurrentStep(4);
+                    }}
+                  >
+                    {guest} {guestWord(guest)}
                   </button>
                 ))}
               </div>
-            )}
-          </motion.section>
-        ) : null}
+            </motion.section>
+          ) : null}
 
-        {currentStep === 3 ? (
-          <motion.section
-            key="reserve-step-3"
-            className="card reserve-flow-card reserve-flow-step-panel"
-            initial={{ opacity: 0, x: 18 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -18 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
-          >
-            <div className="reserve-flow-nav">
-              <button className="btn btn-secondary" type="button" onClick={() => setCurrentStep(2)}>
-                {t.back}
-              </button>
-            </div>
-            <h3>{t.selectGuests}</h3>
-            <div className="reserve-flow-option-grid">
-              {guestOptions.map((guest) => (
+          {currentStep === 4 ? (
+            <motion.section
+              key="reserve-step-4"
+              className="reserve-panel"
+              initial={{ opacity: 0, x: 18 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -18 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+            >
+              <div className="reserve-panel-head">
                 <button
-                  key={guest}
+                  className="btn btn-secondary"
                   type="button"
-                  className={`btn ${selectedGuests === guest ? "btn-primary" : "btn-secondary"}`}
-                  onClick={() => {
-                    setSelectedGuests(guest);
-                    setCurrentStep(4);
-                  }}
+                  onClick={() => setCurrentStep(3)}
                 >
-                  {guest} {t.guestsLabel}
+                  {t.back}
                 </button>
-              ))}
-            </div>
-          </motion.section>
-        ) : null}
-
-        {currentStep === 4 ? (
-          <motion.section
-            key="reserve-step-4"
-            className="card reserve-flow-card reserve-flow-step-panel"
-            initial={{ opacity: 0, x: 18 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -18 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
-          >
-            <div className="reserve-flow-nav">
-              <button className="btn btn-secondary" type="button" onClick={() => setCurrentStep(3)}>
-                {t.back}
-              </button>
-            </div>
-            <h3>{t.yourDetails}</h3>
-            <div className="reserve-flow-summary footer-note">
-              <span>{selectedDate ? formatEuroDate(selectedDate) : "-"}</span>
-              <span>{selectedTime || "-"}</span>
-              <span>
-                {selectedGuests || "-"} {t.guestsLabel}
-              </span>
-            </div>
-            <div className="form-grid" style={{ marginTop: "0.8rem" }}>
-              <div>
-                <label htmlFor="reserve-name">{t.fullName}</label>
-                <input id="reserve-name" value={fullName} onChange={(event) => setFullName(event.target.value)} />
+                <h2>{t.yourDetails}</h2>
               </div>
-              <div>
-                <label htmlFor="reserve-phone">{t.phone}</label>
-                <input
-                  id="reserve-phone"
-                  inputMode="tel"
-                  autoComplete="tel"
-                  value={phone}
-                  onChange={(event) => setPhone(event.target.value)}
-                />
+              <dl className="reserve-summary">
+                <div>
+                  <dt>{t.summaryDate}</dt>
+                  <dd>{selectedDate ? formatEuroDate(selectedDate) : "-"}</dd>
+                </div>
+                <div>
+                  <dt>{t.summaryTime}</dt>
+                  <dd>{selectedTime || "-"}</dd>
+                </div>
+                <div>
+                  <dt>{t.summaryGuests}</dt>
+                  <dd>
+                    {selectedGuests || "-"} {guestWord(selectedGuests)}
+                  </dd>
+                </div>
+              </dl>
+              <div className="reserve-fields">
+                <div className="reserve-field">
+                  <label htmlFor="reserve-name">{t.fullName}</label>
+                  <input
+                    id="reserve-name"
+                    name="name"
+                    ref={nameInputRef}
+                    autoComplete="name"
+                    aria-required="true"
+                    aria-invalid={fieldErrors.name}
+                    aria-describedby={fieldErrors.name ? "reserve-name-error" : undefined}
+                    value={fullName}
+                    onChange={(event) => {
+                      setFullName(event.target.value);
+                      setFieldErrors((prev) => ({ ...prev, name: false }));
+                    }}
+                  />
+                  {fieldErrors.name ? (
+                    <p id="reserve-name-error" className="reserve-field-error">
+                      {t.nameError}
+                    </p>
+                  ) : null}
+                </div>
+                <div className="reserve-field">
+                  <label htmlFor="reserve-phone">{t.phone}</label>
+                  <input
+                    id="reserve-phone"
+                    name="phone"
+                    ref={phoneInputRef}
+                    type="tel"
+                    inputMode="tel"
+                    autoComplete="tel"
+                    aria-required="true"
+                    aria-invalid={fieldErrors.phone}
+                    aria-describedby={fieldErrors.phone ? "reserve-phone-error" : undefined}
+                    value={phone}
+                    onChange={(event) => {
+                      setPhone(event.target.value);
+                      setFieldErrors((prev) => ({ ...prev, phone: false }));
+                    }}
+                  />
+                  {fieldErrors.phone ? (
+                    <p id="reserve-phone-error" className="reserve-field-error">
+                      {t.phoneError}
+                    </p>
+                  ) : null}
+                </div>
+                <div className="reserve-field">
+                  <label htmlFor="reserve-email">
+                    {t.email} <span className="reserve-hint">({t.emailHint})</span>
+                  </label>
+                  <input
+                    id="reserve-email"
+                    name="email"
+                    type="email"
+                    inputMode="email"
+                    autoComplete="email"
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                  />
+                </div>
+                <div className="reserve-field">
+                  <label htmlFor="reserve-other">{t.otherInfo}</label>
+                  <textarea
+                    id="reserve-other"
+                    name="notes"
+                    value={otherInfo}
+                    onChange={(event) => setOtherInfo(event.target.value)}
+                  />
+                </div>
               </div>
-            </div>
-            <div className="form-grid" style={{ marginTop: "0.8rem" }}>
-              <div>
-                <label htmlFor="reserve-email">
-                  {t.email} <span className="footer-note">({t.emailHint})</span>
-                </label>
-                <input
-                  id="reserve-email"
-                  type="email"
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                />
+              <div className="reserve-submit-row">
+                <button
+                  className="btn btn-primary reserve-submit-btn"
+                  type="button"
+                  disabled={isSubmitting}
+                  aria-busy={isSubmitting}
+                  onClick={submitReservation}
+                >
+                  {isSubmitting ? t.sending : t.send}
+                </button>
+                {message ? (
+                  <p className="reserve-message" role="alert">
+                    {message}
+                  </p>
+                ) : null}
               </div>
-              <div>
-                <label htmlFor="reserve-other">{t.otherInfo}</label>
-                <textarea
-                  id="reserve-other"
-                  value={otherInfo}
-                  onChange={(event) => setOtherInfo(event.target.value)}
-                />
-              </div>
-            </div>
-            <div className="reserve-submit-row">
-              <button className="btn btn-primary reserve-submit-btn" type="button" onClick={submitReservation}>
-                {isSubmitting ? t.sending : t.send}
-              </button>
-              {message ? <span className="footer-note">{message}</span> : null}
-            </div>
-          </motion.section>
-        ) : null}
-      </AnimatePresence>
+            </motion.section>
+          ) : null}
+        </AnimatePresence>
+      </div>
+        </div>
+      </div>
 
       <AnimatePresence>
         {availabilityModal ? (
           <>
             <motion.button
-              className="confirm-modal-backdrop"
+              className="confirm-modal-backdrop reserve-backdrop"
               type="button"
               aria-label={t.close}
               onClick={() => setAvailabilityModal(null)}
@@ -855,17 +918,24 @@ export default function ReserveFlow() {
             />
             <div className="confirm-modal-wrap" onClick={() => setAvailabilityModal(null)}>
               <motion.section
-                className="confirm-modal-card"
+                className="confirm-modal-card reserve-modal"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="reserve-availability-title"
                 onClick={(event) => event.stopPropagation()}
                 initial={{ opacity: 0, y: 18, scale: 0.96 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 12, scale: 0.97 }}
               >
                 <ModalStatusIcon variant={availabilityModal.variant} />
-                <h3>{availabilityModal.title}</h3>
-                <p className="footer-note">{availabilityModal.message}</p>
+                <h2 id="reserve-availability-title">{availabilityModal.title}</h2>
+                <p className="reserve-note">{availabilityModal.message}</p>
                 <div className="confirm-modal-actions">
-                  <button className="btn btn-primary" type="button" onClick={() => setAvailabilityModal(null)}>
+                  <button
+                    className="btn btn-primary"
+                    type="button"
+                    onClick={() => setAvailabilityModal(null)}
+                  >
                     {t.close}
                   </button>
                 </div>
@@ -877,7 +947,7 @@ export default function ReserveFlow() {
         {isSuccessModalOpen ? (
           <>
             <motion.button
-              className="confirm-modal-backdrop"
+              className="confirm-modal-backdrop reserve-backdrop"
               type="button"
               aria-label={t.close}
               onClick={() => setIsSuccessModalOpen(false)}
@@ -887,47 +957,65 @@ export default function ReserveFlow() {
             />
             <div className="confirm-modal-wrap" onClick={() => setIsSuccessModalOpen(false)}>
               <motion.section
-                className="confirm-modal-card"
+                className="confirm-modal-card reserve-modal"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="reserve-success-title"
                 onClick={(event) => event.stopPropagation()}
                 initial={{ opacity: 0, y: 18, scale: 0.96 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 12, scale: 0.97 }}
               >
-                <ModalStatusIcon variant="success" />
-                <h3>{t.successTitle}</h3>
-                <p className="footer-note">{t.successBody}</p>
+                <Image
+                  className="reservation-modal-mascot"
+                  src="/mascot_logo.webp"
+                  alt=""
+                  width={84}
+                  height={84}
+                />
+                <h2 id="reserve-success-title">{t.successTitle}</h2>
+                <p className="reserve-note">{t.successBody}</p>
                 {successSummary ? (
                   <>
-                    <div className="reserve-flow-success-block">
-                      <strong>{t.successSummaryTitle}</strong>
-                      <div className="reserve-flow-success-grid">
-                        <p className="footer-note">
-                          <strong>{t.summaryDate}:</strong> {formatEuroDate(successSummary.date)}
-                        </p>
-                        <p className="footer-note">
-                          <strong>{t.summaryTime}:</strong> {successSummary.time}
-                        </p>
-                        <p className="footer-note">
-                          <strong>{t.summaryGuests}:</strong> {successSummary.guests}
-                        </p>
-                        <p className="footer-note">
-                          <strong>{t.summaryName}:</strong> {successSummary.fullName}
-                        </p>
-                        <p className="footer-note">
-                          <strong>{t.summaryPhone}:</strong> {successSummary.phone}
-                        </p>
-                      </div>
+                    <div className="reserve-success-block">
+                      <h3>{t.successSummaryTitle}</h3>
+                      <dl className="reserve-summary">
+                        <div>
+                          <dt>{t.summaryDate}</dt>
+                          <dd>{formatEuroDate(successSummary.date)}</dd>
+                        </div>
+                        <div>
+                          <dt>{t.summaryTime}</dt>
+                          <dd>{successSummary.time}</dd>
+                        </div>
+                        <div>
+                          <dt>{t.summaryGuests}</dt>
+                          <dd>
+                            {successSummary.guests} {guestWord(successSummary.guests)}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt>{t.summaryName}</dt>
+                          <dd>{successSummary.fullName}</dd>
+                        </div>
+                        <div>
+                          <dt>{t.summaryPhone}</dt>
+                          <dd>{successSummary.phone}</dd>
+                        </div>
+                      </dl>
                     </div>
-                    <div className="reserve-flow-success-block">
-                      <strong>{t.successNextTitle}</strong>
-                      <p className="footer-note" style={{ marginTop: "0.3rem" }}>
-                        {t.successNextBody}
-                      </p>
+                    <div className="reserve-success-block">
+                      <h3>{t.successNextTitle}</h3>
+                      <p className="reserve-note">{t.successNextBody}</p>
                     </div>
                   </>
                 ) : null}
                 <div className="confirm-modal-actions">
-                  <button className="btn btn-primary" type="button" onClick={() => setIsSuccessModalOpen(false)}>
+                  <button
+                    className="btn btn-primary"
+                    type="button"
+                    onClick={() => setIsSuccessModalOpen(false)}
+                  >
                     {t.close}
                   </button>
                 </div>
