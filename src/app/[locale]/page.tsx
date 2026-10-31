@@ -92,7 +92,6 @@ export default async function HomePage({ params }: Props) {
   const activeLocale = routing.locales.includes(locale as "en" | "pt")
     ? locale
     : routing.defaultLocale;
-  const isPortuguese = activeLocale === "pt";
   const t = await getTranslations({
     locale: activeLocale,
     namespace: "Home",
@@ -221,78 +220,94 @@ export default async function HomePage({ params }: Props) {
           </div>
         </section>
 
-        <section className="card home-hours-card">
-          <p className="home-section-kicker">🕐 {isPortuguese ? "HORARIO" : "OPENING HOURS"}</p>
-          <div className="home-hours-head">
-            <h3>{t("workingHoursTitle")}</h3>
-          </div>
-          <div className="home-hours-summary">
-            <p className="home-hours-line">
-              <strong>{isPortuguese ? "Seg - Qui" : "Mon - Thu"}</strong>
-              <span>{monThuText}</span>
-            </p>
-            <p className="home-hours-line">
-              <strong>{isPortuguese ? "Sex - Sab" : "Fri - Sat"}</strong>
-              <span>{friSatText}</span>
-            </p>
-            <p className="home-hours-line">
-              <strong>{isPortuguese ? "Domingo" : "Sunday"}</strong>
-              <span>{sundayText}</span>
-            </p>
+        <section className="home-visit full-bleed on-teal" aria-label={t("visitTitle")}>
+          <div className="home-visit-inner">
+            <div className="home-visit-block">
+              <h2>{t("workingHoursTitle")}</h2>
+              <dl className="home-facts">
+                <div>
+                  <dt>{t("dayMonThu")}</dt>
+                  <dd>{monThuText}</dd>
+                </div>
+                <div>
+                  <dt>{t("dayFriSat")}</dt>
+                  <dd>{friSatText}</dd>
+                </div>
+                <div>
+                  <dt>{t("daySun")}</dt>
+                  <dd>{sundayText}</dd>
+                </div>
+              </dl>
+            </div>
+            <div className="home-visit-block">
+              <h2>{t("visitTitle")}</h2>
+              <address className="home-facts-address">
+                <dl className="home-facts">
+                  <div>
+                    <dt>{t("addressLabel")}</dt>
+                    <dd>
+                      <a href={mapsUrl} target="_blank" rel="noopener noreferrer">
+                        R. do Cruzeiro 1, 1300-160 Lisboa
+                      </a>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>{t("phoneLabel")}</dt>
+                    <dd>
+                      <a href="tel:+351218093388">+351 21 809 3388</a>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>{t("whatsappLabel")}</dt>
+                    <dd>
+                      <a
+                        href={`https://wa.me/${whatsappDigits}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {businessContact.businessPhone}
+                      </a>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>{t("emailLabel")}</dt>
+                    <dd>
+                      <a href={`mailto:${businessContact.businessEmail}`}>
+                        {businessContact.businessEmail}
+                      </a>
+                    </dd>
+                  </div>
+                </dl>
+              </address>
+              <p className="home-visit-note">{t("pricingInfo")}</p>
+              <Link className="btn btn-primary" href="/reserve">
+                {t("reserve")}
+              </Link>
+            </div>
           </div>
         </section>
 
         <HomeGallery />
 
-        <section className="card home-seo-card">
-          <p className="home-section-kicker">🌮 {t("seoBlockTitle")}</p>
-          <h3>{isPortuguese ? "Restaurante mexicano em Lisboa e Alcântara" : "Mexican restaurant in Lisbon and Alcântara"}</h3>
-          <p>{t("seoBlockBody1")}</p>
-          <p className="footer-note" style={{ marginTop: "0.75rem" }}>
-            {t("seoBlockBody2")}
-          </p>
+        <section className="home-about" aria-labelledby="home-about-title">
+          <h2 id="home-about-title">{t("seoBlockTitle")}</h2>
+          <div className="home-about-text">
+            <p>{t("seoBlockBody1")}</p>
+            <p>{t("seoBlockBody2")}</p>
+          </div>
         </section>
 
-        <section className="card home-contact-card">
-          <p className="home-section-kicker">📍 LOCATION & CONTACT</p>
-          <p>
-            <strong>🏠</strong>{" "}
-            <a href={mapsUrl} target="_blank" rel="noopener noreferrer">
-              R. do Cruzeiro 1, 1300-160 Lisboa
-            </a>
-          </p>
-          <p className="footer-note" style={{ marginTop: "0.35rem" }}>
-            Alcântara, Lisbon
-          </p>
-          <p style={{ marginTop: "0.55rem" }}>
-            <strong>📞</strong> <a href="tel:+351218093388">+351 21 809 3388</a>
-          </p>
-          <p style={{ marginTop: "0.25rem" }}>
-            <strong>📱</strong>{" "}
-            <a href={`https://wa.me/${whatsappDigits}`} target="_blank" rel="noopener noreferrer">
-              {businessContact.businessPhone} (WhatsApp)
-            </a>
-          </p>
-          <p style={{ marginTop: "0.25rem" }}>
-            <strong>✉️</strong> <a href={`mailto:${businessContact.businessEmail}`}>{businessContact.businessEmail}</a>
-          </p>
-          <p className="footer-note" style={{ marginTop: "0.55rem" }}>
-            {t("pricingInfo")}
-          </p>
-        </section>
-
-        <section className="card home-faq-card">
-          <p className="home-section-kicker">❓ {t("faqTitle")}</p>
+        <section className="home-faq" aria-labelledby="home-faq-title">
+          <h2 id="home-faq-title">{t("faqTitle")}</h2>
           <div className="home-faq-list">
             {faqItems.map((item) => (
               <details key={item.question} className="home-faq-item">
                 <summary>{item.question}</summary>
-                <p className="footer-note">{item.answer}</p>
+                <p>{item.answer}</p>
               </details>
             ))}
           </div>
         </section>
-
       </main>
     </>
   );
