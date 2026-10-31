@@ -2,6 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import AdminAlert from "@/components/admin-alert";
 import AdminReservationList from "@/components/admin-reservation-list";
 import AdminToday from "@/components/admin-today";
 import { useSearchParams } from "next/navigation";
@@ -2151,27 +2152,17 @@ export default function AdminBackOffice() {
             {adminToasts.map((toast) => (
               <motion.div
                 key={toast.id}
-                className={`admin-toast ${
-                  toast.kind === "reservation" ? `admin-toast-theme-${toast.theme ?? "orange"}` : ""
-                }`}
+                className="admin-toast"
                 initial={{ opacity: 0, y: -10, scale: 0.98 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -8, scale: 0.98 }}
               >
-                <div>
-                  <strong>{toast.title}</strong>
-                  <p className="footer-note" style={{ marginTop: "0.25rem" }}>
-                    {toast.message}
-                  </p>
-                </div>
-                <button
-                  className={`btn btn-secondary btn-icon ${toast.kind === "reservation" ? "admin-toast-close-reservation" : ""}`}
-                  type="button"
-                  aria-label="Dismiss notification"
-                  onClick={() => dismissAdminToast(toast.id)}
-                >
-                  ×
-                </button>
+                <AdminAlert
+                  theme={toast.theme ?? "orange"}
+                  title={toast.title}
+                  message={toast.message}
+                  onDismiss={() => dismissAdminToast(toast.id)}
+                />
               </motion.div>
             ))}
           </div>
@@ -2190,7 +2181,12 @@ export default function AdminBackOffice() {
               exit={{ opacity: 0, y: 10 }}
             >
               {adminStatusToast ? (
-                adminStatusToast.message
+                <>
+                  <svg className="admin-alert-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M5 12.5l4.5 4.5L19 7.5" />
+                  </svg>
+                  <span>{adminStatusToast.message}</span>
+                </>
               ) : (
                 <span className="admin-status-loader-ring" aria-hidden="true" />
               )}
@@ -2207,7 +2203,8 @@ export default function AdminBackOffice() {
             exit={{ opacity: 0, y: -8, scale: 0.98 }}
             transition={{ duration: 0.24, ease: "easeOut" }}
           >
-            Syncing with database...
+            <span className="admin-status-loader-ring" aria-hidden="true" />
+            Syncing…
           </motion.div>
         ) : null}
       </AnimatePresence>
@@ -3519,15 +3516,12 @@ export default function AdminBackOffice() {
                 Preview of a new reservation alert in this theme:
               </p>
               <div className="admin-toast-preview">
-                <div
-                  className={`admin-toast admin-toast-theme-${adminRealtimeSettings.notificationTheme}`}
-                >
-                  <div>
-                    <strong>New reservation</strong>
-                    <p className="footer-note" style={{ marginTop: "0.25rem" }}>
-                      Maria Silva · 14/11/2026 at 20:00
-                    </p>
-                  </div>
+                <div className="admin-toast">
+                  <AdminAlert
+                    theme={adminRealtimeSettings.notificationTheme}
+                    title="New reservation"
+                    message="Maria Silva · 14/11/2026 at 20:00"
+                  />
                 </div>
                 <button
                   type="button"

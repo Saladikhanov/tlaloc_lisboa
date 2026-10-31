@@ -111,9 +111,9 @@
 
 **Independent Test**: Quickstart §5.
 
-- [ ] T030 [US4] Restyle the toast stack, status toast and sync badge (`admin-toast*`, `admin-status-toast*`, `sync-overlay-badge`) in `src/app/admin/admin.css` using the alert tokens; each shows a title and an icon; place them clear of the top bar and above the phone bottom bar
-- [ ] T031 [US4] Map the three alert styles (green, orange, neutral) to the contract's alert tokens in both themes; keep sound and desktop notifications untouched
-- [ ] T032 [US4] Delete the legacy toast rules from `src/app/globals.css`
+- [x] T030 [US4] Restyle the toast stack, status toast and sync badge (`admin-toast*`, `admin-status-toast*`, `sync-overlay-badge`) in `src/app/admin/admin.css` using the alert tokens; each shows a title and an icon; place them clear of the top bar and above the phone bottom bar
+- [x] T031 [US4] Map the three alert styles (green, orange, neutral) to the contract's alert tokens in both themes; keep sound and desktop notifications untouched
+- [x] T032 [US4] Delete the legacy toast rules from `src/app/globals.css`
 - [ ] T033 [US4] Verify US4 per quickstart §5 (the sound switch and alert-style picker live in the Settings tab, which stays legacy until stage 3, so use them as they are): public-site booking while the admin is open, sound on and off, permission denied, reconnect behavior, all three styles in both themes
 
 **Checkpoint**: Release candidate for stage 1 (shell, Today, Reservations, alerts): open a pull request
