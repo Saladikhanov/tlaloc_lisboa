@@ -69,6 +69,12 @@ html[data-admin-theme="dark"] {
   --a-warn-fg: #f6dcb0;
 }
 
+/* No double-tap zoom delay on controls */
+.admin-v2 :where(a, button, input, select, textarea, summary, label),
+.admin-shell :where(a, button) {
+  touch-action: manipulation;
+}
+
 /* Focus ring for the new admin components */
 .admin-v2 :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
   outline: 3px solid var(--a-accent);
@@ -2020,4 +2026,13 @@ body:has(.admin-app) .scroll-top-btn {
 
 body:has(.admin-app) .scroll-top-btn:hover {
   background: var(--a-surface);
+}
+
+/* Keep the page from jumping when the selected day has few or many reservations */
+html:has(.admin-app) {
+  scrollbar-gutter: stable;
+}
+
+.admin-calendar-detail {
+  min-height: 26rem;
 }

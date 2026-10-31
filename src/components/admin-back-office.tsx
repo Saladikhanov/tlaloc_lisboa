@@ -3,6 +3,7 @@
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import AdminAlert from "@/components/admin-alert";
+import AdminDialog from "@/components/admin-dialog";
 import AdminCalendar from "@/components/admin-calendar";
 import AdminReservationList from "@/components/admin-reservation-list";
 import AdminToday from "@/components/admin-today";
@@ -1638,32 +1639,6 @@ export default function AdminBackOffice() {
     }
   }, [calendarCells, selectedCalendarDay]);
 
-  useEffect(() => {
-    if (!isManualReservationFormOpen) {
-      return;
-    }
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setIsManualReservationFormOpen(false);
-      }
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [isManualReservationFormOpen]);
-
-  useEffect(() => {
-    if (!deleteReservationModal) {
-      return;
-    }
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setDeleteReservationModal(null);
-      }
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [deleteReservationModal]);
-
   async function runAction(key: string, action: () => Promise<void>) {
     setActionKey(key);
     try {
@@ -2571,7 +2546,8 @@ export default function AdminBackOffice() {
               </div>
               <div className="admin-reward-actions">
                 <input
-                  placeholder="Enter promo code"
+                  aria-label="Enter promo code"
+ placeholder="Enter promo code"
                   value={rewardLookupCode}
                   onChange={(event) => setRewardLookupCode(event.target.value.toUpperCase())}
                 />
@@ -2791,32 +2767,37 @@ export default function AdminBackOffice() {
                 <h3 style={{ marginBottom: "0.7rem" }}>Add section</h3>
                 <form onSubmit={createSection} className="form-grid">
                   <input
-                    placeholder="Slug (example: specials)"
+                    aria-label="Slug (example: specials)"
+ placeholder="Slug (example: specials)"
                     value={newSection.slug}
                     onChange={(event) => setNewSection((prev) => ({ ...prev, slug: event.target.value }))}
                     required
                   />
                   <input
-                    placeholder="Title EN"
+                    aria-label="Title EN"
+ placeholder="Title EN"
                     value={newSection.titleEn}
                     onChange={(event) => setNewSection((prev) => ({ ...prev, titleEn: event.target.value }))}
                     required
                   />
                   <input
-                    placeholder="Title PT"
+                    aria-label="Title PT"
+ placeholder="Title PT"
                     value={newSection.titlePt}
                     onChange={(event) => setNewSection((prev) => ({ ...prev, titlePt: event.target.value }))}
                     required
                   />
                   <input
-                    placeholder="Subtitle EN (optional)"
+                    aria-label="Subtitle EN (optional)"
+ placeholder="Subtitle EN (optional)"
                     value={newSection.subtitleEn}
                     onChange={(event) =>
                       setNewSection((prev) => ({ ...prev, subtitleEn: event.target.value }))
                     }
                   />
                   <input
-                    placeholder="Subtitle PT (optional)"
+                    aria-label="Subtitle PT (optional)"
+ placeholder="Subtitle PT (optional)"
                     value={newSection.subtitlePt}
                     onChange={(event) =>
                       setNewSection((prev) => ({ ...prev, subtitlePt: event.target.value }))
@@ -2846,25 +2827,29 @@ export default function AdminBackOffice() {
                     ))}
                   </select>
                   <input
-                    placeholder="Item name EN"
+                    aria-label="Item name EN"
+ placeholder="Item name EN"
                     value={newItem.nameEn}
                     onChange={(event) => setNewItem((prev) => ({ ...prev, nameEn: event.target.value }))}
                     required
                   />
                   <input
-                    placeholder="Item name PT"
+                    aria-label="Item name PT"
+ placeholder="Item name PT"
                     value={newItem.namePt}
                     onChange={(event) => setNewItem((prev) => ({ ...prev, namePt: event.target.value }))}
                     required
                   />
                   <input
-                    placeholder="Price"
+                    aria-label="Price"
+ placeholder="Price"
                     value={newItem.price}
                     onChange={(event) => setNewItem((prev) => ({ ...prev, price: event.target.value }))}
                     required
                   />
                   <input
-                    placeholder="Description EN"
+                    aria-label="Description EN"
+ placeholder="Description EN"
                     value={newItem.descriptionEn}
                     onChange={(event) =>
                       setNewItem((prev) => ({ ...prev, descriptionEn: event.target.value }))
@@ -2872,7 +2857,8 @@ export default function AdminBackOffice() {
                     required
                   />
                   <input
-                    placeholder="Description PT"
+                    aria-label="Description PT"
+ placeholder="Description PT"
                     value={newItem.descriptionPt}
                     onChange={(event) =>
                       setNewItem((prev) => ({ ...prev, descriptionPt: event.target.value }))
@@ -3293,14 +3279,16 @@ export default function AdminBackOffice() {
             </p>
             <div className="form-grid" style={{ marginTop: "0.7rem" }}>
               <input
-                placeholder="Business WhatsApp number"
+                aria-label="Business WhatsApp number"
+ placeholder="Business WhatsApp number"
                 value={businessContact.businessPhone}
                 onChange={(event) =>
                   setBusinessContact((prev) => ({ ...prev, businessPhone: event.target.value }))
                 }
               />
               <input
-                placeholder="Business email"
+                aria-label="Business email"
+ placeholder="Business email"
                 type="email"
                 value={businessContact.businessEmail}
                 onChange={(event) =>
@@ -3322,7 +3310,8 @@ export default function AdminBackOffice() {
             <h3 style={{ marginBottom: "0.7rem" }}>Change admin password</h3>
             <form onSubmit={onPasswordSubmit} className="form-grid">
               <input
-                placeholder="Username"
+                aria-label="Username"
+ placeholder="Username"
                 value={passwordForm.username}
                 onChange={(event) =>
                   setPasswordForm((prev) => ({ ...prev, username: event.target.value }))
@@ -3330,7 +3319,8 @@ export default function AdminBackOffice() {
                 required
               />
               <input
-                placeholder="Current password"
+                aria-label="Current password"
+ placeholder="Current password"
                 type="password"
                 value={passwordForm.currentPassword}
                 onChange={(event) =>
@@ -3339,7 +3329,8 @@ export default function AdminBackOffice() {
                 required
               />
               <input
-                placeholder="New password"
+                aria-label="New password"
+ placeholder="New password"
                 type="password"
                 minLength={6}
                 value={passwordForm.nextPassword}
@@ -3379,7 +3370,8 @@ export default function AdminBackOffice() {
                   </h4>
                   <div className="form-grid">
                     <input
-                      placeholder="Subject EN"
+                      aria-label="Subject EN"
+ placeholder="Subject EN"
                       value={template.subjectEn}
                       onChange={(event) =>
                         setMessageTemplates((prev) =>
@@ -3392,7 +3384,8 @@ export default function AdminBackOffice() {
                       }
                     />
                     <input
-                      placeholder="Subject PT"
+                      aria-label="Subject PT"
+ placeholder="Subject PT"
                       value={template.subjectPt}
                       onChange={(event) =>
                         setMessageTemplates((prev) =>
@@ -3405,7 +3398,8 @@ export default function AdminBackOffice() {
                       }
                     />
                     <textarea
-                      placeholder="Body EN"
+                      aria-label="Body EN"
+ placeholder="Body EN"
                       value={template.bodyEn}
                       onChange={(event) =>
                         setMessageTemplates((prev) =>
@@ -3418,7 +3412,8 @@ export default function AdminBackOffice() {
                       }
                     />
                     <textarea
-                      placeholder="Body PT"
+                      aria-label="Body PT"
+ placeholder="Body PT"
                       value={template.bodyPt}
                       onChange={(event) =>
                         setMessageTemplates((prev) =>
@@ -3643,208 +3638,186 @@ export default function AdminBackOffice() {
       </div>
 
       {deleteReservationModal ? (
-        <div className="admin-v2">
-          <button
-            className="admin-dialog-backdrop"
-            type="button"
-            aria-label="Close remove confirmation"
-            onClick={() => setDeleteReservationModal(null)}
-          />
-          <div className="admin-v2 admin-dialog-wrap" onClick={() => setDeleteReservationModal(null)}>
-            <section
-              className="admin-dialog"
-              role="alertdialog"
-              aria-modal="true"
-              aria-labelledby="delete-reservation-title"
-              aria-describedby="delete-reservation-text"
-              onClick={(event) => event.stopPropagation()}
+        <AdminDialog
+          role="alertdialog"
+          titleId="delete-reservation-title"
+          describedBy="delete-reservation-text"
+          closeLabel="Close remove confirmation"
+          onClose={() => setDeleteReservationModal(null)}
+        >
+          <h2 id="delete-reservation-title">Remove reservation?</h2>
+          <p id="delete-reservation-text">
+            This removes the reservation for <strong>{deleteReservationModal.guestName}</strong> from the lists. It is
+            archived, not erased.
+          </p>
+          <div className="admin-dialog-actions">
+            <button
+              className="btn btn-secondary"
+              type="button"
+              onClick={() => setDeleteReservationModal(null)}
+              disabled={actionKey !== null}
             >
-              <h2 id="delete-reservation-title">Remove reservation?</h2>
-              <p id="delete-reservation-text">
-                This removes the reservation for <strong>{deleteReservationModal.guestName}</strong> from the lists. It is
-                archived, not erased.
-              </p>
-              <div className="admin-dialog-actions">
-                <button
-                  className="btn btn-secondary"
-                  type="button"
-                  onClick={() => setDeleteReservationModal(null)}
-                  disabled={actionKey !== null}
-                >
-                  Cancel
-                </button>
-                <button
-                  className="btn btn-danger"
-                  type="button"
-                  onClick={confirmDeleteReservation}
-                  disabled={actionKey !== null}
-                >
-                  {actionKey === `delete-reservation-${deleteReservationModal.id}`
-                    ? "Removing…"
-                    : "Remove"}
-                </button>
-              </div>
-            </section>
+              Cancel
+            </button>
+            <button
+              className="btn btn-danger"
+              type="button"
+              onClick={confirmDeleteReservation}
+              disabled={actionKey !== null}
+            >
+              {actionKey === `delete-reservation-${deleteReservationModal.id}`
+                ? "Removing…"
+                : "Remove"}
+            </button>
           </div>
-        </div>
+        </AdminDialog>
       ) : null}
 
       {isManualReservationFormOpen && selectedCalendarDate ? (
-        <>
-          <button
-            className="admin-dialog-backdrop"
-            type="button"
-            aria-label="Close add reservation modal"
-            onClick={() => setIsManualReservationFormOpen(false)}
-          />
-          <div className="admin-v2 admin-dialog-wrap" onClick={() => setIsManualReservationFormOpen(false)}>
-            <section
-              className="admin-dialog admin-dialog--wide"
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="add-reservation-title"
-              onClick={(event) => event.stopPropagation()}
-            >
-              <h2 id="add-reservation-title">Add reservation</h2>
-              <p className="admin-muted">
-                Add a phone or walk-in booking directly to the confirmed calendar for{" "}
-                {formatEuropeanDate(selectedCalendarDate)}.
-              </p>
+        <AdminDialog
+          wide
+          titleId="add-reservation-title"
+          closeLabel="Close add reservation dialog"
+          onClose={() => setIsManualReservationFormOpen(false)}
+        >
+          <h2 id="add-reservation-title">Add reservation</h2>
+          <p className="admin-muted">
+            Add a phone or walk-in booking directly to the confirmed calendar for{" "}
+            {formatEuropeanDate(selectedCalendarDate)}.
+          </p>
 
-              <div className="admin-dialog-form">
-                <div className="admin-choice-group" role="group" aria-label="Language">
-                  <span className="admin-choice-label">Language</span>
-                  <div className="admin-choice-grid">
-                    {manualReservationLocaleOptions.map((option) => (
-                      <button
-                        key={option.value}
-                        type="button"
-                        className={`admin-choice${manualReservationForm.locale === option.value ? " is-selected" : ""}`}
-                        aria-pressed={manualReservationForm.locale === option.value}
-                        onClick={() =>
-                          setManualReservationForm((prev) => ({
-                            ...prev,
-                            locale: option.value,
-                          }))
-                        }
-                      >
-                        {option.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="admin-choice-group" role="group" aria-label="Time">
-                  <span className="admin-choice-label">Time</span>
-                  <div className="admin-choice-grid">
-                    {manualReservationTimeOptions.map((time) => (
-                      <button
-                        key={time}
-                        type="button"
-                        className={`admin-choice${manualReservationForm.time === time ? " is-selected" : ""}`}
-                        aria-pressed={manualReservationForm.time === time}
-                        onClick={() => setManualReservationForm((prev) => ({ ...prev, time }))}
-                      >
-                        {time}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="admin-choice-group" role="group" aria-label="Guests">
-                  <span className="admin-choice-label">Guests</span>
-                  <div className="admin-choice-grid">
-                    {manualReservationGuestOptions.map((guests) => (
-                      <button
-                        key={guests}
-                        type="button"
-                        className={`admin-choice${manualReservationForm.guests === guests ? " is-selected" : ""}`}
-                        aria-pressed={manualReservationForm.guests === guests}
-                        onClick={() => setManualReservationForm((prev) => ({ ...prev, guests }))}
-                      >
-                        {guests}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="admin-dialog-fields">
-                  <div>
-                    <label htmlFor="manual-name">Full name</label>
-                    <input
-                      id="manual-name"
-                      required
-                      value={manualReservationForm.fullName}
-                      onChange={(event) =>
-                        setManualReservationForm((prev) => ({ ...prev, fullName: event.target.value }))
-                      }
-                      placeholder="Guest full name"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="manual-phone">Phone</label>
-                    <input
-                      id="manual-phone"
-                      required
-                      inputMode="tel"
-                      autoComplete="tel"
-                      value={manualReservationForm.phone}
-                      onChange={(event) =>
-                        setManualReservationForm((prev) => ({ ...prev, phone: event.target.value }))
-                      }
-                      placeholder="+351..."
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="manual-email">Email (optional)</label>
-                    <input
-                      id="manual-email"
-                      type="email"
-                      value={manualReservationForm.email}
-                      onChange={(event) =>
-                        setManualReservationForm((prev) => ({ ...prev, email: event.target.value }))
-                      }
-                      placeholder="guest@email.com"
-                    />
-                  </div>
-                  <div className="admin-dialog-fields-wide">
-                    <label htmlFor="manual-info">Other information (optional)</label>
-                    <textarea
-                      id="manual-info"
-                      value={manualReservationForm.otherInfo}
-                      onChange={(event) =>
-                        setManualReservationForm((prev) => ({ ...prev, otherInfo: event.target.value }))
-                      }
-                      placeholder="Notes, seating request, dietary info..."
-                    />
-                  </div>
-                </div>
-
-                <div className="admin-dialog-actions">
+          <div className="admin-dialog-form">
+            <div className="admin-choice-group" role="group" aria-label="Language">
+              <span className="admin-choice-label">Language</span>
+              <div className="admin-choice-grid">
+                {manualReservationLocaleOptions.map((option) => (
                   <button
-                    className="btn btn-secondary"
+                    key={option.value}
                     type="button"
-                    disabled={actionKey !== null}
-                    onClick={() => {
-                      setManualReservationForm(defaultManualReservationForm);
-                      setIsManualReservationFormOpen(false);
-                    }}
+                    className={`admin-choice${manualReservationForm.locale === option.value ? " is-selected" : ""}`}
+                    aria-pressed={manualReservationForm.locale === option.value}
+                    onClick={() =>
+                      setManualReservationForm((prev) => ({
+                        ...prev,
+                        locale: option.value,
+                      }))
+                    }
                   >
-                    Cancel
+                    {option.label}
                   </button>
-                  <button
-                    className="btn btn-primary"
-                    type="button"
-                    disabled={actionKey !== null}
-                    onClick={() => void createManualCalendarReservation()}
-                  >
-                    {actionKey === "create-manual-calendar-reservation" ? "Saving..." : "Add confirmed reservation"}
-                  </button>
-                </div>
+                ))}
               </div>
-            </section>
+            </div>
+
+            <div className="admin-choice-group" role="group" aria-label="Time">
+              <span className="admin-choice-label">Time</span>
+              <div className="admin-choice-grid">
+                {manualReservationTimeOptions.map((time) => (
+                  <button
+                    key={time}
+                    type="button"
+                    className={`admin-choice${manualReservationForm.time === time ? " is-selected" : ""}`}
+                    aria-pressed={manualReservationForm.time === time}
+                    onClick={() => setManualReservationForm((prev) => ({ ...prev, time }))}
+                  >
+                    {time}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="admin-choice-group" role="group" aria-label="Guests">
+              <span className="admin-choice-label">Guests</span>
+              <div className="admin-choice-grid">
+                {manualReservationGuestOptions.map((guests) => (
+                  <button
+                    key={guests}
+                    type="button"
+                    className={`admin-choice${manualReservationForm.guests === guests ? " is-selected" : ""}`}
+                    aria-pressed={manualReservationForm.guests === guests}
+                    onClick={() => setManualReservationForm((prev) => ({ ...prev, guests }))}
+                  >
+                    {guests}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="admin-dialog-fields">
+              <div>
+                <label htmlFor="manual-name">Full name</label>
+                <input
+                  id="manual-name"
+                  required
+                  value={manualReservationForm.fullName}
+                  onChange={(event) =>
+                    setManualReservationForm((prev) => ({ ...prev, fullName: event.target.value }))
+                  }
+                  placeholder="Maria Silva…"
+                />
+              </div>
+              <div>
+                <label htmlFor="manual-phone">Phone</label>
+                <input
+                  id="manual-phone"
+                  required
+                  inputMode="tel"
+                  autoComplete="tel"
+                  value={manualReservationForm.phone}
+                  onChange={(event) =>
+                    setManualReservationForm((prev) => ({ ...prev, phone: event.target.value }))
+                  }
+                  placeholder="+351 912 345 678…"
+                />
+              </div>
+              <div>
+                <label htmlFor="manual-email">Email (optional)</label>
+                <input
+                  id="manual-email"
+                  type="email"
+                  value={manualReservationForm.email}
+                  onChange={(event) =>
+                    setManualReservationForm((prev) => ({ ...prev, email: event.target.value }))
+                  }
+                  placeholder="guest@example.com…"
+                />
+              </div>
+              <div className="admin-dialog-fields-wide">
+                <label htmlFor="manual-info">Other information (optional)</label>
+                <textarea
+                  id="manual-info"
+                  value={manualReservationForm.otherInfo}
+                  onChange={(event) =>
+                    setManualReservationForm((prev) => ({ ...prev, otherInfo: event.target.value }))
+                  }
+                  placeholder="Notes, seating request, dietary info…"
+                />
+              </div>
+            </div>
+
+            <div className="admin-dialog-actions">
+              <button
+                className="btn btn-secondary"
+                type="button"
+                disabled={actionKey !== null}
+                onClick={() => {
+                  setManualReservationForm(defaultManualReservationForm);
+                  setIsManualReservationFormOpen(false);
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-primary"
+                type="button"
+                disabled={actionKey !== null}
+                onClick={() => void createManualCalendarReservation()}
+              >
+                {actionKey === "create-manual-calendar-reservation" ? "Saving..." : "Add confirmed reservation"}
+              </button>
+            </div>
           </div>
-        </>
+        </AdminDialog>
       ) : null}
 
     </div>

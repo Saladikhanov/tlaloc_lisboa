@@ -158,8 +158,8 @@
 ## Phase 9: Polish and cross-cutting
 
 - [ ] T047 [P] Keyboard-only walkthrough of every screen: focus always visible and never hidden by the bars; reduced motion respected; 200% text zoom and phone landscape have no overlap or clipped controls
-- [ ] T048 Run `/web-design-guidelines` on the new and changed admin files and `/vercel-react-best-practices` on the shell, theme scope and any extracted components; fix findings or record why skipped (ignore the Title Case rule per `CLAUDE.md`)
-- [ ] T049 [P] Update `docs/design.md` with the admin section (tokens, themes, navigation, statuses) and `CLAUDE.md` if rules changed
+- [x] T048 Run `/web-design-guidelines` on the new and changed admin files and `/vercel-react-best-practices` on the shell, theme scope and any extracted components; fix findings or record why skipped (ignore the Title Case rule per `CLAUDE.md`) _(Fixed: dialog focus management via AdminDialog, aria-labels on placeholder-only fields, touch-action, placeholders with ellipsis, scrollbar-gutter. Skipped on purpose: Title Case rule (CLAUDE.md), unsaved-changes warning and Intl date formatting (behavior changes outside this redesign). React review: no waterfalls or heavy imports added; the 3,800-line admin-back-office component is existing structure, not split here.)_
+- [x] T049 [P] Update `docs/design.md` with the admin section (tokens, themes, navigation, statuses) and `CLAUDE.md` if rules changed
 - [ ] T050 Run `npm run lint`, `npm run build` and `node scripts/check-contrast.mjs`; run the full `quickstart.md` in both themes and record pass or fail per item
 - [ ] T051 Owner pass on a real phone and a desktop browser in both themes, including the browser bar color, plus a short walkthrough where a staff member who used the old admin does the Today, confirm and cancel tasks on the first try (SC-009); then merge and close the feature
 

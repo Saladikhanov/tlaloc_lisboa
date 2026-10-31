@@ -40,7 +40,7 @@ Rules from the check:
 ## Typography
 - Replace Bebas Neue + Pacifico (template cliché). **Decided 2026-10-31:** Bricolage Grotesque
   (headings, `--font-display`) + Figtree (body, `--font-body`), loaded in `src/app/layout.tsx`
-  and exposed on `<html>`. The admin keeps Geist + Bebas via `src/app/admin/layout.tsx`.
+  and exposed on `<html>`. The admin uses the same two fonts; Geist and Bebas were removed with the legacy look.
 - Two families at most: one characterful grotesk for headings, one clean text sans.
   Fallback if Bricolage ever disappoints with the wordmark: Familjen Grotesk for headings.
 - Must support Portuguese diacritics (á, ã, ç, õ) and the accent in "Tláloc".
@@ -88,4 +88,23 @@ no layout shift from images. After building, audit with `web-design-guidelines` 
 - **High-resolution mascot:** the 512 px app icon is a blurry upscale of a 200 px file; a vector or
   large transparent version would fix the icons and allow a cleaner mascot everywhere.
 - **Hero photo:** the five existing photos work; a dedicated hero shot is optional.
-- **Admin back office:** feature 002 gives it a calm, dense look with a light and a dark theme (`--a-*` tokens in `src/app/admin/admin.css`); tabs not yet migrated keep their old look as a dark panel.
+
+## Admin back office
+Calm, dense work tool on its own tokens in `src/app/admin/admin.css` (scope `.admin-v2`); the
+contract is `specs/002-admin-redesign/contracts/admin-ui-contract.md`.
+- **Themes:** light, dark or system (switch in the bar and the phone More sheet). The choice is
+  stored in the browser and applied before first paint as `data-admin-theme` on `<html>`; the
+  browser bar color follows it. The public site stays light only.
+- **Tokens:** `--a-bg`, `--a-surface`, `--a-surface-2`, `--a-text`, `--a-muted`, `--a-line`,
+  `--a-accent` (main actions, selected states), `--a-danger` (destructive confirms and the "now"
+  marker only), status pairs (new, unread, confirmed, cancelled, no-show, warning), glass and shadow.
+  Every pair is checked by `node scripts/check-contrast.mjs`.
+- **Navigation:** top bar on desktop, bottom bar plus a More sheet on phones. Tabs and addresses are
+  unchanged (`/admin?tab=today|reservations|calendar|metrics|rewards|menu|security|hours`).
+- **Statuses and alerts:** every status chip and alert has a text label and an icon or shape, never
+  color alone. Alert styles (green, orange, neutral) map to the confirmed, warning and surface-2 tokens.
+- **Shape:** content is square-ish (6px); floating layers (bars, toasts, dialogs) are rounded glass.
+- **Live alerts:** the open admin listens to a server stream and also polls
+  `/api/admin/reservations/new` (15 s visible, 60 s hidden) because the stream cannot cross server
+  instances after a deploy. Each booking alerts once.
+- **Dialogs:** use `AdminDialog` (focus moves in, Tab wraps, Escape closes, focus returns).
