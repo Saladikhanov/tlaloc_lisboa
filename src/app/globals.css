@@ -1,19 +1,59 @@
+/*
+ * Design tokens: see docs/design.md and specs/001-public-site-redesign/contracts/design-tokens.md.
+ *
+ * Shared by admin and public (audited 2026-10-31): site-shell, form-shell, form-grid, card,
+ * btn, btn-primary, btn-secondary, footer-note, site-nav, site-nav-inner, brand, nav-toggle,
+ * confirm-modal-*, admin-calendar-head, plus the global label/input/select/textarea rules.
+ * The admin keeps its original look through the ADMIN THEME block at the end of this file;
+ * any shared rule restyled for the public site must be mirrored there.
+ */
 :root {
-  --bg: #130800;
-  --card: #2a1505;
-  --card-soft: #3a1f0b;
-  --text: #fff4e0;
-  --muted: #f0ddb8;
-  --clay: #c4622d;
-  --fire: #e8351a;
-  --marig: #f5a623;
-  --gold: #ffd166;
-  --agave: #2d7b4f;
-  --turq: #00a9a5;
-  --purp: #7b2d8b;
-  --accent: #f5a623;
-  --accent-soft: #e8351a;
-  --line: rgba(245, 166, 35, 0.25);
+  /* Palette */
+  --paper: #fbfbf8;
+  --paper-2: #f0f2ee;
+  --teal: #0a2b36;
+  --teal-mid: #12404f;
+  --cyan: #27a9d8;
+  --chile: #d62f25;
+  --lime: #c9e265;
+  --agave: #1f6b4a;
+  --muted: #4f6168;
+  --white: #ffffff;
+
+  /* Roles on the light page */
+  --text: var(--teal);
+  --line: rgba(10, 43, 54, 0.18);
+  --focus-ring: var(--teal);
+
+  /* Type */
+  --font-display: var(--font-bricolage), "Helvetica Neue", Arial, sans-serif;
+  --font-body: var(--font-figtree), "Helvetica Neue", Arial, sans-serif;
+
+  /* Space and shape */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2.5rem;
+  --space-7: 4rem;
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-pill: 999px;
+
+  /* Bridge: legacy names point at the new palette until each slice is migrated */
+  --bg: var(--paper);
+  --card: var(--white);
+  --card-soft: var(--paper-2);
+  --clay: var(--chile);
+  --fire: var(--chile);
+  --marig: var(--chile);
+  --gold: var(--lime);
+  --turq: var(--cyan);
+  --purp: var(--teal-mid);
+  --accent: var(--chile);
+  --accent-soft: var(--chile);
+
   --header-h: 70px;
   --quick-find-h: 0px;
   --menu-anchor-offset: calc(var(--header-h) + var(--quick-find-h) + 16px);
@@ -38,12 +78,28 @@ html {
 }
 
 body {
-  background: linear-gradient(180deg, #130800 0%, #1a0a00 100%);
+  background: var(--paper);
   color: var(--text);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   padding-top: 70px;
+}
+
+/* Dark surfaces (nav, footer, booking band): remap roles so children read correctly */
+.on-teal,
+.site-nav,
+.site-footer {
+  --text: var(--paper);
+  --muted: color-mix(in srgb, var(--paper) 82%, transparent);
+  --line: rgba(251, 251, 248, 0.24);
+  --accent: var(--lime);
+  --focus-ring: var(--lime);
+}
+
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
 }
 
 a {
@@ -62,9 +118,9 @@ a {
   left: 0;
   width: 100%;
   z-index: 40;
-  background: rgba(19, 8, 0, 0.92);
-  border-bottom: 1px solid var(--line);
-  backdrop-filter: blur(8px);
+  background: var(--teal);
+  color: var(--text);
+  border-bottom: 1px solid var(--teal-mid);
 }
 
 .site-nav-inner {
@@ -104,13 +160,10 @@ a {
 }
 
 .header-page-title {
-  font-family: var(--font-bebas-neue), "Bebas Neue", sans-serif;
-  background: linear-gradient(135deg, var(--marig), var(--gold) 60%, var(--clay));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  letter-spacing: 0.08em;
-  font-size: 1.6rem;
+  font-family: var(--font-display);
+  color: var(--text);
+  letter-spacing: 0;
+  font-size: 1.35rem;
   font-weight: 700;
   line-height: 1;
 }
@@ -135,7 +188,7 @@ a {
   display: inline-flex;
   align-items: center;
   border: 1px solid var(--line);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   overflow: hidden;
 }
 
@@ -155,7 +208,7 @@ a {
   font: inherit;
   font-size: 0.78rem;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
   padding: 0.3rem 0.6rem;
   cursor: pointer;
   transition: color 0.2s ease, background-color 0.2s ease;
@@ -166,7 +219,7 @@ a {
 }
 
 .lang-btn.active {
-  background: rgba(245, 166, 35, 0.18);
+  background: rgba(201, 226, 101, 0.18);
   color: var(--accent);
 }
 
@@ -201,9 +254,9 @@ a {
 .nav-toggle {
   display: none;
   border: 1.5px solid var(--line);
-  background: rgba(255, 255, 255, 0.04);
+  background: transparent;
   color: var(--text);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   width: 52px;
   height: 44px;
   align-items: center;
@@ -211,7 +264,6 @@ a {
   flex-direction: column;
   gap: 5px;
   cursor: pointer;
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22);
   touch-action: manipulation;
 }
 
@@ -231,11 +283,13 @@ a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   border: 1px solid var(--line);
-  padding: 0.65rem 1rem;
+  padding: 0.65rem 1.1rem;
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+  min-height: 44px;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .btn:disabled {
@@ -244,21 +298,25 @@ a {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--accent-soft), var(--accent));
-  color: #fff;
-  border-color: transparent;
+  background: var(--chile);
+  color: var(--white);
+  border-color: var(--chile);
+}
+
+.btn-primary:hover {
+  background: #bd2820;
+  border-color: #bd2820;
 }
 
 .btn-secondary {
-  background: rgba(245, 166, 35, 0.16);
-  color: var(--accent);
-  border-color: rgba(245, 166, 35, 0.45);
+  background: transparent;
+  color: var(--teal);
+  border-color: var(--teal);
 }
 
 .btn-secondary:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-  background: rgba(245, 166, 35, 0.24);
+  background: var(--teal);
+  color: var(--paper);
 }
 
 .btn-icon {
@@ -735,7 +793,7 @@ a {
     }
 
     .offer-pct {
-      font-family: 'Bebas Neue', sans-serif;
+      font-family: var(--font-display);
       font-size: 6.5rem;
       line-height: 1;
       color: white;
@@ -745,7 +803,7 @@ a {
     }
 
     .offer-label {
-      font-family: 'Bebas Neue', sans-serif;
+      font-family: var(--font-display);
       font-size: 1.5rem;
       letter-spacing: 3px;
       color: var(--gold);
@@ -938,7 +996,7 @@ a {
 }
 
 .hero h1 {
-  font-family: var(--font-pacifico), "Pacifico", cursive;
+  font-family: var(--font-display);
   color: var(--gold);
   text-shadow:
     0 0 20px rgba(255, 209, 102, 0.6),
@@ -1277,9 +1335,9 @@ a {
 
 .card {
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   padding: 1rem;
-  background: linear-gradient(180deg, var(--card) 0%, var(--card-soft) 100%);
+  background: var(--card);
   position: relative;
 }
 
@@ -1302,7 +1360,7 @@ a {
 }
 
 .menu-head h1 {
-  font-family: var(--font-bebas-neue), "Bebas Neue", sans-serif;
+  font-family: var(--font-display);
   letter-spacing: 0.02em;
   font-size: clamp(1.6rem, 4vw, 2.3rem);
 }
@@ -1410,7 +1468,7 @@ a {
   border: 1px solid var(--line);
   border-radius: 999px;
   padding: 0.34rem 0.8rem;
-  font-family: var(--font-bebas-neue), "Bebas Neue", sans-serif;
+  font-family: var(--font-display);
   font-size: 0.96rem;
   font-weight: 700;
   letter-spacing: 0.05em;
@@ -1534,7 +1592,7 @@ a {
 }
 
 .menu-block-title {
-  font-family: var(--font-bebas-neue), "Bebas Neue", sans-serif;
+  font-family: var(--font-display);
   letter-spacing: 0.03em;
   color: var(--accent);
   font-size: 1.35rem;
@@ -1549,7 +1607,7 @@ a {
 }
 
 .menu-section h2 {
-  font-family: var(--font-bebas-neue), "Bebas Neue", sans-serif;
+  font-family: var(--font-display);
   letter-spacing: 0.03em;
   margin-bottom: 0.7rem;
   color: var(--accent);
@@ -1681,8 +1739,7 @@ a {
   inset: 0;
   z-index: 90;
   border: 0;
-  background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(2px);
+  background: rgba(10, 43, 54, 0.55);
 }
 
 .confirm-modal-wrap {
@@ -1699,9 +1756,9 @@ a {
   position: relative;
   width: min(460px, calc(100vw - 2rem));
   border: 1px solid var(--line);
-  border-radius: 14px;
-  background: linear-gradient(180deg, var(--card) 0%, var(--card-soft) 100%);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  box-shadow: 0 16px 40px rgba(10, 43, 54, 0.28);
   padding: 1rem;
 }
 
@@ -2416,8 +2473,8 @@ a {
 }
 
 .form-shell h1 {
-  font-family: var(--font-bebas-neue), "Bebas Neue", sans-serif;
-  letter-spacing: 0.02em;
+  font-family: var(--font-display);
+  letter-spacing: 0;
 }
 
 .admin-page-title-today {
@@ -2478,9 +2535,9 @@ select {
   max-width: 100%;
   min-width: 0;
   border: 1px solid var(--line);
-  background: #201003;
+  background: var(--white);
   color: var(--text);
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   padding: 0.7rem 0.75rem;
   font: inherit;
 }
@@ -2600,10 +2657,8 @@ textarea {
 
 .site-footer {
   margin-top: 2.2rem;
-  border-top: 1px solid rgba(245, 166, 35, 0.16);
-  background:
-    radial-gradient(circle at top right, rgba(245, 166, 35, 0.08), transparent 32%),
-    linear-gradient(180deg, rgba(26, 12, 4, 0.96), rgba(16, 8, 2, 0.98));
+  background: var(--teal);
+  color: var(--text);
 }
 
 .site-footer-inner {
@@ -2622,16 +2677,17 @@ textarea {
 
 .site-footer-brand {
   margin: 0;
-  font-family: var(--font-pacifico), "Pacifico", cursive;
-  font-size: 1.5rem;
-  color: var(--gold);
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text);
 }
 
 .site-footer-heading {
   margin: 0;
-  font-family: var(--font-bebas-neue), sans-serif;
-  font-size: 1.1rem;
-  letter-spacing: 0.06em;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
   color: var(--text);
 }
 
@@ -2646,7 +2702,7 @@ textarea {
 }
 
 .site-footer-links a:hover {
-  color: var(--gold);
+  color: var(--accent);
 }
 
 .site-footer-bottom {
@@ -2665,9 +2721,9 @@ textarea {
   width: var(--quick-filter-btn-h);
   height: var(--quick-filter-btn-h);
   border-radius: 999px;
-  border: 1px solid var(--line);
-  background: rgba(19, 8, 0, 0.95);
-  color: var(--accent);
+  border: 1px solid var(--teal-mid);
+  background: var(--teal);
+  color: var(--lime);
   font-size: 1.2rem;
   font-weight: 800;
   cursor: pointer;
@@ -2720,7 +2776,7 @@ textarea {
     border: 1px solid var(--line);
     border-radius: 999px;
     overflow: hidden;
-    background: rgba(19, 8, 0, 0.95);
+    background: var(--teal);
   }
 
   .mobile-lang-switch .lang-btn {
@@ -2951,9 +3007,147 @@ textarea {
     scroll-behavior: auto;
   }
 
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
   .btn.btn-primary.home-discount-banner-cta::before,
   .quick-filter-fab::before {
     animation: none;
     opacity: 0;
   }
+}
+
+/*
+ * ADMIN THEME (frozen legacy look)
+ * The back office keeps its pre-redesign appearance. src/app/admin/layout.tsx wraps every
+ * admin route in .admin-theme. Whenever a rule shared with the public site (see the list at
+ * the top of this file) is restyled, mirror its previous values here. :where() keeps these
+ * at the same specificity as the base rules; they win by coming last.
+ */
+.admin-theme {
+  --bg: #130800;
+  --card: #2a1505;
+  --card-soft: #3a1f0b;
+  --text: #fff4e0;
+  --muted: #f0ddb8;
+  --clay: #c4622d;
+  --fire: #e8351a;
+  --marig: #f5a623;
+  --gold: #ffd166;
+  --agave: #2d7b4f;
+  --turq: #00a9a5;
+  --purp: #7b2d8b;
+  --accent: #f5a623;
+  --accent-soft: #e8351a;
+  --line: rgba(245, 166, 35, 0.25);
+  --focus-ring: #ffd166;
+  color: var(--text);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+body:has(.admin-theme) {
+  background: linear-gradient(180deg, #130800 0%, #1a0a00 100%);
+  color: #fff4e0;
+}
+
+body:has(.admin-theme) .scroll-top-btn {
+  border: 1px solid rgba(245, 166, 35, 0.25);
+  background: rgba(19, 8, 0, 0.95);
+  color: #f5a623;
+}
+
+:where(.admin-theme) .site-nav {
+  --text: #fff4e0;
+  --muted: #f0ddb8;
+  --line: rgba(245, 166, 35, 0.25);
+  --accent: #f5a623;
+  --focus-ring: #ffd166;
+  background: rgba(19, 8, 0, 0.92);
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(8px);
+}
+
+:where(.admin-theme) .header-page-title {
+  font-family: var(--font-bebas-neue), "Bebas Neue", sans-serif;
+  background: linear-gradient(135deg, #f5a623, #ffd166 60%, #c4622d);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: 0.08em;
+  font-size: 1.6rem;
+}
+
+:where(.admin-theme) .lang-btn {
+  letter-spacing: 0.06em;
+}
+
+:where(.admin-theme) .lang-btn.active {
+  background: rgba(245, 166, 35, 0.18);
+}
+
+:where(.admin-theme) .nav-toggle {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22);
+}
+
+:where(.admin-theme) .mobile-lang-switch {
+  background: rgba(19, 8, 0, 0.95);
+}
+
+:where(.admin-theme) .btn {
+  padding: 0.65rem 1rem;
+  font-size: 0.9rem;
+  min-height: 0;
+  transition: none;
+}
+
+:where(.admin-theme) .btn-primary,
+:where(.admin-theme) .btn-primary:hover {
+  background: linear-gradient(135deg, #e8351a, #f5a623);
+  color: #fff;
+  border-color: transparent;
+}
+
+:where(.admin-theme) .btn-secondary {
+  background: rgba(245, 166, 35, 0.16);
+  color: #f5a623;
+  border-color: rgba(245, 166, 35, 0.45);
+}
+
+:where(.admin-theme) .btn-secondary:hover {
+  border-color: #f5a623;
+  color: #f5a623;
+  background: rgba(245, 166, 35, 0.24);
+}
+
+:where(.admin-theme) .card {
+  border-radius: 14px;
+  background: linear-gradient(180deg, #2a1505 0%, #3a1f0b 100%);
+}
+
+:where(.admin-theme) .confirm-modal-backdrop {
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(2px);
+}
+
+:where(.admin-theme) .confirm-modal-card {
+  border-radius: 14px;
+  background: linear-gradient(180deg, #2a1505 0%, #3a1f0b 100%);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+}
+
+:where(.admin-theme) .form-shell h1 {
+  font-family: var(--font-bebas-neue), "Bebas Neue", sans-serif;
+  letter-spacing: 0.02em;
+}
+
+:where(.admin-theme) :is(input, textarea, select) {
+  background: #201003;
+  border-radius: 10px;
 }

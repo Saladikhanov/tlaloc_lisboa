@@ -1,30 +1,20 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import { Bebas_Neue, Geist, Geist_Mono, Pacifico } from "next/font/google";
+import { Bricolage_Grotesque, Figtree } from "next/font/google";
 import ScrollToTop from "@/components/scroll-to-top";
 import { getSiteBaseUrl } from "@/lib/site-url";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const bricolage = Bricolage_Grotesque({
+  variable: "--font-bricolage",
+  subsets: ["latin", "latin-ext"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-const bebasNeue = Bebas_Neue({
-  variable: "--font-bebas-neue",
-  subsets: ["latin"],
-  weight: "400",
-});
-
-const pacifico = Pacifico({
-  variable: "--font-pacifico",
-  subsets: ["latin"],
-  weight: "400",
+const figtree = Figtree({
+  variable: "--font-figtree",
+  subsets: ["latin", "latin-ext"],
+  display: "swap",
 });
 
 const appBaseUrl = getSiteBaseUrl();
@@ -73,20 +63,21 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = {
+  themeColor: "#0a2b36",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={`${bricolage.variable} ${figtree.variable}`} suppressHydrationWarning>
       <head>
         <meta property="og:logo" content={`${appBaseUrl}/favicon-v2.ico`} />
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} ${bebasNeue.variable} ${pacifico.variable}`}
-        suppressHydrationWarning
-      >
+      <body suppressHydrationWarning>
         {children}
         <ScrollToTop />
         <SpeedInsights />

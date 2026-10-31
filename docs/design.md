@@ -38,7 +38,9 @@ Rules from the check:
 - Re-run contrast whenever a hex changes.
 
 ## Typography
-- Replace Bebas Neue + Pacifico (template cliché).
+- Replace Bebas Neue + Pacifico (template cliché). **Decided 2026-10-31:** Bricolage Grotesque
+  (headings, `--font-display`) + Figtree (body, `--font-body`), loaded in `src/app/layout.tsx`
+  and exposed on `<html>`. The admin keeps Geist + Bebas via `src/app/admin/layout.tsx`.
 - Two families at most: one characterful grotesk for headings, one clean text sans.
   Candidates to test against the TLÁLOC wordmark: Bricolage Grotesque (display) with a
   neutral sans for body. Decide in the plan after seeing them with real copy.
@@ -66,6 +68,5 @@ no layout shift from images. After building, audit with `web-design-guidelines` 
 `vercel-react-best-practices`.
 
 ## Open decisions
-- Final typefaces (needs a visual test).
 - Whether the mascot is the primary logo or sits beside the wordmark.
 - Photo set: current five gallery shots are the minimum; consider a reshoot for the hero.
