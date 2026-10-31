@@ -185,7 +185,7 @@ export default async function HomePage({ params }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
-      <PublicNav />
+      <PublicNav overHero />
 
       <main className="site-shell">
         <section className="home-hero full-bleed" aria-labelledby="home-hero-title">
