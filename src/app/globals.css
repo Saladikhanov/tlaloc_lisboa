@@ -123,15 +123,17 @@ a {
 }
 
 /*
- * Public nav backdrop: solid teal behind the bar that fades to transparent below it, with a
- * progressive blur (four layers: strongest right under the bar, tapering to none lower down). Decorative only.
+ * Public nav backdrop: gradient and progressive blur share exactly the bar's height.
+ * Teal is solid behind the logo and links, then turns translucent toward the bottom edge,
+ * where the blur (four layers, strongest around two thirds down) shows through and tapers
+ * to nothing at the edge. Decorative only.
  */
 .site-nav-fade {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: calc(var(--header-h) + 12px);
+  height: var(--header-h);
   z-index: -1;
   pointer-events: none;
 }
@@ -142,23 +144,23 @@ a {
 }
 
 .site-nav-fade span:nth-child(1) {
-  backdrop-filter: blur(6px);
-  mask-image: linear-gradient(to bottom, #000 0%, #000 40%, transparent 70%);
+  backdrop-filter: blur(0.5px);
+  mask-image: linear-gradient(to bottom, transparent 20%, #000 40%, #000 60%, transparent 85%);
 }
 
 .site-nav-fade span:nth-child(2) {
-  backdrop-filter: blur(3px);
-  mask-image: linear-gradient(to bottom, transparent 25%, #000 45%, #000 60%, transparent 80%);
+  backdrop-filter: blur(1.5px);
+  mask-image: linear-gradient(to bottom, transparent 35%, #000 55%, #000 70%, transparent 90%);
 }
 
 .site-nav-fade span:nth-child(3) {
-  backdrop-filter: blur(1.5px);
-  mask-image: linear-gradient(to bottom, transparent 45%, #000 65%, #000 80%, transparent 95%);
+  backdrop-filter: blur(3px);
+  mask-image: linear-gradient(to bottom, transparent 50%, #000 68%, #000 78%, transparent 95%);
 }
 
 .site-nav-fade span:nth-child(4) {
-  backdrop-filter: blur(0.5px);
-  mask-image: linear-gradient(to bottom, transparent 60%, #000 80%, transparent 100%);
+  backdrop-filter: blur(4px);
+  mask-image: linear-gradient(to bottom, transparent 60%, #000 78%, #000 86%, transparent 100%);
 }
 
 .site-nav-fade::after {
@@ -168,8 +170,8 @@ a {
   background: linear-gradient(
     to bottom,
     var(--teal) 0,
-    var(--teal) calc(var(--header-h) - 30px),
-    rgba(10, 43, 54, 0.78) var(--header-h),
+    var(--teal) 45%,
+    rgba(10, 43, 54, 0.6) 80%,
     rgba(10, 43, 54, 0) 100%
   );
 }
@@ -789,7 +791,9 @@ a {
 .home-hero {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  min-height: min(620px, calc(100svh - var(--header-h)));
+  /* Slides under the fixed header so the nav fade and blur have color to work with */
+  margin-top: calc(var(--header-h) * -1);
+  min-height: min(690px, 100svh);
 }
 
 .home-hero-copy {
@@ -797,7 +801,7 @@ a {
   gap: var(--space-4);
   align-content: center;
   justify-items: start;
-  padding: var(--space-7) var(--space-6) var(--space-7)
+  padding: calc(var(--space-7) + var(--header-h)) var(--space-6) var(--space-7)
     max(1rem, calc((100vw - 1120px) / 2));
   background: var(--lime);
   color: var(--teal);
