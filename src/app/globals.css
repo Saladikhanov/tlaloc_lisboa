@@ -573,85 +573,13 @@ summary,
   }
 }
 
-.card.tutorial-mode-card {
-  border-color: rgba(255, 255, 255, 0.68);
-  background:
-    radial-gradient(circle at 16% 0%, rgba(255, 255, 255, 0.88), transparent 45%),
-    radial-gradient(circle at 88% 0%, rgba(255, 255, 255, 0.7), transparent 44%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(255, 255, 255, 0.74));
-  color: #111827;
-}
 
-.tutorial-overlay {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 89;
-  padding: 0.85rem 0.9rem 0.95rem;
-  background: transparent;
-  backdrop-filter: none;
-  border-top: 0;
-  box-shadow: none;
-  pointer-events: none;
-}
 
-.card.tutorial-overlay-panel {
-  width: min(980px, calc(100vw - 1.8rem));
-  margin: 0 auto;
-  max-height: min(64vh, 560px);
-  overflow: hidden;
-  border-radius: 24px;
-  border: 0;
-  background:
-    radial-gradient(circle at 15% -10%, rgba(255, 255, 255, 0.72), transparent 42%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.54), rgba(255, 255, 255, 0.36));
-  backdrop-filter: blur(22px) saturate(115%);
-  box-shadow: 0 16px 36px rgba(148, 163, 184, 0.24);
-  pointer-events: auto;
-}
 
-.tutorial-overlay-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.6rem;
-}
 
-.tutorial-steps {
-  margin-top: 0.8rem;
-  display: flex;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scroll-snap-type: x proximity;
-  -webkit-overflow-scrolling: touch;
-  gap: 0.7rem;
-  padding-bottom: 0.2rem;
-}
 
-.tutorial-step {
-  border: 1px solid rgba(255, 255, 255, 0.75);
-  border-radius: 18px;
-  padding: 0.75rem;
-  background:
-    radial-gradient(circle at top, rgba(255, 255, 255, 0.45), transparent 62%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.2));
-  backdrop-filter: blur(14px) saturate(120%);
-  display: grid;
-  gap: 0.45rem;
-  flex: 0 0 min(320px, calc(100vw - 3.4rem));
-  scroll-snap-align: start;
-  color: #111827;
-}
 
-.tutorial-step .btn {
-  justify-self: start;
-}
 
-.tutorial-action-note {
-  margin-top: 0.2rem;
-  opacity: 0.9;
-}
 
 .reservation-anchor-card {
   position: relative;
@@ -748,38 +676,9 @@ summary,
   transform: translate(-100%, -50%);
 }
 
-.tutorial-overlay-panel h3,
-.tutorial-step strong {
-  color: #111827;
-}
 
-.tutorial-overlay-panel .footer-note {
-  color: rgba(17, 24, 39, 0.76);
-}
 
-.tutorial-continue-btn {
-  position: fixed;
-  left: 50%;
-  bottom: 0.9rem;
-  transform: translateX(-50%);
-  z-index: 90;
-  border-radius: 999px;
-  border-color: rgba(255, 255, 255, 0.8);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.64));
-  color: #111827;
-  backdrop-filter: blur(12px) saturate(120%);
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.85),
-    0 10px 24px rgba(148, 163, 184, 0.34);
-}
 
-.tutorial-overlay .btn.btn-secondary,
-.tutorial-overlay .btn.btn-primary {
-  border-color: rgba(255, 255, 255, 0.85);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.82));
-  color: #111827;
-  box-shadow: 0 8px 18px rgba(148, 163, 184, 0.28);
-}
 
 .full-bleed {
   width: 100vw;
@@ -3006,12 +2905,14 @@ textarea {
 }
 
 /*
+
+/*
  * ADMIN LEGACY LOOK (until feature 002 migrates each screen)
  * The back office keeps its pre-redesign appearance by default. src/app/admin/layout.tsx wraps every
  * admin route in .admin-app, which carries the legacy variables and the mirrors below. Screens that are
  * migrated sit inside .admin-v2 (new tokens, see src/app/admin/admin.css); screens that are not yet
  * migrated sit inside .admin-legacy, a self-contained dark panel that reads well in either theme.
- * The floating layers (toasts, badge, tutorial overlay, dialogs) stay outside both wrappers. Whenever a rule shared with the public site (see the list at
+ * The floating layers (toasts, badge, dialogs) stay outside both wrappers. Whenever a rule shared with the public site (see the list at
  * the top of this file) is restyled, mirror its previous values here. :where() keeps these
  * at the same specificity as the base rules; they win by coming last.
  */
