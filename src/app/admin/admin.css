@@ -1,0 +1,2038 @@
+/*
+ * Admin design tokens and themes (feature 002, see specs/002-admin-redesign/contracts/admin-ui-contract.md).
+ * Loaded only by the admin layout so public pages do not ship it.
+ *
+ * The theme is chosen by the data-admin-theme attribute on <html> (set before first paint by a small inline
+ * script, and kept in sync by AdminThemeScope). Keep these values in sync with scripts/check-contrast.mjs,
+ * which fails if any pair drops below WCAG AA.
+ */
+
+html[data-admin-theme="light"] {
+  color-scheme: light;
+  --a-bg: #f4f6f5;
+  --a-surface: #ffffff;
+  --a-surface-2: #ecf0ef;
+  --a-text: #0a2b36;
+  --a-muted: #4f6168;
+  --a-line: rgba(10, 43, 54, 0.18);
+  --a-accent: #0a2b36;
+  --a-on-accent: #fbfbf8;
+  --a-danger: #d62f25;
+  --a-on-danger: #ffffff;
+  --a-glass: rgba(255, 255, 255, 0.72);
+  --a-glass-edge: rgba(255, 255, 255, 0.95);
+  --a-shadow: rgba(10, 43, 54, 0.16);
+  --a-radius: 6px;
+
+  --a-new-bg: #ffdd8a;
+  --a-new-fg: #4d3200;
+  --a-unread-bg: #0b6a8f;
+  --a-unread-fg: #ffffff;
+  --a-confirmed-bg: #bfe6cf;
+  --a-confirmed-fg: #0e3d29;
+  --a-cancelled-bg: #f7c6c2;
+  --a-cancelled-fg: #7a1812;
+  --a-noshow-bg: #d9dad5;
+  --a-noshow-fg: #2f3b3f;
+  --a-warn-bg: #fbe9cc;
+  --a-warn-fg: #6b3f00;
+}
+
+html[data-admin-theme="dark"] {
+  color-scheme: dark;
+  --a-bg: #0b1417;
+  --a-surface: #121d21;
+  --a-surface-2: #1a282d;
+  --a-text: #eaf1f1;
+  --a-muted: #9db0b5;
+  --a-line: rgba(255, 255, 255, 0.14);
+  --a-accent: #c9e265;
+  --a-on-accent: #0b1417;
+  --a-danger: #d62f25;
+  --a-on-danger: #ffffff;
+  --a-glass: rgba(18, 29, 33, 0.72);
+  --a-glass-edge: rgba(255, 255, 255, 0.2);
+  --a-shadow: rgba(0, 0, 0, 0.45);
+  --a-radius: 6px;
+
+  --a-new-bg: #6b4e12;
+  --a-new-fg: #ffe6a8;
+  --a-unread-bg: #27a9d8;
+  --a-unread-fg: #0b1417;
+  --a-confirmed-bg: #1d5a40;
+  --a-confirmed-fg: #cff0df;
+  --a-cancelled-bg: #6a2622;
+  --a-cancelled-fg: #fbd5d1;
+  --a-noshow-bg: #3a474c;
+  --a-noshow-fg: #dde5e7;
+  --a-warn-bg: #4a3410;
+  --a-warn-fg: #f6dcb0;
+}
+
+/* No double-tap zoom delay on controls */
+.admin-v2 :where(a, button, input, select, textarea, summary, label),
+.admin-shell :where(a, button) {
+  touch-action: manipulation;
+}
+
+/* Focus ring for the new admin components */
+.admin-v2 :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 3px solid var(--a-accent);
+  outline-offset: 2px;
+}
+
+/* ------------------------------------------------------------------------------------------
+ * Base look for migrated (v2) screens. The legacy variable names are re-pointed at the admin
+ * tokens so shared rules written with them pick up the right theme.
+ * ---------------------------------------------------------------------------------------- */
+.admin-v2 {
+  --text: var(--a-text);
+  --muted: var(--a-muted);
+  --line: var(--a-line);
+  --card: var(--a-surface);
+  --card-soft: var(--a-surface-2);
+  --bg: var(--a-bg);
+  --accent: var(--a-accent);
+  --accent-soft: var(--a-accent);
+  color: var(--a-text);
+  font-family: var(--font-body);
+}
+
+.admin-v2 :is(h1, h2, h3, h4) {
+  font-family: var(--font-display);
+  color: var(--a-text);
+  letter-spacing: -0.01em;
+}
+
+.admin-v2 label {
+  color: var(--a-text);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.admin-v2 :is(input, select, textarea) {
+  min-height: 44px;
+  border: 1px solid var(--a-muted);
+  border-radius: var(--a-radius);
+  background: var(--a-surface);
+  color: var(--a-text);
+}
+
+.admin-v2 :is(input, select, textarea):focus-visible {
+  outline: 3px solid var(--a-accent);
+  outline-offset: 1px;
+}
+
+.admin-v2 .btn {
+  min-height: 44px;
+  padding: 0.55rem 1rem;
+  border-radius: var(--a-radius);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.admin-v2 .btn-primary {
+  background: var(--a-accent);
+  border-color: var(--a-accent);
+  color: var(--a-on-accent);
+}
+
+.admin-v2 .btn-primary:hover {
+  filter: brightness(0.92);
+}
+
+/* Red is reserved for destructive confirmations and the "now" marker */
+.admin-v2 .btn-danger {
+  background: var(--a-danger);
+  border-color: var(--a-danger);
+  color: var(--a-on-danger);
+}
+
+.admin-v2 .btn-danger:hover {
+  filter: brightness(0.92);
+}
+
+.admin-v2 .btn-secondary {
+  background: var(--a-surface);
+  border: 1px solid var(--a-line);
+  color: var(--a-text);
+}
+
+.admin-v2 .btn-secondary:hover {
+  background: var(--a-surface-2);
+  color: var(--a-text);
+}
+
+.admin-muted {
+  color: var(--a-muted);
+}
+
+.admin-form-error {
+  color: var(--a-cancelled-fg);
+  background: var(--a-cancelled-bg);
+  border-radius: var(--a-radius);
+  padding: 0.6rem 0.8rem;
+  font-weight: 600;
+}
+
+/* ------------------------------------------------------------------------------------------
+ * Theme switch
+ * ---------------------------------------------------------------------------------------- */
+.admin-theme-toggle {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--a-line);
+  border-radius: 999px;
+  background: var(--a-surface-2);
+}
+
+.admin-theme-option {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0 0.6rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--a-text);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.admin-theme-option:hover {
+  background: var(--a-line);
+}
+
+.admin-theme-option[aria-pressed="true"] {
+  background: var(--a-accent);
+  color: var(--a-on-accent);
+}
+
+.admin-theme-toggle--full .admin-theme-option {
+  min-height: 44px;
+  padding: 0 0.8rem;
+}
+
+/* ------------------------------------------------------------------------------------------
+ * Shell: glass top bar (all tabs on desktop), slim top bar + bottom tab bar + sheet on phones.
+ * Glass uses the same recipe as the public header, tinted by the theme.
+ * ---------------------------------------------------------------------------------------- */
+.admin-shell {
+  position: fixed;
+  z-index: 40;
+  background: var(--a-glass);
+  color: var(--a-text);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  box-shadow:
+    inset 0 1px 0 var(--a-glass-edge),
+    inset 0 0 0 1px var(--a-line),
+    0 10px 30px var(--a-shadow);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .admin-shell,
+  .admin-more-sheet {
+    background: var(--a-surface);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+.admin-shell--top {
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  border-radius: 16px;
+}
+
+.admin-shell-inner {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: min(1240px, 100%);
+  min-height: 58px;
+  margin: 0 auto;
+  padding: 0 0.75rem;
+}
+
+.admin-shell-brand {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.admin-shell-brand img {
+  display: block;
+  border-radius: 50%;
+}
+
+.admin-shell-title {
+  display: none;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.admin-shell-tabs {
+  display: flex;
+  flex: 1;
+  gap: 0.25rem;
+  min-width: 0;
+  overflow-x: auto;
+  list-style: none;
+  scrollbar-width: none;
+}
+
+.admin-shell-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.admin-shell-tabs a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 0.85rem;
+  border-radius: 999px;
+  color: var(--a-text);
+  font-size: 0.95rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.admin-shell-tabs a:hover {
+  background: var(--a-surface-2);
+}
+
+.admin-shell-tabs a[aria-current="page"] {
+  background: var(--a-accent);
+  color: var(--a-on-accent);
+}
+
+.admin-shell-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+}
+
+.admin-shell-site-link {
+  color: var(--a-text);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+/* The shared sign-out button, restyled for the shell */
+.admin-shell .btn-icon,
+.admin-more-sheet .btn {
+  border: 1px solid var(--a-line);
+  border-radius: 999px;
+  background: var(--a-surface);
+  color: var(--a-text);
+}
+
+.admin-shell .btn-icon {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+}
+
+.admin-shell :is(a, button):focus-visible,
+.admin-more-sheet :is(a, button):focus-visible {
+  outline: 3px solid var(--a-accent);
+  outline-offset: 2px;
+}
+
+/* Bottom tab bar and sheet exist on phones only */
+.admin-shell--bottom,
+.admin-more-sheet {
+  display: none;
+}
+
+@media (max-width: 860px) {
+  .admin-shell-inner {
+    gap: 0.75rem;
+  }
+
+  .admin-shell-title {
+    display: block;
+  }
+
+  .admin-shell-tabs,
+  .admin-shell-actions {
+    display: none;
+  }
+
+  .admin-shell--bottom {
+    display: block;
+    left: 10px;
+    right: 10px;
+    bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    border-radius: 18px;
+  }
+
+  .admin-shell--bottom ul {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    list-style: none;
+  }
+
+  .admin-shell--bottom :is(a, button) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    width: 100%;
+    min-height: 58px;
+    border: 0;
+    border-radius: 14px;
+    background: transparent;
+    color: var(--a-text);
+    font: inherit;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .admin-shell--bottom :is(a, button)[aria-current="page"] {
+    background: var(--a-accent);
+    color: var(--a-on-accent);
+  }
+
+  .admin-more-sheet {
+    position: fixed;
+    z-index: 39;
+    left: 10px;
+    right: 10px;
+    bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+    display: grid;
+    gap: 0.9rem;
+    max-height: calc(100svh - 170px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 1rem;
+    border-radius: 18px;
+    background: color-mix(in srgb, var(--a-surface) 94%, transparent);
+    color: var(--a-text);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(20px) saturate(180%);
+    box-shadow:
+      inset 0 1px 0 var(--a-glass-edge),
+      inset 0 0 0 1px var(--a-line),
+      0 10px 30px var(--a-shadow);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(8px);
+    transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s ease;
+  }
+
+  .admin-more-sheet.open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: none;
+  }
+}
+
+.admin-more-heading {
+  color: var(--a-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.admin-more-tabs {
+  display: grid;
+  list-style: none;
+}
+
+.admin-more-tabs a {
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  padding: 0 0.5rem;
+  border-top: 1px solid var(--a-line);
+  font-weight: 600;
+}
+
+.admin-more-tabs a[aria-current="page"] {
+  color: var(--a-accent);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 6px;
+}
+
+.admin-more-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--a-line);
+  font-weight: 600;
+}
+
+.admin-more-row .admin-theme-toggle--full {
+  flex: 1 1 100%;
+}
+
+.admin-more-row .admin-theme-toggle--full .admin-theme-option {
+  flex: 1;
+  padding: 0 0.4rem;
+}
+
+.admin-more-row--links {
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.admin-more-row--links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 0.25rem;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+/* Phones: make room for the bottom bar, and lift the scroll-to-top button above it */
+@media (max-width: 860px) {
+  body:has(.admin-shell--bottom) {
+    padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px));
+  }
+
+  body:has(.admin-shell--bottom) .scroll-top-btn {
+    bottom: calc(90px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* ------------------------------------------------------------------------------------------
+ * Sign-in page
+ * ---------------------------------------------------------------------------------------- */
+.admin-login {
+  display: grid;
+  justify-items: center;
+  gap: 1rem;
+  min-height: calc(100svh - 70px);
+  padding: 1rem 1rem 3rem;
+}
+
+.admin-login-top {
+  justify-self: end;
+}
+
+.admin-login-card {
+  display: grid;
+  gap: 1rem;
+  width: min(420px, 100%);
+  padding: 1.5rem;
+  border: 1px solid var(--a-line);
+  border-radius: 16px;
+  background: var(--a-surface);
+  box-shadow: 0 10px 30px var(--a-shadow);
+}
+
+.admin-login-card img {
+  border-radius: 50%;
+}
+
+.admin-login-card h1 {
+  font-size: 1.8rem;
+  line-height: 1.1;
+}
+
+.admin-field {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.admin-password {
+  position: relative;
+}
+
+.admin-password input {
+  padding-right: 3rem;
+}
+
+.admin-password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 0.35rem;
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  transform: translateY(-50%);
+  border: 0;
+  border-radius: var(--a-radius);
+  background: transparent;
+  color: var(--a-text);
+  cursor: pointer;
+}
+
+.admin-password-toggle:hover {
+  background: var(--a-surface-2);
+}
+
+.admin-login-submit {
+  width: 100%;
+}
+
+.admin-login-back a {
+  color: var(--a-muted);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+/* ------------------------------------------------------------------------------------------
+ * Status chips: text and a shape, never color alone
+ * ---------------------------------------------------------------------------------------- */
+.admin-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  /* a visible edge in the label's own color, so pale fills never look blank on a card */
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, currentColor 55%, transparent);
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.admin-chip--new {
+  background: var(--a-new-bg);
+  color: var(--a-new-fg);
+}
+
+/* Unread is a "look at this" signal rather than a state, so it is a solid badge */
+.admin-chip--unread {
+  background: var(--a-unread-bg);
+  color: var(--a-unread-fg);
+  box-shadow: none;
+}
+
+.admin-chip--confirmed {
+  background: var(--a-confirmed-bg);
+  color: var(--a-confirmed-fg);
+}
+
+.admin-chip--cancelled {
+  background: var(--a-cancelled-bg);
+  color: var(--a-cancelled-fg);
+}
+
+.admin-chip--no_show {
+  background: var(--a-noshow-bg);
+  color: var(--a-noshow-fg);
+}
+
+.admin-chip--next,
+.admin-chip--arriving {
+  background: var(--a-accent);
+  color: var(--a-on-accent);
+  box-shadow: none;
+}
+
+/* ------------------------------------------------------------------------------------------
+ * Today
+ * ---------------------------------------------------------------------------------------- */
+.admin-today-head {
+  display: flex;
+  align-items: baseline;
+}
+
+.admin-today-clock {
+  font-family: var(--font-display);
+  font-size: clamp(2.6rem, 9vw, 3.8rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--a-text);
+}
+
+.admin-today {
+  display: grid;
+  gap: 1rem;
+}
+
+.admin-today-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.admin-today-stats > div {
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--a-line);
+  border-radius: var(--a-radius);
+  background: var(--a-surface);
+}
+
+.admin-today-stats dt {
+  color: var(--a-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.admin-today-stats dd {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-today-nextup {
+  padding: 0.8rem 1rem;
+  border-radius: var(--a-radius);
+  background: var(--a-accent);
+  color: var(--a-on-accent);
+}
+
+.admin-today-nextup .admin-muted {
+  color: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  opacity: 0.85;
+}
+
+.admin-today-nextup-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.9rem;
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.admin-today-nextup-line strong {
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-today-nextup-guests {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.admin-today-empty {
+  padding: 1rem;
+  border: 1px dashed var(--a-line);
+  border-radius: var(--a-radius);
+  color: var(--a-muted);
+}
+
+.admin-today-list {
+  display: grid;
+  gap: 0.6rem;
+  list-style: none;
+}
+
+.admin-today-now {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0.3rem 0 0.6rem;
+  color: var(--a-danger);
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.admin-today-now::after {
+  content: "";
+  flex: 1;
+  height: 2px;
+  background: var(--a-danger);
+}
+
+.admin-today-row {
+  display: grid;
+  grid-template-columns: 4rem minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.admin-today-time {
+  padding-top: 0.85rem;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-today-card {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--a-line);
+  border-radius: var(--a-radius);
+  background: var(--a-surface);
+}
+
+.is-next .admin-today-card {
+  border-color: var(--a-accent);
+  box-shadow: inset 4px 0 0 var(--a-accent);
+}
+
+.is-arriving .admin-today-card {
+  border-color: var(--a-accent);
+}
+
+.admin-today-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+}
+
+.admin-today-card h3 {
+  font-size: 1.1rem;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.admin-today-meta {
+  margin-top: 0.15rem;
+  overflow-wrap: anywhere;
+}
+
+.admin-today-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.admin-today-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.admin-today-closed {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--a-line);
+}
+
+.admin-today-closed-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.admin-today-closed h2 {
+  font-size: 1.2rem;
+}
+
+.admin-today-count {
+  min-width: 2rem;
+  padding: 0.1rem 0.6rem;
+  border-radius: 999px;
+  background: var(--a-surface-2);
+  font-weight: 700;
+  text-align: center;
+}
+
+.admin-today-closed-list {
+  display: grid;
+  list-style: none;
+}
+
+.admin-today-closed-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.6rem 0;
+  border-top: 1px solid var(--a-line);
+}
+
+@media (max-width: 420px) {
+  .admin-today-row {
+    grid-template-columns: 3.2rem minmax(0, 1fr);
+    gap: 0.5rem;
+  }
+
+  .admin-today-time {
+    font-size: 1.05rem;
+  }
+}
+
+/* ------------------------------------------------------------------------------------------
+ * Reservations inbox
+ * ---------------------------------------------------------------------------------------- */
+.admin-reservations {
+  display: grid;
+  gap: 1rem;
+}
+
+.admin-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-height: 44px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.admin-switch input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.admin-switch-track {
+  position: relative;
+  flex-shrink: 0;
+  width: 46px;
+  height: 26px;
+  border-radius: 999px;
+  background: var(--a-surface-2);
+  box-shadow: inset 0 0 0 1.5px var(--a-muted);
+  transition: background-color 0.15s ease;
+}
+
+.admin-switch-track::after {
+  content: "";
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--a-muted);
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+.admin-switch input:checked + .admin-switch-track {
+  background: var(--a-accent);
+  box-shadow: none;
+}
+
+.admin-switch input:checked + .admin-switch-track::after {
+  transform: translateX(20px);
+  background: var(--a-on-accent);
+}
+
+.admin-switch input:focus-visible + .admin-switch-track {
+  outline: 3px solid var(--a-accent);
+  outline-offset: 2px;
+}
+
+.admin-reservation-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 430px), 1fr));
+  gap: 0.75rem;
+  list-style: none;
+}
+
+.admin-empty {
+  padding: 1.2rem;
+  border: 1px dashed var(--a-line);
+  border-radius: var(--a-radius);
+  color: var(--a-muted);
+}
+
+.admin-reservation {
+  display: grid;
+  align-content: start;
+  gap: 0.65rem;
+  height: 100%;
+  padding: 1rem;
+  border: 1px solid var(--a-line);
+  border-radius: var(--a-radius);
+  background: var(--a-surface);
+}
+
+.admin-reservation.is-unread {
+  box-shadow: inset 4px 0 0 var(--a-unread-bg);
+}
+
+/* A booking that just arrived while the admin was open */
+.admin-reservation.is-fresh {
+  outline: 3px solid color-mix(in srgb, var(--a-accent) 55%, transparent);
+  outline-offset: 2px;
+}
+
+.admin-reservation-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.admin-reservation-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding-top: 0.2rem;
+}
+
+.admin-reservation-icons {
+  display: flex;
+  flex-shrink: 0;
+  gap: 0.4rem;
+}
+
+.admin-icon-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--a-line);
+  border-radius: var(--a-radius);
+  background: var(--a-surface);
+  color: var(--a-text);
+  cursor: pointer;
+}
+
+.admin-icon-btn:hover:not(:disabled) {
+  background: var(--a-surface-2);
+}
+
+.admin-icon-btn--danger:hover:not(:disabled) {
+  background: var(--a-cancelled-bg);
+  color: var(--a-cancelled-fg);
+}
+
+.admin-icon-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.admin-reservation-name {
+  font-size: 1.25rem;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.admin-reservation-when {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.2rem 0.9rem;
+}
+
+.admin-reservation-guests {
+  color: var(--a-muted);
+  font-weight: 600;
+}
+
+.admin-reservation-contact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.admin-reservation-contact .btn {
+  max-width: 100%;
+  height: auto;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+.admin-reservation-reward {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-radius: var(--a-radius);
+  background: var(--a-surface-2);
+}
+
+.admin-reservation-reward-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.admin-count {
+  padding: 0.1rem 0.6rem;
+  border-radius: 999px;
+  background: var(--a-surface);
+  box-shadow: inset 0 0 0 1px var(--a-line);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.admin-reservation-details summary {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.admin-reservation-details p {
+  margin-top: 0.3rem;
+  color: var(--a-muted);
+  overflow-wrap: anywhere;
+}
+
+.admin-status-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 0.4rem;
+}
+
+.admin-status-group .btn.is-current {
+  background: var(--a-accent);
+  border-color: var(--a-accent);
+  color: var(--a-on-accent);
+}
+
+.admin-reservation-meta {
+  font-size: 0.8rem;
+}
+
+.admin-skeleton-card {
+  display: grid;
+  gap: 0.7rem;
+  padding: 1rem;
+  border: 1px solid var(--a-line);
+  border-radius: var(--a-radius);
+  background: var(--a-surface);
+}
+
+.admin-skeleton-line {
+  display: block;
+  height: 14px;
+  border-radius: 999px;
+  background: var(--a-surface-2);
+  animation: admin-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes admin-pulse {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@media (max-width: 520px) {
+  .admin-status-group {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ------------------------------------------------------------------------------------------
+ * Dialogs: glass sheets over a blurred, tinted backdrop
+ * ---------------------------------------------------------------------------------------- */
+.admin-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  border: 0;
+  background: rgba(8, 20, 24, 0.5);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+.admin-dialog-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 91;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.admin-dialog {
+  display: grid;
+  gap: 0.9rem;
+  width: min(440px, 100%);
+  max-height: 90dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 1.25rem;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--a-surface) 94%, transparent);
+  color: var(--a-text);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  box-shadow:
+    inset 0 1px 0 var(--a-glass-edge),
+    inset 0 0 0 1px var(--a-line),
+    0 20px 50px var(--a-shadow);
+}
+
+.admin-dialog h2 {
+  font-size: 1.35rem;
+  line-height: 1.15;
+}
+
+.admin-dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
+
+@media (max-width: 520px) {
+  .admin-dialog-actions .btn {
+    flex: 1 1 100%;
+  }
+}
+
+/* ------------------------------------------------------------------------------------------
+ * Alerts: reservation toasts, status toast, sync badge
+ * Green = confirmed pair, orange = warning pair, neutral = surface-2 (contract section 4).
+ * ---------------------------------------------------------------------------------------- */
+.admin-toast-stack {
+  position: fixed;
+  top: 84px;
+  right: 0.9rem;
+  z-index: 92;
+  display: grid;
+  gap: 0.6rem;
+  width: min(380px, calc(100vw - 1.8rem));
+}
+
+.admin-alert {
+  --alert-bg: var(--a-warn-bg);
+  --alert-fg: var(--a-warn-fg);
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  padding: 0.8rem 0.6rem 0.8rem 0.9rem;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--alert-fg) 28%, transparent);
+  background: var(--alert-bg);
+  color: var(--alert-fg);
+  box-shadow:
+    inset 0 1px 0 var(--a-glass-edge),
+    0 12px 28px var(--a-shadow);
+}
+
+.admin-alert--green {
+  --alert-bg: var(--a-confirmed-bg);
+  --alert-fg: var(--a-confirmed-fg);
+}
+
+.admin-alert--orange {
+  --alert-bg: var(--a-warn-bg);
+  --alert-fg: var(--a-warn-fg);
+}
+
+.admin-alert--neutral {
+  --alert-bg: var(--a-surface-2);
+  --alert-fg: var(--a-text);
+}
+
+.admin-alert-icon {
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.admin-alert-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-alert-title {
+  display: block;
+  font-size: 0.95rem;
+  line-height: 1.3;
+}
+
+.admin-alert .admin-alert-text {
+  color: inherit;
+  margin: 0.2rem 0 0;
+  font-size: 0.88rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.admin-alert-close {
+  flex-shrink: 0;
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  margin: -0.25rem 0 -0.25rem 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.admin-alert-close:hover {
+  background: color-mix(in srgb, var(--alert-fg) 14%, transparent);
+}
+
+.admin-alert-close:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 1px;
+}
+
+.admin-toast-preview {
+  display: grid;
+  gap: 0.6rem;
+  justify-items: start;
+  max-width: 380px;
+}
+
+.admin-toast-preview .admin-toast {
+  width: 100%;
+}
+
+/* Status toast and sync badge: glass layer, centered, clear of the bars */
+.admin-status-toast-wrap {
+  position: fixed;
+  bottom: 1.1rem;
+  left: 0;
+  right: 0;
+  z-index: 92;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.admin-status-toast,
+.sync-overlay-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  padding: 0.65rem 1rem;
+  border-radius: 999px;
+  border: 1px solid var(--a-line);
+  background: var(--a-glass);
+  color: var(--a-text);
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.3;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow:
+    inset 0 1px 0 var(--a-glass-edge),
+    0 10px 26px var(--a-shadow);
+}
+
+.admin-status-toast {
+  max-width: min(560px, calc(100vw - 1.8rem));
+  pointer-events: auto;
+}
+
+.admin-status-toast .admin-alert-icon {
+  margin: 0;
+  color: var(--a-confirmed-fg);
+}
+
+.admin-status-toast-loading {
+  padding: 0.7rem;
+}
+
+.sync-overlay-badge {
+  position: fixed;
+  top: 84px;
+  left: 0;
+  right: 0;
+  z-index: 89;
+  width: fit-content;
+  margin: 0 auto;
+}
+
+.admin-status-loader-ring {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 999px;
+  border: 2px solid var(--a-line);
+  border-top-color: var(--a-text);
+  animation: admin-status-loader-spin 0.8s linear infinite;
+}
+
+@keyframes admin-status-loader-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-status-loader-ring {
+    animation-duration: 2.4s;
+  }
+}
+
+/* Phones: toasts span the width under the top bar; the status toast sits above the bottom bar */
+@media (max-width: 860px) {
+  .admin-toast-stack {
+    left: 0.9rem;
+    width: auto;
+  }
+
+  body:has(.admin-shell--bottom) .admin-status-toast-wrap {
+    bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* ------------------------------------------------------------------------------------------
+ * Calendar
+ * ---------------------------------------------------------------------------------------- */
+.admin-calendar {
+  display: grid;
+  gap: 1rem;
+}
+
+.admin-calendar-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.admin-calendar-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.admin-calendar-month {
+  min-width: 10.5rem;
+  margin: 0;
+  font-size: 1.35rem;
+  text-align: center;
+  text-transform: capitalize;
+}
+
+.admin-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.35rem;
+}
+
+.admin-calendar-weekday {
+  padding: 0.25rem 0;
+  color: var(--a-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.admin-calendar-day,
+.admin-calendar-empty {
+  min-height: 64px;
+  border-radius: var(--a-radius);
+}
+
+.admin-calendar-empty {
+  background: transparent;
+}
+
+.admin-calendar-day {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.2rem;
+  padding: 0.4rem 0.45rem;
+  border: 1px solid var(--a-line);
+  background: var(--a-surface);
+  color: var(--a-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.admin-calendar-day:hover {
+  background: var(--a-surface-2);
+}
+
+.admin-calendar-day.is-today .admin-calendar-day-number {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.7rem;
+  height: 1.7rem;
+  padding: 0 0.3rem;
+  border-radius: 999px;
+  background: var(--a-accent);
+  color: var(--a-on-accent);
+}
+
+.admin-calendar-day.is-selected {
+  border-color: var(--a-accent);
+  box-shadow: inset 0 0 0 2px var(--a-accent);
+  background: var(--a-surface-2);
+}
+
+.admin-calendar-day:focus-visible {
+  outline: 3px solid var(--a-accent);
+  outline-offset: 2px;
+}
+
+.admin-calendar-day-number {
+  font-weight: 700;
+}
+
+.admin-calendar-day-marks {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.admin-calendar-closed-mark {
+  flex-shrink: 0;
+  vertical-align: -2px;
+  color: var(--a-cancelled-fg);
+}
+
+.admin-calendar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.admin-calendar-day-panel {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.admin-calendar-day-title {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.admin-closures {
+  display: grid;
+  gap: 0.8rem;
+  padding: 1rem;
+  border-radius: var(--a-radius);
+  border: 1px solid var(--a-line);
+  background: var(--a-surface);
+}
+
+.admin-closures-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.admin-closures-head h4 {
+  margin: 0 0 0.15rem;
+  font-size: 1.05rem;
+}
+
+.admin-closures-head p,
+.admin-closure p {
+  margin: 0;
+}
+
+.admin-closures-body {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.admin-closure-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.admin-closure-list {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-closure {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.7rem 0.8rem;
+  border-radius: var(--a-radius);
+  background: var(--a-surface-2);
+}
+
+@media (max-width: 520px) {
+  .admin-calendar-grid {
+    gap: 0.25rem;
+  }
+
+  .admin-calendar-day,
+  .admin-calendar-empty {
+    min-height: 56px;
+  }
+
+  .admin-calendar-head .btn {
+    width: 100%;
+  }
+
+  .admin-calendar-nav {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+/* ------------------------------------------------------------------------------------------
+ * Form dialogs (Add reservation)
+ * ---------------------------------------------------------------------------------------- */
+.admin-dialog--wide {
+  width: min(640px, 100%);
+}
+
+.admin-dialog p {
+  margin: 0;
+}
+
+.admin-dialog label {
+  color: var(--a-text);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.admin-dialog :is(input, select, textarea) {
+  min-height: 44px;
+  border: 1px solid var(--a-muted);
+  border-radius: var(--a-radius);
+  background: var(--a-surface);
+  color: var(--a-text);
+}
+
+.admin-dialog textarea {
+  min-height: 88px;
+}
+
+.admin-dialog :where(a, button, input, select, textarea):focus-visible {
+  outline: 3px solid var(--a-accent);
+  outline-offset: 2px;
+}
+
+.admin-dialog-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.admin-dialog-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.admin-dialog-fields > div {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.admin-dialog-fields-wide {
+  grid-column: 1 / -1;
+}
+
+.admin-choice-group {
+  display: grid;
+  gap: 0.4rem;
+  border: 0;
+  padding: 0;
+}
+
+.admin-choice-label {
+  color: var(--a-text);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.admin-choice-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.admin-choice {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 0.8rem;
+  border: 1px solid var(--a-muted);
+  border-radius: var(--a-radius);
+  background: var(--a-surface);
+  color: var(--a-text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.admin-choice:hover {
+  background: var(--a-surface-2);
+}
+
+.admin-choice.is-selected {
+  border-color: var(--a-accent);
+  background: var(--a-accent);
+  color: var(--a-on-accent);
+}
+
+@media (max-width: 520px) {
+  .admin-closure-fields,
+  .admin-dialog-fields {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ------------------------------------------------------------------------------------------
+ * Remaining tabs (metrics, rewards, menu, hours, settings): the existing markup, on admin tokens
+ * ---------------------------------------------------------------------------------------- */
+.admin-v2 .card {
+  padding: 1rem;
+  border: 1px solid var(--a-line);
+  border-radius: var(--a-radius);
+  background: var(--a-surface);
+  color: var(--a-text);
+}
+
+.admin-v2 .card h3 {
+  margin: 0 0 0.45rem;
+  font-size: 1.15rem;
+}
+
+.admin-v2 .card h4 {
+  margin: 0 0 0.3rem;
+  font-size: 1rem;
+}
+
+.admin-v2 .card p {
+  color: var(--a-muted);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.admin-v2 .footer-note {
+  margin-top: 0.4rem;
+  color: var(--a-muted);
+  font-size: 0.88rem;
+}
+
+.admin-v2 .form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.85rem;
+}
+
+.admin-v2 .form-grid > div {
+  min-width: 0;
+}
+
+.admin-v2 label {
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
+/* Labels that are layout containers keep their own layout */
+.admin-v2 label.admin-switch {
+  display: inline-flex;
+  margin-bottom: 0;
+}
+
+.admin-v2 :is(input, select, textarea)::placeholder {
+  color: var(--a-muted);
+  opacity: 1;
+}
+
+.admin-v2 :is(input, select, textarea):disabled {
+  opacity: 0.6;
+}
+
+.admin-v2 .pill {
+  padding: 0.1rem 0.6rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--a-surface-2);
+  box-shadow: inset 0 0 0 1px var(--a-line);
+  color: var(--a-text);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.admin-v2 .btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Switch */
+.admin-v2 .ios-switch-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 44px;
+  margin: 0;
+  color: var(--a-text);
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+}
+
+.admin-v2 .ios-switch-input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
+.admin-v2 .ios-switch {
+  position: relative;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  width: 46px;
+  height: 26px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--a-surface-2);
+  box-shadow: inset 0 0 0 1.5px var(--a-muted);
+  transition: background-color 0.2s ease;
+}
+
+.admin-v2 .ios-switch::after {
+  content: "";
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: var(--a-muted);
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.admin-v2 .ios-switch-input:checked + .ios-switch {
+  background: var(--a-accent);
+  box-shadow: none;
+}
+
+.admin-v2 .ios-switch-input:checked + .ios-switch::after {
+  background: var(--a-on-accent);
+  transform: translateX(20px);
+}
+
+.admin-v2 .ios-switch-input:focus-visible + .ios-switch {
+  outline: 3px solid var(--a-accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-v2 .ios-switch,
+  .admin-v2 .ios-switch::after {
+    transition: none;
+  }
+}
+
+/* Metrics and charts: numbers always sit next to the bars, and series differ by pattern */
+.admin-v2 .admin-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 0.75rem;
+}
+
+.admin-v2 .admin-metric-card {
+  padding: 0.9rem;
+}
+
+.admin-v2 .admin-metric-label {
+  color: var(--a-muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.admin-v2 .admin-metric-value {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--a-text);
+  font-family: var(--font-display);
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.admin-v2 .admin-metric-note {
+  margin-top: 0.35rem;
+  line-height: 1.35;
+}
+
+.admin-v2 .admin-dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 0.9rem;
+}
+
+.admin-v2 .admin-chart-card,
+.admin-v2 .admin-reward-program-card,
+.admin-v2 .admin-realtime-settings-card {
+  display: grid;
+  align-content: start;
+  gap: 0.8rem;
+}
+
+.admin-v2 .admin-chart-head {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.admin-v2 .admin-chart-subtitle {
+  margin-top: 0;
+}
+
+.admin-v2 .admin-chart-list {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.admin-v2 .admin-chart-row {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.admin-v2 .admin-chart-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.92rem;
+}
+
+.admin-v2 .admin-chart-track {
+  width: 100%;
+  height: 12px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--a-surface-2);
+  box-shadow: inset 0 0 0 1px var(--a-line);
+}
+
+.admin-v2 .admin-chart-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--a-accent);
+}
+
+.admin-v2 .admin-chart-fill-secondary {
+  background: repeating-linear-gradient(
+    45deg,
+    var(--a-accent) 0 5px,
+    color-mix(in srgb, var(--a-accent) 45%, var(--a-surface-2)) 5px 10px
+  );
+}
+
+.admin-v2 .admin-chart-note {
+  color: var(--a-muted);
+  font-size: 0.82rem;
+}
+
+/* Rewards */
+.admin-v2 .admin-reward-codes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.8rem;
+}
+
+.admin-v2 .admin-reward-code-row {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.6rem 0;
+  border-top: 1px solid var(--a-line);
+}
+
+.admin-v2 .admin-reward-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+  margin-top: 0.45rem;
+}
+
+.admin-v2 .admin-reward-actions > :first-child {
+  grid-column: 1 / -1;
+}
+
+/* Settings */
+.admin-v2 .admin-realtime-settings-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.admin-v2 .admin-choice-group {
+  margin-top: 0.4rem;
+}
+
+/* Rewards card inside the program tab */
+.admin-v2 .admin-reward-card {
+  display: grid;
+  gap: 0.35rem;
+  margin-top: 0.55rem;
+  padding: 0.75rem;
+  background: var(--a-surface-2);
+}
+
+.admin-v2 .admin-reward-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+/* ------------------------------------------------------------------------------------------
+ * Page behind the admin: follows the theme and leaves room for the fixed top bar
+ * ---------------------------------------------------------------------------------------- */
+body:has(.admin-app) {
+  background: var(--a-bg);
+  color: var(--a-text);
+  padding-top: 70px;
+}
+
+/* The scroll-to-top button follows the admin theme, like the shell's glass */
+body:has(.admin-app) .scroll-top-btn {
+  border: 0;
+  border-radius: 16px;
+  background: var(--a-glass);
+  color: var(--a-text);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  box-shadow:
+    inset 0 1px 0 var(--a-glass-edge),
+    inset 0 0 0 1px var(--a-line),
+    0 10px 30px var(--a-shadow);
+}
+
+body:has(.admin-app) .scroll-top-btn:hover {
+  background: var(--a-surface);
+}
+
+/* Keep the page from jumping when the selected day has few or many reservations */
+html:has(.admin-app) {
+  scrollbar-gutter: stable;
+}
+
+.admin-calendar-detail {
+  min-height: 26rem;
+}

@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import AdminBackOffice from "@/components/admin-back-office";
 import AdminPageHeader from "@/components/admin-page-header";
-import AdminTopNav from "@/components/admin-top-nav";
+import AdminShell from "@/components/admin-shell";
 import { getAdminSessionCookieName, verifyAdminSessionToken } from "@/lib/admin-auth";
 
 export const metadata = {
@@ -24,7 +24,7 @@ export default async function AdminPage({
 
   return (
     <>
-      <AdminTopNav />
+      <AdminShell />
 
       <main className="site-shell form-shell">
         <AdminPageHeader />

@@ -1,8 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import AdminThemeToggle from "@/components/admin-theme-toggle";
 
 type Status = "idle" | "loading" | "error";
 
@@ -11,6 +13,7 @@ export default function AdminLoginPage() {
   const [status, setStatus] = useState<Status>("idle");
   const [message, setMessage] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const passwordRef = useRef<HTMLInputElement>(null);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -33,6 +36,9 @@ export default function AdminLoginPage() {
     if (!response.ok) {
       setStatus("error");
       setMessage(json.error ?? "Login failed.");
+      // Keep what was typed and put the cursor where the fix is likely needed
+      passwordRef.current?.focus();
+      passwordRef.current?.select();
       return;
     }
 
@@ -41,36 +47,46 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <main className="site-shell form-shell">
-      <h1>Admin Login</h1>
-      <p className="footer-note">Authorized staff only.</p>
+    <div className="admin-v2 admin-login">
+      <div className="admin-login-top">
+        <AdminThemeToggle variant="compact" />
+      </div>
 
-      <form onSubmit={onSubmit} style={{ marginTop: "1rem" }}>
-        <div className="form-grid">
-          <div>
+      <main id="main-content" className="admin-login-card">
+        <Image src="/mascot_logo.webp" alt="" width={56} height={56} priority />
+        <div>
+          <h1>Back office</h1>
+          <p className="admin-muted">Authorized staff only.</p>
+        </div>
+
+        <form onSubmit={onSubmit} style={{ display: "grid", gap: "1rem" }}>
+          <div className="admin-field">
             <label htmlFor="username">Username</label>
             <input
               id="username"
               name="username"
               autoComplete="username"
-              defaultValue="admin"
               required
+              aria-invalid={status === "error"}
+              aria-describedby={message ? "login-error" : undefined}
             />
           </div>
-          <div>
+          <div className="admin-field">
             <label htmlFor="password">Password</label>
-            <div className="password-field">
+            <div className="admin-password">
               <input
                 id="password"
-                className="password-input"
+                ref={passwordRef}
                 name="password"
                 type={showPassword ? "text" : "password"}
                 autoComplete="current-password"
                 required
+                aria-invalid={status === "error"}
+                aria-describedby={message ? "login-error" : undefined}
               />
               <button
                 type="button"
-                className="password-toggle"
+                className="admin-password-toggle"
                 aria-label={showPassword ? "Hide password" : "Show password"}
                 aria-pressed={showPassword}
                 onClick={() => setShowPassword((prev) => !prev)}
@@ -109,19 +125,22 @@ export default function AdminLoginPage() {
               </button>
             </div>
           </div>
-        </div>
 
-        <div style={{ marginTop: "1rem" }}>
-          <button className="btn btn-primary" disabled={status === "loading"}>
-            {status === "loading" ? "Signing in..." : "Sign in"}
+          {message ? (
+            <p id="login-error" className="admin-form-error" role="alert">
+              {message}
+            </p>
+          ) : null}
+
+          <button className="btn btn-primary admin-login-submit" disabled={status === "loading"}>
+            {status === "loading" ? "Signing in…" : "Sign in"}
           </button>
-          {message ? <p className="footer-note">{message}</p> : null}
-        </div>
-      </form>
+        </form>
 
-      <p className="footer-note" style={{ marginTop: "1rem" }}>
-        <Link href="/menu">Back to menu</Link>
-      </p>
-    </main>
+        <p className="admin-login-back">
+          <Link href="/menu">Back to menu</Link>
+        </p>
+      </main>
+    </div>
   );
 }

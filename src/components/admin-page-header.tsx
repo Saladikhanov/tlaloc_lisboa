@@ -44,12 +44,13 @@ export default function AdminPageHeader() {
             exit={{ opacity: 0, y: -4 }}
             transition={headerTransition}
           >
-            <h1 className="admin-page-title-today">
-            <span>TODAY</span>
-              <span className="admin-page-title-today-time" suppressHydrationWarning>
-              {currentTimeLabel}
-              </span>
-            </h1>
+            {/* The word "Today" is already in the navigation, so the page shows just the clock */}
+            <div className="admin-v2 admin-today-head">
+              <h1 className="visually-hidden">Today</h1>
+              <time className="admin-today-clock" suppressHydrationWarning>
+                {currentTimeLabel}
+              </time>
+            </div>
           </motion.div>
         ) : (
           <motion.div
@@ -59,8 +60,7 @@ export default function AdminPageHeader() {
             exit={{ opacity: 0, y: -4 }}
             transition={headerTransition}
           >
-            <h1>Back Office (MVP)</h1>
-            <p className="footer-note">Manage reservations, menu configuration, and admin security.</p>
+            <h1 className="visually-hidden">Back office</h1>
           </motion.div>
         )}
       </AnimatePresence>

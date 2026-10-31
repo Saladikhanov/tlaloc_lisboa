@@ -14,8 +14,10 @@ Next.js 16 App Router · React 19 · TypeScript · Prisma 7/PostgreSQL · next-i
 - `src/components/` UI; `messages/{en,pt}.json` translations; `prisma/` schema + migrations
 
 ## Design
-- Redesign is split: `001-public-site-redesign` (in progress), then `002-admin-redesign`.
-  Until 002, the admin stays on its frozen look (`.admin-theme`, `src/app/admin/layout.tsx`).
+- Redesign is split: `001-public-site-redesign` (done), `002-admin-redesign` (done, pending owner
+  device pass). The admin has a light and a dark theme (`--a-*` tokens in `src/app/admin/admin.css`,
+  attribute `data-admin-theme` on `<html>`); there is no legacy admin look any more. Main actions use
+  `--a-accent`; red (`--a-danger`) is for destructive confirms only. See `docs/design.md`.
 - Shape rule: page content is square (2px on buttons/inputs); the glass layer (header, floating
   controls, sheets, modals, booking panel) is rounded. See `docs/design.md`.
 - Use the `frontend-design` skill (`.claude/skills/frontend-design`) for UI work. Tokens live in `src/app/globals.css`; see constitution VII.
