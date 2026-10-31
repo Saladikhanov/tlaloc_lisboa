@@ -55,6 +55,13 @@ Rules from the check:
   Respect `prefers-reduced-motion`.
 - Mascot: used large and sparingly, with a job (closed-today, booking confirmed, empty states).
 
+## Shape and the glass layer
+- Page content is square: blocks and photos have no radius; buttons and inputs use 2px.
+- The glass layer is the exception and is rounded: the floating header (16px), its circular
+  logo, the pill language switch, the rounded menu button and the mobile menu sheet.
+- The header is light liquid glass (about 72% white over a strong blur) with teal text; the
+  active page is shown with a chile underline, not color alone.
+
 ## Copy
 - Plain, specific, bilingual (en/pt) with the same meaning in both.
 - Remove leftover dev/SEO-filler copy from `messages/*.json` as part of the redesign
