@@ -1,21 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { SpeedInsights } from "@vercel/speed-insights/next";
-import { Bricolage_Grotesque, Figtree } from "next/font/google";
-import ScrollToTop from "@/components/scroll-to-top";
 import { getSiteBaseUrl } from "@/lib/site-url";
 import "./globals.css";
-
-const bricolage = Bricolage_Grotesque({
-  variable: "--font-bricolage",
-  subsets: ["latin", "latin-ext"],
-  display: "swap",
-});
-
-const figtree = Figtree({
-  variable: "--font-figtree",
-  subsets: ["latin", "latin-ext"],
-  display: "swap",
-});
 
 const appBaseUrl = getSiteBaseUrl();
 const siteDescription =
@@ -68,21 +53,12 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
+// The <html> element is rendered by each route tree (locale, admin, root not-found) through
+// DocumentShell, so the lang attribute is correct in the server-rendered HTML.
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return (
-    <html lang="en" className={`${bricolage.variable} ${figtree.variable}`} suppressHydrationWarning>
-      <head>
-        <meta property="og:logo" content={`${appBaseUrl}/favicon-v2.ico`} />
-      </head>
-      <body suppressHydrationWarning>
-        {children}
-        <ScrollToTop />
-        <SpeedInsights />
-      </body>
-    </html>
-  );
+  return children;
 }

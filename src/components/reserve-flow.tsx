@@ -75,10 +75,16 @@ type ReserveText = {
 };
 
 
-const getTodayMonthKey = (): string => {
-  const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-};
+const lisbonDateFormat = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "Europe/Lisbon",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+
+const getLisbonTodayIso = (): string => lisbonDateFormat.format(new Date());
+
+const getTodayMonthKey = (): string => getLisbonTodayIso().slice(0, 7);
 
 const dayFromIsoDate = (value: string): number | null => {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
@@ -263,7 +269,7 @@ export default function ReserveFlow() {
   const nameInputRef = useRef<HTMLInputElement>(null);
   const phoneInputRef = useRef<HTMLInputElement>(null);
 
-  const todayIso = new Date().toISOString().slice(0, 10);
+  const todayIso = getLisbonTodayIso();
   const calendarMonthDate = useMemo(() => {
     const parsed = parseMonthKey(calendarMonth);
     if (!parsed) {
