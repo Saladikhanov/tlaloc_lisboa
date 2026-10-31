@@ -64,6 +64,7 @@
 - [ ] T014 [US1] Restyle `src/app/admin/login/page.tsx` with v2 tokens: card on `--a-bg`, theme control, labels, `autocomplete` for username and current password, error message next to the form with a fix-oriented message, username kept after a failed attempt, 44 px button; no logic change
 - [ ] T015 [US1] Verify US1 per quickstart §2: theme persists after reload and after sign-out and in, Device follows the system, no flash on reload, switching theme with a dialog or the More sheet open keeps state, `theme-color` follows the theme, deep links work
 - [ ] T016 [US1] Run the scripted overflow and contrast checks for `/admin/login` and the shell at 360 px and 1280 px in both themes
+- [ ] T016a [US1] Remove the tutorial mode (owner decision: unused). In `src/components/admin-back-office.tsx` delete the tutorial state and handlers (`isTutorialMode`, `isTutorialInProgress`, `tutorialStepIndex`, the demo reservation and demo calendar reservation, hint modes and anchors, `handleToggleTutorial` and friends), the tutorial button, the overlay and the "Continue tutorial" button, and the `tutorial-*` rules in `src/app/globals.css`; KEEP the business phone and email: they are stored as "tutorial settings" and read by the public home page, so leave `src/lib/tutorial-settings-store.ts`, `src/app/api/admin/tutorial-settings/route.ts`, the table and the Settings tab fields working exactly as today (relabel that Settings section "Business contact" later in T042); confirm `git diff --stat -- src/lib src/app/api` is empty and the public home page still shows the phone and email
 
 **Checkpoint**: Shell, login and theme are shippable on their own
 
@@ -144,8 +145,8 @@
 - [ ] T039 [P] [US6] Rewards tab v2: program settings, code lookup, active and redeemed lists
 - [ ] T040 [P] [US6] Menu configuration tab v2: sections and items forms and lists
 - [ ] T041 [P] [US6] Working hours tab v2
-- [ ] T042 [US6] Settings tab (`security`) v2: password change, realtime notification settings, sound switch, alert style picker, message templates
-- [ ] T043 [US6] Tutorial overlay and hints v2; re-run the tutorial flow and fix any anchor positions that moved
+- [ ] T042 [US6] Settings tab (`security`) v2: business contact (phone and email, relabelled from the old "tutorial settings"), password change, realtime notification settings, sound switch, alert style picker, message templates
+- [X] T043 [US6] Tutorial overlay and hints v2 _(Superseded by T016a: the tutorial mode is removed, so there is nothing to migrate.)_
 - [ ] T044 [US6] Add each of these tabs to `MIGRATED_TABS` as it is finished; when all are done remove `MIGRATED_TABS` and the `admin-legacy` wrapper
 - [ ] T045 [US6] Delete the `.admin-legacy` block and every remaining legacy admin rule and variable from `src/app/globals.css`, remove the Geist and Bebas fonts from `src/app/admin/layout.tsx`, and set the admin `theme-color` default to the tokens; confirm `grep -rn "admin-legacy\|admin-theme" src` finds nothing and no old brown or orange remains
 - [ ] T046 [US6] Verify US6 per quickstart §7 on every tab in both themes at 360 px and 1280 px

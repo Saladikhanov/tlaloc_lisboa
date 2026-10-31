@@ -48,7 +48,7 @@ git diff --stat -- src/lib src/app/api # must be empty
 
 ## 7. Remaining tabs and cleanup (US6)
 
-1. Metrics, rewards, menu, hours, settings and the tutorial look like the migrated screens in both themes.
+1. Metrics, rewards, menu, hours and settings (including business contact) look like the migrated screens in both themes; there is no tutorial mode any more.
 2. After cleanup: `grep -n "admin-legacy\\|admin-theme" src` finds nothing; no screen uses the old brown or orange.
 
 ## 8. Accessibility and device pass

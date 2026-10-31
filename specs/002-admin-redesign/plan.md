@@ -111,7 +111,7 @@ src/app/globals.css         # legacy admin rules deleted in the last stage
 | 0. Foundations | Constitution 1.3.0, admin tokens and themes, theme scope and toggle, legacy island wrapper, contrast script for admin | US1 base |
 | 1. Shell, Today, Reservations | New shell and login, Today, Reservations (cards, add and delete dialogs), live alerts and settings styles | US1, US2, US3, US4 |
 | 2. Calendar | Calendar tab and closures | US5 |
-| 3. The rest | Metrics, rewards, menu, hours, security and settings, tutorial overlay | US6 |
+| 3. The rest | Metrics, rewards, menu, hours, security and settings | US6 |
 | 4. Cleanup | Remove `admin-legacy`, legacy fonts and legacy CSS; final audits | US6, FR-015 |
 
 Every stage is shippable on its own because unmigrated tabs stay readable as dark islands.
@@ -120,7 +120,7 @@ Every stage is shippable on its own because unmigrated tabs stay readable as dar
 
 - **One huge component**: edit by tab, run the booking and admin flows after each tab, and keep `git diff -- src/lib src/app/api` empty.
 - **Shared global classes** (`.btn`, `.card`, inputs, labels) are used by public, admin v2 and legacy: scope v2 overrides under `.admin-app` and keep the island mirrors until the end.
-- **Tutorial mode** measures anchors on screen; layout changes can move hints. Migrate it last and re-run it.
+- **Tutorial mode is removed** (owner decision, unused): about 170 lines of state, demo data, hints and overlay in the big component and 15 style rules go first, which makes Today, Reservations and Calendar simpler to migrate. The business phone and email stored under the old "tutorial settings" name stay, because the public home page reads them.
 - **Theme flash and html attribute leaks**: pre-paint script plus cleanup on leaving the admin.
 - **Phone browser bars** may tint from page content on newer iOS; keep `theme-color` in sync and check on a real phone.
 - **Light theme next to dark islands** during rollout can look uneven; keep stages short.

@@ -139,7 +139,7 @@ booking page no longer offers those times; remove it and check they return.
 
 ### User Story 6 - Use the rest of the admin in the same look (Priority: P3)
 
-The remaining areas (metrics, rewards, menu, working hours, security, tutorial and notification settings) adopt the same
+The remaining areas (metrics, rewards, menu, working hours, and settings with business contact and alert options) adopt the same
 look, themes and navigation, so the admin feels like one product. When this is done, the old dark brown admin styling no
 longer exists anywhere.
 
@@ -167,7 +167,7 @@ brown/orange look.
 - New reservation arrives while the staff member is editing, scrolling or has a dialog open.
 - Notification permission denied or never asked; sounds blocked by the browser until first tap.
 - Connection loss and reconnection while live alerts are active; session expiry while a dialog is open.
-- Switching theme while a dialog or the tutorial overlay is open.
+- Switching theme while a dialog is open.
 - Phone in landscape, 200% text zoom, and very small phones.
 - A status change or save that fails: the screen must say so and keep the previous state.
 - Color-blind staff: statuses must be readable without relying on color.
@@ -198,7 +198,7 @@ brown/orange look.
   MUST keep working exactly as today and remain readable in both themes without relying on color alone.
 - **FR-012**: The Calendar tab MUST show confirmed reservations and closures per day and keep creating and removing
   closures working as before.
-- **FR-013**: Metrics, rewards, menu, working hours, security, tutorial and notification settings MUST adopt the same look
+- **FR-013**: Metrics, rewards, menu, working hours and settings (business contact, alert style, sound, password) MUST adopt the same look
   and themes in the final stage.
 - **FR-014**: Behavior, data, permissions, notifications and API routes MUST NOT change; guests' public booking experience
   MUST be unaffected.
@@ -208,6 +208,8 @@ brown/orange look.
   the reduced-motion setting.
 - **FR-017**: Statuses (new, confirmed, cancelled, no-show, unread) MUST be identifiable by text or icon as well as color.
 - **FR-018**: Switching theme MUST take effect immediately without losing the current screen state, open dialog or entered data.
+- **FR-019**: The guided tutorial mode (overlay, hints, demo reservations and its button) is removed at the owner's request because it is
+  not used; the business contact settings that share its storage MUST keep working because the public home page shows them.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -244,5 +246,7 @@ brown/orange look.
 - During the staged rollout, tabs that are not yet migrated appear as self-contained dark areas that remain fully usable; each
   stage is shippable on its own.
 - The constitution's design principle will be amended to mention the admin's dark token set when planning starts.
-- Existing behaviors (live alerts, tutorial mode, three alert styles, manual reservations, closures) are kept, only restyled.
+- Existing behaviors (live alerts, three alert styles, manual reservations, closures) are kept, only restyled. The one exception is the
+  tutorial mode: the owner confirmed nobody uses it, so it is removed (FR-019). Its stored business phone and email stay because the
+  public home page shows them.
 - Real-device checks (phone and desktop browsers) are part of acceptance because there is no automated test suite.

@@ -2307,90 +2307,10 @@ export default function AdminBackOffice() {
 
   return (
     <div style={{ marginTop: "1rem", display: "grid", gap: "1rem" }}>
-      <div className="admin-legacy admin-legacy--bar">
-      {activeTab === "today" ? (
-        <div>
-          <button
-            className="btn btn-secondary"
-            type="button"
-            onClick={() => navigateToTab("reservations")}
-            style={{ display: "inline-flex", alignItems: "center", gap: "0.55rem" }}
-            aria-label="Back to back office sections"
-          >
-            <svg
-              aria-hidden="true"
-              viewBox="0 0 24 24"
-              width="16"
-              height="16"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M15 18l-6-6 6-6" />
-            </svg>
-            Back
-          </button>
-        </div>
-      ) : (
-        <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap" }}>
-          <button
-            className={`btn ${activeTab === "reservations" ? "btn-primary" : "btn-secondary"}`}
-            onClick={() => navigateToTab("reservations")}
-            type="button"
-          >
-            Reservations
-          </button>
-          <button
-            className="btn btn-secondary"
-            onClick={() => navigateToTab("today")}
-            type="button"
-          >
-            Today
-          </button>
-          <button
-            className={`btn ${activeTab === "calendar" ? "btn-primary" : "btn-secondary"}`}
-            onClick={() => navigateToTab("calendar")}
-            type="button"
-          >
-            Confirmed Calendar
-          </button>
-          <button
-            className={`btn ${activeTab === "metrics" ? "btn-primary" : "btn-secondary"}`}
-            onClick={() => navigateToTab("metrics")}
-            type="button"
-          >
-            Metrics
-          </button>
-          <button
-            className={`btn ${activeTab === "rewards" ? "btn-primary" : "btn-secondary"}`}
-            onClick={() => navigateToTab("rewards")}
-            type="button"
-          >
-            Reward Program (Beta)
-          </button>
-          <button
-            className={`btn ${activeTab === "menu" ? "btn-primary" : "btn-secondary"}`}
-            onClick={() => navigateToTab("menu")}
-            type="button"
-          >
-            Menu Configuration
-          </button>
-          <button
-            className={`btn ${activeTab === "security" ? "btn-primary" : "btn-secondary"}`}
-            onClick={() => navigateToTab("security")}
-            type="button"
-          >
-            Settings
-          </button>
-          <button
-            className={`btn ${activeTab === "hours" ? "btn-primary" : "btn-secondary"}`}
-            onClick={() => navigateToTab("hours")}
-            type="button"
-          >
-            Working Hours
-          </button>
+      {activeTab !== "today" ? (
+        // The section tabs moved to the shell (admin-shell.tsx). The tutorial button stays here until the
+        // tutorial itself is migrated, because its state lives in this component.
+        <div className="admin-legacy admin-legacy--bar">
           <button
             className={`btn ${isTutorialMode || isTutorialInProgress ? "btn-primary" : "btn-secondary"}`}
             type="button"
@@ -2399,8 +2319,7 @@ export default function AdminBackOffice() {
             {isTutorialMode ? "Exit tutorial mode" : "Tutorial mode"}
           </button>
         </div>
-      )}
-      </div>
+      ) : null}
 
       <AnimatePresence>
         {adminToasts.length > 0 ? (
