@@ -157,7 +157,7 @@
 - [X] T056 [P] Update `CLAUDE.md` Design section if the token names or admin theme rule changed _(Shape rule added.)_
 - [X] T057 Run `npm run lint` and `npm run build`; fix errors _(`npm run lint` has 0 errors and 1 pre-existing warning; `npm run build` succeeds.)_
 - [X] T058 Run the full `quickstart.md` validation (§1–§7) in both languages and record pass/fail per item in the PR description, including the SC-001 tap/time check (§4) and the page title, description, structured data and social preview check for FR-016 (§7) _(Run on 2026-10-31: lint (0 errors), production build, contrast script, key parity, titles/descriptions/canonical/OG per page in both languages, 360 px overflow checks, booking walk-through up to the failed submit plus one real test reservation by the owner. Known gaps: raw HTML `lang` is `en` on Portuguese pages (client sets it after load; needs a root-layout restructure), logged-in admin comparison not done, menu/booking have no hreflang alternates or structured data (as before). Fixed on the way: doubled brand in every page title.)_
-- [ ] T059 Open the PR from `001-public-site-redesign` with before/after screenshots (from T003) for landing, menu, booking and admin; include contrast results and audit summaries
+- [X] T059 Open the PR from `001-public-site-redesign` with before/after screenshots (from T003) for landing, menu, booking and admin; include contrast results and audit summaries _(Opened https://github.com/Saladikhanov/tlaloc_lisboa/pull/1. Screenshots were captured locally and not attached.)_
 
 ---
 
