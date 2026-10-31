@@ -1,9 +1,12 @@
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
-import HtmlLang from "@/components/html-lang";
+import DocumentShell from "@/components/document-shell";
 import SiteFooter from "@/components/site-footer";
 import { routing } from "@/i18n/routing";
+import { getPublicWhatsappNumber } from "@/lib/tutorial-settings-store";
+
+export const revalidate = 60;
 
 type Props = {
   children: React.ReactNode;
@@ -22,20 +25,22 @@ export default async function LocaleLayout({ children, params }: Props) {
   }
 
   setRequestLocale(locale);
-  const [messagesModule, tNav] = await Promise.all([
+  const [messagesModule, tNav, whatsappNumber] = await Promise.all([
     import(`../../../messages/${locale}.json`),
     getTranslations({ locale, namespace: "Nav" }),
+    getPublicWhatsappNumber(),
   ]);
   const messages = messagesModule.default;
 
   return (
-    <NextIntlClientProvider locale={locale} messages={messages}>
-      <HtmlLang locale={locale} />
-      <a className="skip-link" href="#main-content">
-        {tNav("skip")}
-      </a>
-      {children}
-      <SiteFooter />
-    </NextIntlClientProvider>
+    <DocumentShell lang={locale}>
+      <NextIntlClientProvider locale={locale} messages={messages}>
+        <a className="skip-link" href="#main-content">
+          {tNav("skip")}
+        </a>
+        {children}
+        <SiteFooter whatsappNumber={whatsappNumber} />
+      </NextIntlClientProvider>
+    </DocumentShell>
   );
 }

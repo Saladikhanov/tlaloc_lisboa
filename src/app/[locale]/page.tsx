@@ -8,6 +8,7 @@ import { routing } from "@/i18n/routing";
 import HomeGallery from "@/components/home-gallery";
 import HomeOpenStatus from "@/components/home-open-status";
 import { computeIsOpenNow } from "@/lib/working-hours-open-now";
+import { LANDLINE_DISPLAY, LANDLINE_TEL, getPublicEmail, whatsappDigits } from "@/lib/contact";
 import { listTutorialSettings } from "@/lib/tutorial-settings-store";
 import { listWorkingHours } from "@/lib/working-hours-store";
 import { getSiteBaseUrl } from "@/lib/site-url";
@@ -115,7 +116,8 @@ export default async function HomePage({ params }: Props) {
   const sundayText = sun?.isClosed ? t("closedLabel") : `${sun?.lunchOpen ?? "--:--"}-${sun?.lunchClose ?? "--:--"}`;
 
   const base = getSiteBaseUrl();
-  const whatsappDigits = businessContact.businessPhone.replace(/[^\d]/g, "");
+  const whatsappNumber = whatsappDigits(businessContact.businessPhone);
+  const publicEmail = getPublicEmail(businessContact.businessEmail);
   const restaurantJsonLd = {
     "@context": "https://schema.org",
     "@type": "Restaurant",
@@ -124,7 +126,7 @@ export default async function HomePage({ params }: Props) {
     alternateName: "Tláloc Cantina",
     image: [`${base}/og_image.jpg`],
     url: `${base}/${activeLocale}`,
-    telephone: "+351218093388",
+    telephone: LANDLINE_TEL,
     servesCuisine: ["Mexican"],
     priceRange: "€€",
     address: {
@@ -251,14 +253,14 @@ export default async function HomePage({ params }: Props) {
                   <div>
                     <dt>{t("phoneLabel")}</dt>
                     <dd>
-                      <a href="tel:+351218093388">+351 21 809 3388</a>
+                      <a href={`tel:${LANDLINE_TEL}`}>{LANDLINE_DISPLAY}</a>
                     </dd>
                   </div>
                   <div>
                     <dt>{t("whatsappLabel")}</dt>
                     <dd>
                       <a
-                        href={`https://wa.me/${whatsappDigits}`}
+                        href={`https://wa.me/${whatsappNumber}`}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
@@ -266,14 +268,14 @@ export default async function HomePage({ params }: Props) {
                       </a>
                     </dd>
                   </div>
-                  <div>
-                    <dt>{t("emailLabel")}</dt>
-                    <dd>
-                      <a href={`mailto:${businessContact.businessEmail}`}>
-                        {businessContact.businessEmail}
-                      </a>
-                    </dd>
-                  </div>
+                  {publicEmail ? (
+                    <div>
+                      <dt>{t("emailLabel")}</dt>
+                      <dd>
+                        <a href={`mailto:${publicEmail}`}>{publicEmail}</a>
+                      </dd>
+                    </div>
+                  ) : null}
                 </dl>
               </address>
               <p className="home-visit-note">{t("pricingInfo")}</p>

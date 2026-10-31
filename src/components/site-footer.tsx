@@ -3,8 +3,9 @@
 import NextLink from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import { LANDLINE_DISPLAY, LANDLINE_TEL } from "@/lib/contact";
 
-export default function SiteFooter() {
+export default function SiteFooter({ whatsappNumber }: { whatsappNumber: string }) {
   const locale = useLocale();
   const t = useTranslations("Footer");
 
@@ -33,8 +34,8 @@ export default function SiteFooter() {
             <NextLink href="https://maps.google.com/?q=R.+do+Cruzeiro+1+Lisboa" target="_blank" rel="noopener noreferrer">
               {locationLabel}
             </NextLink>
-            <NextLink href="tel:+351218093388">+351 21 809 3388</NextLink>
-            <NextLink href="https://wa.me/351933357555" target="_blank" rel="noopener noreferrer">
+            <NextLink href={`tel:${LANDLINE_TEL}`}>{LANDLINE_DISPLAY}</NextLink>
+            <NextLink href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noopener noreferrer">
               WhatsApp
             </NextLink>
           </div>

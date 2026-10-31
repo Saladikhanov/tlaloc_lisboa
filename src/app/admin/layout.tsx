@@ -1,5 +1,6 @@
 import type { Viewport } from "next";
 import { Bebas_Neue, Geist } from "next/font/google";
+import DocumentShell from "@/components/document-shell";
 
 // The back office keeps its original look (see ADMIN THEME in globals.css), including the
 // legacy fonts, which are loaded only for admin routes.
@@ -21,6 +22,8 @@ export const viewport: Viewport = {
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className={`admin-theme ${geistSans.variable} ${bebasNeue.variable}`}>{children}</div>
+    <DocumentShell lang="en" className={`${geistSans.variable} ${bebasNeue.variable}`}>
+      <div className="admin-theme">{children}</div>
+    </DocumentShell>
   );
 }
