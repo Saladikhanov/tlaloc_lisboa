@@ -76,12 +76,12 @@
 
 **Independent Test**: Quickstart §3.
 
-- [ ] T017 [US2] Extract the Today board JSX from `src/components/admin-back-office.tsx` into `src/components/admin-today.tsx`; props are the data and handlers it already uses (the timeline, closed list and any actions); no logic moves
-- [ ] T018 [US2] Restyle `src/components/admin-page-header.tsx` for v2: compact Today header with the Lisbon clock, no gradient text or display-font clock; keep the once-a-minute update
-- [ ] T019 [US2] Build the v2 timeline in `src/components/admin-today.tsx` and `src/app/admin/admin.css`: time-ordered rows, a visible "now" marker, the next arrival emphasized with a text label, time, name, party size and notes
-- [ ] T020 [US2] Build the "closed today" area with status chips (text and shape) and the empty messages ("No reservations today", "No cancelled or no-show reservations today")
-- [ ] T021 [US2] Add `"today"` to `MIGRATED_TABS` and delete the legacy `admin-today-*` rules from `src/app/globals.css`
-- [ ] T022 [US2] Verify US2 per quickstart §3 including the SC-001 timing check on a phone
+- [X] T017 [US2] Extract the Today board JSX from `src/components/admin-back-office.tsx` into `src/components/admin-today.tsx`; props are the data and handlers it already uses (the timeline, closed list and any actions); no logic moves _(`src/components/admin-today.tsx` is presentation only (generic over the reservation type); it receives the timeline, the action state, the date formatter, the WhatsApp link builder and the two handlers from the admin component.)_
+- [X] T018 [US2] Restyle `src/components/admin-page-header.tsx` for v2: compact Today header with the Lisbon clock, no gradient text or display-font clock; keep the once-a-minute update _(The visible word "Today" is dropped from the page header because the navigation already shows it; the page leads with the big clock and keeps a hidden `h1`.)_
+- [X] T019 [US2] Build the v2 timeline in `src/components/admin-today.tsx` and `src/app/admin/admin.css`: time-ordered rows, a visible "now" marker, the next arrival emphasized with a text label, time, name, party size and notes _(Adds a "Next arrival" banner at the top so the next guest and party size are on the first phone screen, a labelled "Now" line, "Next" and "Arriving now" chips, and the Bookings, Covers and Pending counts from the existing data.)_
+- [X] T020 [US2] Build the "closed today" area with status chips (text and shape) and the empty messages ("No reservations today", "No cancelled or no-show reservations today") _(Closed-today list uses the shared chips; both empty messages are kept.)_
+- [X] T021 [US2] Add `"today"` to `MIGRATED_TABS` and delete the legacy `admin-today-*` rules from `src/app/globals.css` _(`MIGRATED_TABS` now contains `today`; 19 legacy `admin-today-*` and `admin-page-title-today*` rules removed with a pattern that cannot swallow comments, after the earlier mistake.)_
+- [X] T022 [US2] Verify US2 per quickstart §3 including the SC-001 timing check on a phone _(Verified on the throwaway data: Read and Confirm in the real UI change the database and update the card; the next-arrival banner ends at 331 px of a 740 px phone screen in both themes; no overflow at 360 or 1280 px.)_
 
 **Checkpoint**: Today is migrated
 
@@ -93,7 +93,7 @@
 
 **Independent Test**: Quickstart §4.
 
-- [ ] T023 [P] [US3] Create `src/components/admin-status-chip.tsx` for new, unread, confirmed, cancelled and no-show: tinted background from the tokens, readable text and a shape (dot, check, cross, ring)
+- [X] T023 [P] [US3] Create `src/components/admin-status-chip.tsx` for new, unread, confirmed, cancelled and no-show: tinted background from the tokens, readable text and a shape (dot, check, cross, ring) _(Created early in `src/components/admin-status-chip.tsx` because Today needs it: new, unread, confirmed, cancelled, no-show, next and arriving, each with a shape and text.)_
 - [ ] T024 [US3] Extract the reservation list JSX (cards, loaders, empty state) from `src/components/admin-back-office.tsx` into `src/components/admin-reservation-list.tsx`; props are what it uses today; all handlers stay in the parent
 - [ ] T025 [US3] Restyle the list header and controls (read-state switch, filters) in v2: denser, 44 px targets on phones, replace the ios-switch look with the v2 switch styles
 - [ ] T026 [US3] Reservation card v2 in `src/components/admin-reservation-list.tsx`: date and time, name, party size, locale chip, unread label, contact actions (call, WhatsApp, email) at 44 px, status actions (confirm, cancel, no-show) reachable in two taps or fewer, extra-details disclosure, delete behind confirmation; long names and notes wrap without hiding actions

@@ -2,6 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import AdminToday from "@/components/admin-today";
 import { useSearchParams } from "next/navigation";
 import type { AdminEvent } from "@/lib/admin-events";
 import type {
@@ -193,7 +194,7 @@ const weekdayLabels = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "
 const mondayFirstOrder: number[] = [1, 2, 3, 4, 5, 6, 0];
 const weekdayShortMondayFirst = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 // Tabs that use the new admin look. Every other tab sits inside the dark "legacy" panel until it is migrated.
-const MIGRATED_TABS: TabId[] = [];
+const MIGRATED_TABS: TabId[] = ["today"];
 
 const adminTabIds: TabId[] = [
   "reservations",
@@ -2328,154 +2329,14 @@ export default function AdminBackOffice() {
       ) : null}
 
       {activeTab === "today" ? (
-        <section style={{ display: "grid", gap: "0.9rem" }}>
-          <section className="card admin-today-card">
-            <p className="footer-note admin-chart-subtitle" style={{ marginTop: 0 }}>
-              {formatEuropeanDate(todayTimeline.date)} in Lisbon time.
-            </p>
-
-            {todayTimeline.timelineReservations.length === 0 ? (
-              <p className="footer-note" style={{ marginTop: 0 }}>
-                No active reservations left for today.
-              </p>
-            ) : (
-              <div className="admin-today-timeline">
-                {todayTimeline.timelineReservations.map((reservation, index) => (
-                  <div key={reservation.id}>
-                    {todayTimeline.markerIndex === index ? (
-                      <div className="admin-today-marker">
-                        <span className="admin-today-marker-line" />
-                      </div>
-                    ) : null}
-                    <div className="admin-today-row">
-                      <div className="admin-today-time-rail">
-                        <p className="admin-today-time">{reservation.time}</p>
-                        <span className="admin-today-rail-line" />
-                      </div>
-                      <article
-                        className={`card admin-today-item ${
-                          todayTimeline.currentReservationIds.includes(reservation.id) ? "admin-today-item-live" : ""
-                        }`}
-                      >
-                        <div className="admin-today-item-head">
-                          <div>
-                            <strong>
-                              {reservation.firstName} {reservation.lastName}
-                            </strong>
-                            <p className="footer-note admin-today-meta">
-                              {reservation.guests} guests
-                              {reservation.notes?.trim() ? ` · ${reservation.notes.trim()}` : ""}
-                            </p>
-                          </div>
-                          <div className="admin-today-badges">
-                            {!reservation.isRead ? (
-                              <span className="pill reservation-status reservation-status-new">Unread</span>
-                            ) : null}
-                            <span className={`pill reservation-status reservation-status-${reservation.status}`}>
-                              {reservation.status}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="admin-today-links">
-                          <a
-                            className="btn btn-secondary"
-                            href={toWhatsAppUrl(reservation.phone, reservation, messageTemplates)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            {reservation.phone}
-                          </a>
-                          {!reservation.isRead ? (
-                            <button
-                              className="btn btn-secondary"
-                              type="button"
-                              disabled={actionKey !== null}
-                              onClick={() => void markReservationRead(reservation.id)}
-                            >
-                              Read
-                            </button>
-                          ) : null}
-                          {reservation.status !== "confirmed" ? (
-                            <button
-                              className="btn btn-secondary"
-                              type="button"
-                              disabled={actionKey !== null}
-                              onClick={() => void changeReservationStatus(reservation.id, "confirmed")}
-                            >
-                              {actionKey === `reservation-${reservation.id}-confirmed` ? "Updating..." : "Confirm"}
-                            </button>
-                          ) : null}
-                          {reservation.status !== "cancelled" ? (
-                            <button
-                              className="btn btn-secondary"
-                              type="button"
-                              disabled={actionKey !== null}
-                              onClick={() => void changeReservationStatus(reservation.id, "cancelled")}
-                            >
-                              {actionKey === `reservation-${reservation.id}-cancelled` ? "Updating..." : "Cancel"}
-                            </button>
-                          ) : null}
-                          {reservation.status !== "no_show" ? (
-                            <button
-                              className="btn btn-secondary"
-                              type="button"
-                              disabled={actionKey !== null}
-                              onClick={() => void changeReservationStatus(reservation.id, "no_show")}
-                            >
-                              {actionKey === `reservation-${reservation.id}-no_show` ? "Updating..." : "No show"}
-                            </button>
-                          ) : null}
-                        </div>
-                      </article>
-                    </div>
-                  </div>
-                ))}
-                {todayTimeline.markerIndex === todayTimeline.timelineReservations.length ? (
-                  <div className="admin-today-marker">
-                    <span className="admin-today-marker-line" />
-                  </div>
-                ) : null}
-              </div>
-            )}
-
-            <section className="admin-today-closed">
-              <div className="admin-today-section-head">
-                <div>
-                  <h4>Closed today</h4>
-                  <p className="footer-note" style={{ marginTop: "0.2rem" }}>
-                    Cancelled and no-show reservations, kept out of the live timeline.
-                  </p>
-                </div>
-                <span className="pill reservation-locale-chip">{todayTimeline.closedReservations.length}</span>
-              </div>
-
-              {todayTimeline.closedReservations.length === 0 ? (
-                <p className="footer-note" style={{ marginTop: 0 }}>
-                  No cancelled or no-show reservations today.
-                </p>
-              ) : (
-                <div className="admin-today-closed-list">
-                  {todayTimeline.closedReservations.map((reservation) => (
-                    <div className="admin-today-closed-row" key={reservation.id}>
-                      <div>
-                        <strong>
-                          {reservation.time} · {reservation.firstName} {reservation.lastName}
-                        </strong>
-                        <p className="footer-note" style={{ marginTop: "0.15rem" }}>
-                          {reservation.guests} guests
-                        </p>
-                      </div>
-                      <span className={`pill reservation-status reservation-status-${reservation.status}`}>
-                        {reservation.status}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
-          </section>
-        </section>
+        <AdminToday
+          timeline={todayTimeline}
+          actionKey={actionKey}
+          formatDate={formatEuropeanDate}
+          whatsAppHref={(reservation) => toWhatsAppUrl(reservation.phone, reservation, messageTemplates)}
+          onMarkRead={(id) => void markReservationRead(id)}
+          onChangeStatus={(id, status) => void changeReservationStatus(id, status)}
+        />
       ) : null}
 
       {activeTab === "metrics" ? (

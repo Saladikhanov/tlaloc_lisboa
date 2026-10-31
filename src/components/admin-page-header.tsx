@@ -44,13 +44,12 @@ export default function AdminPageHeader() {
             exit={{ opacity: 0, y: -4 }}
             transition={headerTransition}
           >
-            <div className="admin-legacy admin-legacy--bar">
-              <h1 className="admin-page-title-today">
-                <span>TODAY</span>
-                <span className="admin-page-title-today-time" suppressHydrationWarning>
-                  {currentTimeLabel}
-                </span>
-              </h1>
+            {/* The word "Today" is already in the navigation, so the page shows just the clock */}
+            <div className="admin-v2 admin-today-head">
+              <h1 className="visually-hidden">Today</h1>
+              <time className="admin-today-clock" suppressHydrationWarning>
+                {currentTimeLabel}
+              </time>
             </div>
           </motion.div>
         ) : (
