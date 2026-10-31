@@ -114,7 +114,7 @@
 - [x] T030 [US4] Restyle the toast stack, status toast and sync badge (`admin-toast*`, `admin-status-toast*`, `sync-overlay-badge`) in `src/app/admin/admin.css` using the alert tokens; each shows a title and an icon; place them clear of the top bar and above the phone bottom bar
 - [x] T031 [US4] Map the three alert styles (green, orange, neutral) to the contract's alert tokens in both themes; keep sound and desktop notifications untouched
 - [x] T032 [US4] Delete the legacy toast rules from `src/app/globals.css`
-- [ ] T033 [US4] Verify US4 per quickstart §5 (the sound switch and alert-style picker live in the Settings tab, which stays legacy until stage 3, so use them as they are): public-site booking while the admin is open, sound on and off, permission denied, reconnect behavior, all three styles in both themes
+- [ ] T033 [US4] Verify US4 per quickstart §5 (the sound switch and alert-style picker live in the Settings tab, which stays legacy until stage 3, so use them as they are): public-site booking while the admin is open, sound on and off, permission denied, reconnect behavior, all three styles in both themes _(Owner confirmed sound works on 2026-10-31; alerts via stream and polling and all three styles in both themes verified in a browser; permission-denied and reconnect not tested)_
 
 **Checkpoint**: Release candidate for stage 1 (shell, Today, Reservations, alerts): open a pull request
 
@@ -149,7 +149,7 @@
 - [X] T043 [US6] Tutorial overlay and hints v2 _(Superseded by T016a: the tutorial mode is removed, so there is nothing to migrate.)_
 - [x] T044 [US6] Add each of these tabs to `MIGRATED_TABS` as it is finished; when all are done remove `MIGRATED_TABS` and the `admin-legacy` wrapper
 - [x] T045 [US6] Delete the `.admin-legacy` block and every remaining legacy admin rule and variable from `src/app/globals.css`, remove the Geist and Bebas fonts from `src/app/admin/layout.tsx`, and set the admin `theme-color` default to the tokens; confirm `grep -rn "admin-legacy\|admin-theme" src` finds nothing and no old brown or orange remains
-- [ ] T046 [US6] Verify US6 per quickstart §7 on every tab in both themes at 360 px and 1280 px
+- [ ] T046 [US6] Verify US6 per quickstart §7 on every tab in both themes at 360 px and 1280 px _(Every tab checked in both themes at 360 and 1280 px for overflow; visual review covered Today, Reservations, Calendar, Rewards, Menu, Hours, Settings, Metrics)_
 
 **Checkpoint**: All tabs migrated and the legacy look removed: open a pull request
 
@@ -161,7 +161,7 @@
 - [x] T048 Run `/web-design-guidelines` on the new and changed admin files and `/vercel-react-best-practices` on the shell, theme scope and any extracted components; fix findings or record why skipped (ignore the Title Case rule per `CLAUDE.md`) _(Fixed: dialog focus management via AdminDialog, aria-labels on placeholder-only fields, touch-action, placeholders with ellipsis, scrollbar-gutter. Skipped on purpose: Title Case rule (CLAUDE.md), unsaved-changes warning and Intl date formatting (behavior changes outside this redesign). React review: no waterfalls or heavy imports added; the 3,800-line admin-back-office component is existing structure, not split here.)_
 - [x] T049 [P] Update `docs/design.md` with the admin section (tokens, themes, navigation, statuses) and `CLAUDE.md` if rules changed
 - [ ] T050 Run `npm run lint`, `npm run build` and `node scripts/check-contrast.mjs`; run the full `quickstart.md` in both themes and record pass or fail per item
-- [ ] T051 Owner pass on a real phone and a desktop browser in both themes, including the browser bar color, plus a short walkthrough where a staff member who used the old admin does the Today, confirm and cancel tasks on the first try (SC-009); then merge and close the feature
+- [ ] T051 Owner pass on a real phone and a desktop browser in both themes, including the browser bar color, plus a short walkthrough where a staff member who used the old admin does the Today, confirm and cancel tasks on the first try (SC-009); then merge and close the feature _(Staff walkthrough deferred by the owner; the owner has checked the live site on a phone)_
 
 ---
 
