@@ -2492,42 +2492,68 @@ textarea {
   scroll-margin-top: var(--menu-anchor-offset);
 }
 
+/* Category band: a flat color field, rotating through the palette */
+.menu-band {
+  padding: var(--space-5) 0;
+}
+
+.menu-band-inner {
+  width: min(1120px, 100% - 2rem);
+  margin: 0 auto;
+}
+
+.band-lime {
+  background: var(--lime);
+  color: var(--teal);
+}
+
+.band-chile {
+  background: var(--chile);
+  color: var(--white);
+}
+
+.band-teal {
+  background: var(--teal);
+  color: var(--paper);
+}
+
+.band-cyan {
+  background: var(--cyan);
+  color: var(--teal);
+}
+
 .menu-section h2 {
-  padding-bottom: var(--space-2);
-  border-bottom: 2px solid var(--teal);
   font-family: var(--font-display);
-  font-size: clamp(1.6rem, 3.4vw, 2.2rem);
+  font-size: clamp(2.2rem, 6vw, 3.6rem);
   font-weight: 800;
-  line-height: 1.1;
-  letter-spacing: -0.015em;
+  line-height: 1;
+  letter-spacing: -0.025em;
 }
 
 .menu-section-note {
   margin-top: var(--space-2);
-  color: var(--muted);
+  font-size: 1.05rem;
 }
 
 .menu-items {
   list-style: none;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  column-gap: var(--space-6);
+  column-gap: var(--space-7);
+  padding: var(--space-5) 0 0;
 }
 
 .menu-item {
   display: grid;
   align-content: start;
   gap: var(--space-1);
-  padding: var(--space-4) 0;
-  border-bottom: 1px solid var(--line);
+  padding: var(--space-3) 0 var(--space-4);
 }
 
 .menu-item-top {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
   align-items: baseline;
-  gap: var(--space-1) var(--space-4);
+  gap: var(--space-2);
 }
 
 .menu-item-name {
@@ -2546,8 +2572,17 @@ textarea {
   overflow-wrap: anywhere;
 }
 
+.menu-item-dots {
+  flex: 1 1 1rem;
+  min-width: 1rem;
+  align-self: end;
+  margin-bottom: 0.3em;
+  border-bottom: 2px dotted var(--line);
+}
+
 .menu-item-price {
-  margin-left: auto;
+  flex-shrink: 0;
+  white-space: nowrap;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   text-align: right;

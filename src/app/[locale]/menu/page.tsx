@@ -9,6 +9,8 @@ import { getSiteBaseUrl } from "@/lib/site-url";
 
 export const dynamic = "force-dynamic";
 
+const BAND_COLORS = ["lime", "chile", "teal", "cyan"] as const;
+
 type Props = {
   params: Promise<{ locale: string }>;
 };
@@ -61,17 +63,21 @@ export default async function MenuPage({ params }: Props) {
           }))}
         />
 
-        {menuData.map((category) => (
+        {menuData.map((category, index) => (
           <section
             className="menu-section"
             id={category.id}
             key={category.id}
             aria-labelledby={`${category.id}-title`}
           >
-            <h2 id={`${category.id}-title`}>{category.title[locale]}</h2>
-            {category.subtitle ? (
-              <p className="menu-section-note">{category.subtitle[locale]}</p>
-            ) : null}
+            <div className={`menu-band full-bleed band-${BAND_COLORS[index % BAND_COLORS.length]}`}>
+              <div className="menu-band-inner">
+                <h2 id={`${category.id}-title`}>{category.title[locale]}</h2>
+                {category.subtitle ? (
+                  <p className="menu-section-note">{category.subtitle[locale]}</p>
+                ) : null}
+              </div>
+            </div>
             <ul className="menu-items">
               {category.items.map((item) => (
                 <li className="menu-item" key={`${category.id}-${item.name.en}`}>
@@ -82,6 +88,7 @@ export default async function MenuPage({ params }: Props) {
                         <span className="menu-veg">{t("vegetarian")}</span>
                       ) : null}
                     </div>
+                    <span className="menu-item-dots" aria-hidden="true" />
                     <span className="menu-item-price">{item.price}</span>
                   </div>
                   {item.description[locale] ? <p>{item.description[locale]}</p> : null}

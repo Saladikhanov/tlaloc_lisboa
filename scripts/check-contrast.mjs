@@ -27,6 +27,7 @@ const pairs = [
   ["teal", "lime", "text"],
   ["agave", "paper", "text"],
   ["paper", "agave", "text"],
+  ["teal", "cyan", "text"],
   ["chile", "teal", "large"],
 ];
 
