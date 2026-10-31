@@ -49,7 +49,7 @@ export default function MenuQuickFind({ quickFindLabel, closeLabel, categories }
 
       <nav
         id="menu-quick-find-panel"
-        className={`quick-filter-panel on-teal ${isOpen ? "open" : ""}`}
+        className={`quick-filter-panel ${isOpen ? "open" : ""}`}
         aria-label={quickFindLabel}
       >
         <strong>{quickFindLabel}</strong>

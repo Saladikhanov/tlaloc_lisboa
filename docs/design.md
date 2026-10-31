@@ -59,6 +59,8 @@ Rules from the check:
 - Page content is square: blocks and photos have no radius; buttons and inputs use 2px.
 - The glass layer is the exception and is rounded: the floating header (16px), its circular
   logo, the pill language switch, the rounded menu button and the mobile menu sheet.
+- The floating controls (Jump to, scroll to top, the jump sheet) use the same glass, radius and
+  shadow as the header.
 - The header is light liquid glass (about 72% white over a strong blur) with teal text; the
   active page is shown with a chile underline, not color alone.
 
