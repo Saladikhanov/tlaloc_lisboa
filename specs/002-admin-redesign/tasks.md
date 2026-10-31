@@ -141,14 +141,14 @@
 
 **Independent Test**: Quickstart §7.
 
-- [ ] T038 [P] [US6] Metrics tab v2: metric cards and chart bars with labels and patterns that do not rely on color alone
-- [ ] T039 [P] [US6] Rewards tab v2: program settings, code lookup, active and redeemed lists
-- [ ] T040 [P] [US6] Menu configuration tab v2: sections and items forms and lists
-- [ ] T041 [P] [US6] Working hours tab v2
-- [ ] T042 [US6] Settings tab (`security`) v2: business contact (phone and email, relabelled from the old "tutorial settings"), password change, realtime notification settings, sound switch, alert style picker, message templates
+- [x] T038 [P] [US6] Metrics tab v2: metric cards and chart bars with labels and patterns that do not rely on color alone
+- [x] T039 [P] [US6] Rewards tab v2: program settings, code lookup, active and redeemed lists
+- [x] T040 [P] [US6] Menu configuration tab v2: sections and items forms and lists
+- [x] T041 [P] [US6] Working hours tab v2
+- [x] T042 [US6] Settings tab (`security`) v2: business contact (phone and email, relabelled from the old "tutorial settings"), password change, realtime notification settings, sound switch, alert style picker, message templates
 - [X] T043 [US6] Tutorial overlay and hints v2 _(Superseded by T016a: the tutorial mode is removed, so there is nothing to migrate.)_
-- [ ] T044 [US6] Add each of these tabs to `MIGRATED_TABS` as it is finished; when all are done remove `MIGRATED_TABS` and the `admin-legacy` wrapper
-- [ ] T045 [US6] Delete the `.admin-legacy` block and every remaining legacy admin rule and variable from `src/app/globals.css`, remove the Geist and Bebas fonts from `src/app/admin/layout.tsx`, and set the admin `theme-color` default to the tokens; confirm `grep -rn "admin-legacy\|admin-theme" src` finds nothing and no old brown or orange remains
+- [x] T044 [US6] Add each of these tabs to `MIGRATED_TABS` as it is finished; when all are done remove `MIGRATED_TABS` and the `admin-legacy` wrapper
+- [x] T045 [US6] Delete the `.admin-legacy` block and every remaining legacy admin rule and variable from `src/app/globals.css`, remove the Geist and Bebas fonts from `src/app/admin/layout.tsx`, and set the admin `theme-color` default to the tokens; confirm `grep -rn "admin-legacy\|admin-theme" src` finds nothing and no old brown or orange remains
 - [ ] T046 [US6] Verify US6 per quickstart §7 on every tab in both themes at 360 px and 1280 px
 
 **Checkpoint**: All tabs migrated and the legacy look removed: open a pull request

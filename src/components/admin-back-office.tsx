@@ -197,7 +197,6 @@ const weekdayLabels = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "
 const mondayFirstOrder: number[] = [1, 2, 3, 4, 5, 6, 0];
 const weekdayShortMondayFirst = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 // Tabs that use the new admin look. Every other tab sits inside the dark "legacy" panel until it is migrated.
-const MIGRATED_TABS: TabId[] = ["today", "reservations", "calendar"];
 
 const adminTabIds: TabId[] = [
   "reservations",
@@ -2251,7 +2250,7 @@ export default function AdminBackOffice() {
         ) : null}
       </AnimatePresence>
 
-      <div className={MIGRATED_TABS.includes(activeTab) ? "admin-v2" : "admin-legacy"}>
+      <div className="admin-v2">
       {activeTab === "reservations" ? (
         <AdminReservationList
           reservations={activeReservations}
@@ -2731,7 +2730,7 @@ export default function AdminBackOffice() {
         <div style={{ display: "grid", gap: "1rem" }}>
           <section className="card">
             <div style={{ display: "flex", justifyContent: "space-between", gap: "0.8rem" }}>
-              <h3>Menu Preview</h3>
+              <h3>Menu preview</h3>
               <button
                 className={`btn ${isMenuEditMode ? "btn-primary" : "btn-secondary"}`}
                 type="button"
@@ -2789,7 +2788,7 @@ export default function AdminBackOffice() {
           {isMenuEditMode ? (
             <>
               <section className="card">
-                <h3 style={{ marginBottom: "0.7rem" }}>Add Section</h3>
+                <h3 style={{ marginBottom: "0.7rem" }}>Add section</h3>
                 <form onSubmit={createSection} className="form-grid">
                   <input
                     placeholder="Slug (example: specials)"
@@ -2830,7 +2829,7 @@ export default function AdminBackOffice() {
               </section>
 
               <section className="card">
-                <h3 style={{ marginBottom: "0.7rem" }}>Add Item</h3>
+                <h3 style={{ marginBottom: "0.7rem" }}>Add item</h3>
                 <form onSubmit={createItem} className="form-grid">
                   <select
                     value={newItem.sectionId}
@@ -3233,16 +3232,17 @@ export default function AdminBackOffice() {
                 </label>
               </div>
             </div>
-            <div className="admin-manual-choice-section">
-              <label>Notification theme</label>
-              <div className="admin-manual-choice-grid admin-manual-choice-grid-theme">
+            <div className="admin-choice-group" role="group" aria-label="Alert style">
+              <span className="admin-choice-label">Alert style</span>
+              <div className="admin-choice-grid">
                 {adminNotificationThemeOptions.map((option) => (
                   <button
                     key={option.value}
                     type="button"
-                    className={`admin-manual-choice ${
-                      adminRealtimeSettings.notificationTheme === option.value ? "active" : ""
+                    className={`admin-choice${
+                      adminRealtimeSettings.notificationTheme === option.value ? " is-selected" : ""
                     }`}
+                    aria-pressed={adminRealtimeSettings.notificationTheme === option.value}
                     onClick={() =>
                       setAdminRealtimeSettings((current) => ({
                         ...current,
@@ -3255,7 +3255,7 @@ export default function AdminBackOffice() {
                 ))}
               </div>
               <p className="footer-note" style={{ marginBottom: "0.4rem" }}>
-                Preview of a new reservation alert in this theme:
+                Preview of a new reservation alert in this style:
               </p>
               <div className="admin-toast-preview">
                 <div className="admin-toast">
@@ -3287,7 +3287,7 @@ export default function AdminBackOffice() {
           </section>
 
           <section className="card">
-            <h3 style={{ marginBottom: "0.7rem" }}>Business Contact</h3>
+            <h3 style={{ marginBottom: "0.7rem" }}>Business contact</h3>
             <p className="footer-note" style={{ marginTop: 0 }}>
               Shown in the homepage contact details so the owner can update it later.
             </p>
@@ -3319,7 +3319,7 @@ export default function AdminBackOffice() {
           </section>
 
           <section className="card">
-            <h3 style={{ marginBottom: "0.7rem" }}>Change Admin Password</h3>
+            <h3 style={{ marginBottom: "0.7rem" }}>Change admin password</h3>
             <form onSubmit={onPasswordSubmit} className="form-grid">
               <input
                 placeholder="Username"
@@ -3356,7 +3356,7 @@ export default function AdminBackOffice() {
           </section>
 
           <section className="card">
-            <h3 style={{ marginBottom: "0.7rem" }}>Message Templates</h3>
+            <h3 style={{ marginBottom: "0.7rem" }}>Message templates</h3>
             <p className="footer-note" style={{ marginTop: 0 }}>
               Message language is selected automatically from each reservation locale (EN/PT).
             </p>
@@ -3372,7 +3372,7 @@ export default function AdminBackOffice() {
                 >
                   <h4 style={{ marginBottom: "0.55rem" }}>
                     {template.key === "reservation_new"
-                      ? "Pending / Request Received"
+                      ? "Pending / request received"
                       : template.key === "reservation_confirmed"
                         ? "Confirmed"
                         : "Could Not Confirm (Apology)"}
@@ -3450,7 +3450,7 @@ export default function AdminBackOffice() {
 
       {activeTab === "hours" ? (
         <section className="card">
-          <h3 style={{ marginBottom: "0.7rem" }}>Working Hours</h3>
+          <h3 style={{ marginBottom: "0.7rem" }}>Working hours</h3>
           <p className="footer-note" style={{ marginTop: 0, marginBottom: "0.9rem" }}>
             Week starts on Sunday. Reservations outside configured days/hours are automatically
             rejected.
