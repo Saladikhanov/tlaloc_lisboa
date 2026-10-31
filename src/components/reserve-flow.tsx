@@ -70,6 +70,7 @@ type ReserveText = {
   nameError: string;
   phoneError: string;
   fullyBooked: string;
+  slotTaken: string;
   stepsLabel: string;
 };
 
@@ -159,6 +160,7 @@ const texts = {
     nameError: "Enter your full name.",
     phoneError: "Enter a phone or WhatsApp number so we can confirm your table.",
     fullyBooked: "Fully booked",
+    slotTaken: "That time is no longer available. Please go back and choose another time.",
     previousMonth: "Previous month",
     nextMonth: "Next month",
   },
@@ -206,6 +208,7 @@ const texts = {
     nameError: "Indique o seu nome completo.",
     phoneError: "Indique um telefone ou WhatsApp para podermos confirmar a mesa.",
     fullyBooked: "Sem vagas neste dia",
+    slotTaken: "Essa hora já não está disponível. Volte atrás e escolha outra hora.",
     previousMonth: "Mês anterior",
     nextMonth: "Mês seguinte",
   },
@@ -461,7 +464,7 @@ export default function ReserveFlow() {
         if (json.code === "slot_unavailable") {
           setAvailabilityModal({
             title: t.fullTitle,
-            message: json.error ?? t.fullBody,
+            message: t.slotTaken,
             variant: "full",
           });
         } else {
