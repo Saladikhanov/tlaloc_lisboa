@@ -31,6 +31,32 @@ export default function PublicNav({ headerTitle }: PublicNavProps) {
   };
 
   useEffect(() => {
+    if (!isMenuOpen) {
+      return;
+    }
+
+    // Close the mobile menu on any tap outside the menu panel and the burger button, and on Escape.
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target as Element | null;
+      if (!target?.closest(".mobile-nav-links, .nav-toggle")) {
+        setIsMenuOpen(false);
+      }
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [isMenuOpen]);
+
+  useEffect(() => {
     let active = true;
 
     const loadAdminSession = async () => {
@@ -98,64 +124,67 @@ export default function PublicNav({ headerTitle }: PublicNavProps) {
   );
 
   return (
-    <nav className="site-nav">
-      <div className="site-nav-inner">
-        <Link className="brand" href="/">
-          <Image
-            className="brand-image"
-            src="/mascot_logo.webp"
-            alt="Tláloc Restaurant"
-            width={42}
-            height={42}
-            sizes="42px"
-            priority
-          />
-        </Link>
-        {headerTitle ? <div className="header-page-title">{headerTitle}</div> : null}
-        <div className="mobile-nav-controls">
-          <div className="mobile-lang-switch-wrap">
-            {renderLanguageSwitch(false, "lang-switch mobile-lang-switch")}
-          </div>
-          <button
-            type="button"
-            className="nav-toggle"
-            aria-expanded={isMenuOpen}
-            aria-label="Toggle navigation menu"
-            onClick={() => setIsMenuOpen((prev) => !prev)}
-          >
-            <motion.span
-              animate={isMenuOpen ? { rotate: 45, y: 7 } : { rotate: 0, y: 0 }}
-              transition={{ duration: 0.2 }}
+    <>
+      <nav className="site-nav">
+        <div className="site-nav-inner">
+          <Link className="brand" href="/">
+            <Image
+              className="brand-image"
+              src="/mascot_logo.webp"
+              alt="Tláloc Restaurant"
+              width={42}
+              height={42}
+              sizes="42px"
+              priority
             />
-            <motion.span
-              animate={isMenuOpen ? { opacity: 0 } : { opacity: 1 }}
-              transition={{ duration: 0.18 }}
-            />
-            <motion.span
-              animate={isMenuOpen ? { rotate: -45, y: -7 } : { rotate: 0, y: 0 }}
-              transition={{ duration: 0.2 }}
-            />
-          </button>
-        </div>
-        <div className="nav-links desktop-nav-links">
-          {renderLinks(false)}
-          {renderLanguageSwitch(false, "lang-switch desktop-lang-switch")}
-        </div>
-
-        <AnimatePresence>
-          {isMenuOpen ? (
-            <motion.div
-              className="nav-links mobile-nav-links open"
-              initial={{ opacity: 0, y: -8, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -8, scale: 0.98 }}
-              transition={{ duration: 0.18, ease: "easeOut" }}
+          </Link>
+          {headerTitle ? <div className="header-page-title">{headerTitle}</div> : null}
+          <div className="mobile-nav-controls">
+            <div className="mobile-lang-switch-wrap">
+              {renderLanguageSwitch(false, "lang-switch mobile-lang-switch")}
+            </div>
+            <button
+              type="button"
+              className="nav-toggle"
+              aria-expanded={isMenuOpen}
+              aria-controls="public-mobile-menu"
+              aria-label="Toggle navigation menu"
+              onClick={() => setIsMenuOpen((prev) => !prev)}
             >
-              {renderLinks(true)}
-            </motion.div>
-          ) : null}
-        </AnimatePresence>
-      </div>
-    </nav>
+              <motion.span
+                animate={isMenuOpen ? { rotate: 45, y: 7 } : { rotate: 0, y: 0 }}
+                transition={{ duration: 0.2 }}
+              />
+              <motion.span
+                animate={isMenuOpen ? { opacity: 0 } : { opacity: 1 }}
+                transition={{ duration: 0.18 }}
+              />
+              <motion.span
+                animate={isMenuOpen ? { rotate: -45, y: -7 } : { rotate: 0, y: 0 }}
+                transition={{ duration: 0.2 }}
+              />
+            </button>
+          </div>
+          <div className="nav-links desktop-nav-links">
+            {renderLinks(false)}
+            {renderLanguageSwitch(false, "lang-switch desktop-lang-switch")}
+          </div>
+        </div>
+      </nav>
+      <AnimatePresence>
+        {isMenuOpen ? (
+          <motion.div
+            id="public-mobile-menu"
+            className="nav-links mobile-nav-links open"
+            initial={{ opacity: 0, y: -8, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.98 }}
+            transition={{ duration: 0.18, ease: "easeOut" }}
+          >
+            {renderLinks(true)}
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+    </>
   );
 }
