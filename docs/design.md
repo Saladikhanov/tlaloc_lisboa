@@ -42,8 +42,7 @@ Rules from the check:
   (headings, `--font-display`) + Figtree (body, `--font-body`), loaded in `src/app/layout.tsx`
   and exposed on `<html>`. The admin keeps Geist + Bebas via `src/app/admin/layout.tsx`.
 - Two families at most: one characterful grotesk for headings, one clean text sans.
-  Candidates to test against the TLÁLOC wordmark: Bricolage Grotesque (display) with a
-  neutral sans for body. Decide in the plan after seeing them with real copy.
+  Fallback if Bricolage ever disappoints with the wordmark: Familjen Grotesk for headings.
 - Must support Portuguese diacritics (á, ã, ç, õ) and the accent in "Tláloc".
 - Body line length under 80 characters; sentence case for headings and buttons.
 
