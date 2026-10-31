@@ -1,7 +1,6 @@
 "use client";
 
-const UBER_EATS_WEB_URL =
-  "https://www.ubereats.com/pt-en/store/tlaloc-un-rincon-mexicana/WZywXn7kQiOh8tBFs4dwog";
+import { UBER_EATS_WEB_URL } from "@/lib/contact";
 
 // Best-effort deep-linking:
 // - Android: intent URL opens app if installed, otherwise falls back to web URL.

@@ -11,3 +11,6 @@ export const getPublicEmail = (email: string): string | null => {
 };
 
 export const whatsappDigits = (phone: string): string => phone.replace(/[^\d]/g, "");
+
+export const UBER_EATS_WEB_URL =
+  "https://www.ubereats.com/pt-en/store/tlaloc-un-rincon-mexicana/WZywXn7kQiOh8tBFs4dwog";
