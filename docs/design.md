@@ -104,7 +104,8 @@ contract is `specs/002-admin-redesign/contracts/admin-ui-contract.md`.
 - **Statuses and alerts:** every status chip and alert has a text label and an icon or shape, never
   color alone. Alert styles (green, orange, neutral) map to the confirmed, warning and surface-2 tokens.
 - **Shape:** content is square-ish (6px); floating layers (bars, toasts, dialogs) are rounded glass.
-- **Live alerts:** the open admin listens to a server stream and also polls
-  `/api/admin/reservations/new` (15 s visible, 60 s hidden) because the stream cannot cross server
-  instances after a deploy. Each booking alerts once.
+- **Live alerts:** the open admin polls `/api/admin/reservations/new` (30 s visible, 2 min hidden,
+  and right away when the tab comes back). There is no server stream: it cannot cross server
+  instances after a deploy and holds a function open, which uses compute memory. Each booking
+  alerts once.
 - **Dialogs:** use `AdminDialog` (focus moves in, Tab wraps, Escape closes, focus returns).
