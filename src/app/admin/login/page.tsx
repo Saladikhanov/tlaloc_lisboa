@@ -66,7 +66,6 @@ export default function AdminLoginPage() {
               id="username"
               name="username"
               autoComplete="username"
-              defaultValue="admin"
               required
               aria-invalid={status === "error"}
               aria-describedby={message ? "login-error" : undefined}

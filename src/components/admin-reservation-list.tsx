@@ -1,3 +1,4 @@
+import { formatGuests } from "@/components/admin-format";
 import AdminStatusChip from "@/components/admin-status-chip";
 
 type ReservationStatus = "new" | "confirmed" | "cancelled" | "no_show";
@@ -148,8 +149,8 @@ export default function AdminReservationList<R extends ListReservation>({
                         className="admin-icon-btn admin-icon-btn--danger"
                         type="button"
                         id={`reservation-delete-btn-${reservation.id}`}
-                        aria-label={`Delete reservation for ${guestName}`}
-                        title="Delete reservation"
+                        aria-label={`Remove reservation for ${guestName}`}
+                        title="Remove reservation"
                         onClick={() => onDelete(reservation.id, guestName)}
                         disabled={busy}
                       >
@@ -163,7 +164,7 @@ export default function AdminReservationList<R extends ListReservation>({
                   <h3 className="admin-reservation-name">{guestName}</h3>
                   <p className="admin-reservation-when">
                     <strong>{formatDate(reservation.date)}</strong> at <strong>{reservation.time}</strong>
-                    <span className="admin-reservation-guests">{reservation.guests} guests</span>
+                    <span className="admin-reservation-guests">{formatGuests(reservation.guests)}</span>
                   </p>
 
                   <div className="admin-reservation-contact">
@@ -174,7 +175,7 @@ export default function AdminReservationList<R extends ListReservation>({
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      {reservation.phone}
+                      WhatsApp {reservation.phone}
                     </a>
                     {reservation.email ? (
                       <a

@@ -1,3 +1,4 @@
+import { formatGuests } from "@/components/admin-format";
 import AdminStatusChip from "@/components/admin-status-chip";
 
 type TodayReservation = {
@@ -56,7 +57,7 @@ export default function AdminToday<R extends TodayReservation>({
       <dl className="admin-today-stats">
         <div>
           <dt>Bookings</dt>
-          <dd>{statLabel(timeline.cards, "Today total")}</dd>
+          <dd>{timelineReservations.length}</dd>
         </div>
         <div>
           <dt>Covers</dt>
@@ -76,7 +77,7 @@ export default function AdminToday<R extends TodayReservation>({
             <span>
               {nextReservation.firstName} {nextReservation.lastName}
             </span>
-            <span className="admin-today-nextup-guests">{nextReservation.guests} guests</span>
+            <span className="admin-today-nextup-guests">{formatGuests(nextReservation.guests)}</span>
           </p>
         </div>
       ) : null}
@@ -104,7 +105,7 @@ export default function AdminToday<R extends TodayReservation>({
                           {reservation.firstName} {reservation.lastName}
                         </h3>
                         <p className="admin-today-meta admin-muted">
-                          <strong>{reservation.guests}</strong> guests
+                          <strong>{formatGuests(reservation.guests)}</strong>
                           {reservation.notes?.trim() ? ` · ${reservation.notes.trim()}` : ""}
                         </p>
                       </div>
@@ -124,7 +125,7 @@ export default function AdminToday<R extends TodayReservation>({
                         rel="noopener noreferrer"
                         aria-label={`Message ${reservation.firstName} ${reservation.lastName} on WhatsApp`}
                       >
-                        {reservation.phone}
+                        WhatsApp {reservation.phone}
                       </a>
                       {!reservation.isRead ? (
                         <button
@@ -201,7 +202,7 @@ export default function AdminToday<R extends TodayReservation>({
                   <strong>
                     {reservation.time} · {reservation.firstName} {reservation.lastName}
                   </strong>
-                  <p className="admin-muted">{reservation.guests} guests</p>
+                  <p className="admin-muted">{formatGuests(reservation.guests)}</p>
                 </div>
                 <AdminStatusChip status={reservation.status} />
               </li>

@@ -724,7 +724,8 @@ export default function AdminBackOffice() {
     const effectiveMarkerIndex =
       currentMarkerIndex === -1 ? timelineReservations.length : currentMarkerIndex;
 
-    const coversToday = todayReservations.reduce((sum, reservation) => sum + toGuestCount(reservation.guests), 0);
+    // Covers are the guests still expected: cancelled and no-show reservations are not counted
+    const coversToday = timelineReservations.reduce((sum, reservation) => sum + toGuestCount(reservation.guests), 0);
     const activeCount = timelineReservations.length;
     const pendingCount = todayReservations.filter((reservation) => reservation.status === "new").length;
 
@@ -3761,7 +3762,7 @@ export default function AdminBackOffice() {
           <button
             className="admin-dialog-backdrop"
             type="button"
-            aria-label="Close delete confirmation"
+            aria-label="Close remove confirmation"
             onClick={() => setDeleteReservationModal(null)}
           />
           <div className="admin-dialog-wrap" onClick={() => setDeleteReservationModal(null)}>
@@ -3773,10 +3774,10 @@ export default function AdminBackOffice() {
               aria-describedby="delete-reservation-text"
               onClick={(event) => event.stopPropagation()}
             >
-              <h2 id="delete-reservation-title">Delete reservation?</h2>
+              <h2 id="delete-reservation-title">Remove reservation?</h2>
               <p id="delete-reservation-text">
-                This will permanently remove reservation for{" "}
-                <strong>{deleteReservationModal.guestName}</strong>.
+                This removes the reservation for <strong>{deleteReservationModal.guestName}</strong> from the lists. It is
+                archived, not erased.
               </p>
               <div className="admin-dialog-actions">
                 <button
@@ -3794,8 +3795,8 @@ export default function AdminBackOffice() {
                   disabled={actionKey !== null}
                 >
                   {actionKey === `delete-reservation-${deleteReservationModal.id}`
-                    ? "Deleting…"
-                    : "Delete"}
+                    ? "Removing…"
+                    : "Remove"}
                 </button>
               </div>
             </section>
