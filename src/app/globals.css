@@ -37,9 +37,9 @@
   --space-5: 1.5rem;
   --space-6: 2.5rem;
   --space-7: 4rem;
-  --radius-sm: 6px;
-  --radius-md: 12px;
-  --radius-pill: 999px;
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-pill: 0;
 
   /* Bridge: legacy names point at the new palette until each slice is migrated */
   --bg: var(--paper);
@@ -118,9 +118,60 @@ a {
   left: 0;
   width: 100%;
   z-index: 40;
-  background: var(--teal);
+  background: transparent;
   color: var(--text);
-  border-bottom: 1px solid var(--teal-mid);
+}
+
+/*
+ * Public nav backdrop: solid teal behind the bar that fades to transparent below it, with a
+ * progressive blur (four layers: strongest right under the bar, tapering to none lower down). Decorative only.
+ */
+.site-nav-fade {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: calc(var(--header-h) + 44px);
+  z-index: -1;
+  pointer-events: none;
+}
+
+.site-nav-fade span {
+  position: absolute;
+  inset: 0;
+}
+
+.site-nav-fade span:nth-child(1) {
+  backdrop-filter: blur(12px);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 30%, transparent 55%);
+}
+
+.site-nav-fade span:nth-child(2) {
+  backdrop-filter: blur(6px);
+  mask-image: linear-gradient(to bottom, transparent 15%, #000 35%, #000 50%, transparent 70%);
+}
+
+.site-nav-fade span:nth-child(3) {
+  backdrop-filter: blur(3px);
+  mask-image: linear-gradient(to bottom, transparent 35%, #000 55%, #000 70%, transparent 88%);
+}
+
+.site-nav-fade span:nth-child(4) {
+  backdrop-filter: blur(1px);
+  mask-image: linear-gradient(to bottom, transparent 55%, #000 75%, transparent 100%);
+}
+
+.site-nav-fade::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    var(--teal) 0,
+    var(--teal) calc(var(--header-h) - 20px),
+    rgba(10, 43, 54, 0.55) calc(var(--header-h) - 2px),
+    rgba(10, 43, 54, 0) 100%
+  );
 }
 
 .site-nav-inner {
@@ -730,27 +781,34 @@ a {
   }
 }
 
+.full-bleed {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+}
+
 .home-hero {
   display: grid;
-  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
-  gap: var(--space-6);
-  align-items: center;
-  padding: var(--space-6) 0 var(--space-7);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  min-height: min(620px, calc(100svh - var(--header-h)));
 }
 
 .home-hero-copy {
   display: grid;
   gap: var(--space-4);
+  align-content: center;
   justify-items: start;
-  max-width: 34rem;
+  padding: var(--space-7) var(--space-6) var(--space-7)
+    max(1rem, calc((100vw - 1120px) / 2));
+  background: var(--lime);
+  color: var(--teal);
 }
 
 .home-hero h1 {
   font-family: var(--font-display);
-  font-size: clamp(2.4rem, 6.2vw, 4.2rem);
+  font-size: clamp(2.6rem, 6.4vw, 4.8rem);
   font-weight: 800;
-  line-height: 1.02;
-  letter-spacing: -0.02em;
+  line-height: 0.98;
+  letter-spacing: -0.025em;
   text-wrap: balance;
 }
 
@@ -762,17 +820,15 @@ a {
 }
 
 .home-hero-desc {
-  max-width: 32rem;
-  color: var(--muted);
+  max-width: 30rem;
+  color: var(--teal);
   font-size: 1.05rem;
   line-height: 1.55;
 }
 
 .home-hero-media {
   position: relative;
-  aspect-ratio: 4 / 3;
-  overflow: hidden;
-  border-radius: var(--radius-md);
+  min-height: 320px;
   background: var(--paper-2);
 }
 
@@ -790,12 +846,17 @@ a {
 @media (max-width: 860px) {
   .home-hero {
     grid-template-columns: 1fr;
-    gap: var(--space-5);
-    padding: var(--space-4) 0 var(--space-6);
+    min-height: 0;
   }
 
   .home-hero-media {
     order: -1;
+    min-height: 0;
+    aspect-ratio: 4 / 3;
+  }
+
+  .home-hero-copy {
+    padding: var(--space-5) 1rem var(--space-6);
   }
 }
 
@@ -812,11 +873,7 @@ a {
   margin: 0.75rem auto 2.2rem;
   max-width: 920px;
   padding: 1.15rem 1.1rem;
-  background:
-    radial-gradient(circle at top right, rgba(245, 166, 35, 0.1), transparent 42%),
-    linear-gradient(180deg, rgba(52, 28, 10, 0.62) 0%, rgba(36, 18, 6, 0.52) 100%);
-  border-color: rgba(245, 166, 35, 0.22);
-  backdrop-filter: blur(2px);
+  background: var(--paper-2);
 }
 
 .home-seo-card,
@@ -1103,10 +1160,10 @@ a {
 }
 
 .card {
-  border: 1px solid var(--line);
+  border: 0;
   border-radius: var(--radius-md);
   padding: 1rem;
-  background: var(--card);
+  background: var(--paper-2);
   position: relative;
 }
 
@@ -2303,7 +2360,7 @@ select {
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  border: 1px solid var(--line);
+  border: 1px solid var(--muted);
   background: var(--white);
   color: var(--text);
   border-radius: var(--radius-sm);
@@ -2597,9 +2654,9 @@ textarea {
     max-width: calc(100vw - 2rem);
     padding: 1rem;
     border: 1px solid var(--line);
-    border-radius: 12px;
-    background: rgba(19, 8, 0, 0.98);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35);
+    border-radius: var(--radius-md);
+    background: var(--teal);
+    box-shadow: 0 12px 24px rgba(10, 43, 54, 0.35);
     display: none;
     z-index: 69;
   }
@@ -2803,6 +2860,10 @@ body:has(.admin-theme) .scroll-top-btn {
   font-size: 1.6rem;
 }
 
+:where(.admin-theme) .lang-switch {
+  border-radius: 999px;
+}
+
 :where(.admin-theme) .lang-btn {
   letter-spacing: 0.06em;
 }
@@ -2822,6 +2883,7 @@ body:has(.admin-theme) .scroll-top-btn {
 }
 
 :where(.admin-theme) .btn {
+  border-radius: 999px;
   padding: 0.65rem 1rem;
   font-size: 0.9rem;
   min-height: 0;
@@ -2848,6 +2910,7 @@ body:has(.admin-theme) .scroll-top-btn {
 }
 
 :where(.admin-theme) .card {
+  border: 1px solid var(--line);
   border-radius: 14px;
   background: linear-gradient(180deg, #2a1505 0%, #3a1f0b 100%);
 }
@@ -2870,5 +2933,6 @@ body:has(.admin-theme) .scroll-top-btn {
 
 :where(.admin-theme) :is(input, textarea, select) {
   background: #201003;
+  border-color: var(--line);
   border-radius: 10px;
 }

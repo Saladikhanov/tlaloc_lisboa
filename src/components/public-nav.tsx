@@ -110,6 +110,12 @@ export default function PublicNav({ headerTitle }: PublicNavProps) {
 
   return (
     <nav className={`site-nav ${isCompact ? "compact" : ""}`}>
+      <div className="site-nav-fade" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+        <span />
+      </div>
       <div className="site-nav-inner">
         <Link className="brand" href="/">
           <Image

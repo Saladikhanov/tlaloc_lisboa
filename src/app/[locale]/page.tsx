@@ -189,7 +189,7 @@ export default async function HomePage({ params }: Props) {
       <PublicNav />
 
       <main className="site-shell">
-        <section className="home-hero" aria-labelledby="home-hero-title">
+        <section className="home-hero full-bleed" aria-labelledby="home-hero-title">
           <div className="home-hero-copy">
             <HomeOpenStatus
               initialOpen={isOpenNow}
