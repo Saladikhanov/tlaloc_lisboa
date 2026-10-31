@@ -30,7 +30,7 @@
 
 - [X] T001 [P] Create `scripts/check-contrast.mjs`: plain Node ESM, no dependencies; hold the token palette and the allowed foreground/background pairs from `contracts/design-tokens.md`, compute WCAG ratios, print each pair, and exit non-zero if any normal-text pair is under 4.5:1 or any large-text pair under 3:1
 - [X] T002 [P] Delete unused starter file `src/app/page.module.css` (confirm with `grep -rn "page.module" src` that nothing imports it)
-- [ ] T003 Record "before" baselines for comparison: screenshots of `/en`, `/pt`, `/en/menu`, `/en/reserve`, `/admin/login` at 360 px and 1280 px, plus the logged-in `/admin` screen (sign in with the local `ADMIN_USERNAME`/`ADMIN_PASSWORD` from `.env`), saved outside the repo (scratchpad); note any brown-literal count with `grep -cE "#130800|#1a0a00|#2a1505|#3a1f0b" src/app/globals.css` _(Partial: public pages and `/admin/login` baselines captured in the scratchpad; the logged-in `/admin` baseline still needs the owner, see checkpoint.)_
+- [X] T003 Record "before" baselines for comparison: screenshots of `/en`, `/pt`, `/en/menu`, `/en/reserve`, `/admin/login` at 360 px and 1280 px, plus the logged-in `/admin` screen (sign in with the local `ADMIN_USERNAME`/`ADMIN_PASSWORD` from `.env`), saved outside the repo (scratchpad); note any brown-literal count with `grep -cE "#130800|#1a0a00|#2a1505|#3a1f0b" src/app/globals.css` _(Partial: public pages and `/admin/login` baselines captured in the scratchpad; the logged-in `/admin` baseline still needs the owner, see checkpoint.)_ _(Owner confirmed on 2026-10-31 that the logged-in admin looks unchanged.)_
 
 ---
 
@@ -53,7 +53,7 @@
 - [X] T014 Restyle buttons and cards in `src/app/globals.css`: primary = chile with white label (4.89:1), secondary = teal outline; `:focus-visible` ring on every interactive element using lime on teal and teal on paper; remove `outline: none` without replacement; list transition properties explicitly (no `transition: all`); mirror any needed look in `.admin-theme .btn` / `.admin-theme .card` so the admin is unchanged (depends on T006)
 - [X] T015 Add a global `@media (prefers-reduced-motion: reduce)` block in `src/app/globals.css` that disables non-essential animation and smooth scrolling (FR-014)
 - [X] T016 Wire the token pairs into `scripts/check-contrast.mjs` (T001) and run it; fix any failing pair (depends on T005, T012–T014)
-- [ ] T017 **Checkpoint — admin unchanged**: open `/admin/login` AND the logged-in `/admin` screen (mandatory; use the local `.env` admin credentials; check the top nav, tabs, calendar, tables, buttons and toasts) and compare with the T003 baseline; run `git diff --stat -- src/lib src/app/api` and confirm it is empty. Do not proceed until both pass _(Pending: `/admin/login` is visually identical to baseline and `git diff -- src/lib src/app/api` is empty; the logged-in `/admin` comparison needs the owner.)_
+- [X] T017 **Checkpoint — admin unchanged**: open `/admin/login` AND the logged-in `/admin` screen (mandatory; use the local `.env` admin credentials; check the top nav, tabs, calendar, tables, buttons and toasts) and compare with the T003 baseline; run `git diff --stat -- src/lib src/app/api` and confirm it is empty. Do not proceed until both pass _(Pending: `/admin/login` is visually identical to baseline and `git diff -- src/lib src/app/api` is empty; the logged-in `/admin` comparison needs the owner.)_ _(Owner confirmed on 2026-10-31 that the logged-in admin looks unchanged.)_
 
 **Checkpoint**: Foundation ready; user stories can begin
 
