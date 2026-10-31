@@ -857,3 +857,320 @@ html[data-admin-theme="dark"] {
     font-size: 1.05rem;
   }
 }
+
+/* ------------------------------------------------------------------------------------------
+ * Reservations inbox
+ * ---------------------------------------------------------------------------------------- */
+.admin-reservations {
+  display: grid;
+  gap: 1rem;
+}
+
+.admin-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-height: 44px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.admin-switch input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.admin-switch-track {
+  position: relative;
+  flex-shrink: 0;
+  width: 46px;
+  height: 26px;
+  border-radius: 999px;
+  background: var(--a-surface-2);
+  box-shadow: inset 0 0 0 1.5px var(--a-muted);
+  transition: background-color 0.15s ease;
+}
+
+.admin-switch-track::after {
+  content: "";
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--a-muted);
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+.admin-switch input:checked + .admin-switch-track {
+  background: var(--a-accent);
+  box-shadow: none;
+}
+
+.admin-switch input:checked + .admin-switch-track::after {
+  transform: translateX(20px);
+  background: var(--a-on-accent);
+}
+
+.admin-switch input:focus-visible + .admin-switch-track {
+  outline: 3px solid var(--a-accent);
+  outline-offset: 2px;
+}
+
+.admin-reservation-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 430px), 1fr));
+  gap: 0.75rem;
+  list-style: none;
+}
+
+.admin-empty {
+  padding: 1.2rem;
+  border: 1px dashed var(--a-line);
+  border-radius: var(--a-radius);
+  color: var(--a-muted);
+}
+
+.admin-reservation {
+  display: grid;
+  align-content: start;
+  gap: 0.65rem;
+  height: 100%;
+  padding: 1rem;
+  border: 1px solid var(--a-line);
+  border-radius: var(--a-radius);
+  background: var(--a-surface);
+}
+
+.admin-reservation.is-unread {
+  box-shadow: inset 4px 0 0 var(--a-unread-bg);
+}
+
+/* A booking that just arrived while the admin was open */
+.admin-reservation.is-fresh {
+  outline: 3px solid color-mix(in srgb, var(--a-accent) 55%, transparent);
+  outline-offset: 2px;
+}
+
+.admin-reservation-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.admin-reservation-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding-top: 0.2rem;
+}
+
+.admin-reservation-icons {
+  display: flex;
+  flex-shrink: 0;
+  gap: 0.4rem;
+}
+
+.admin-icon-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--a-line);
+  border-radius: var(--a-radius);
+  background: var(--a-surface);
+  color: var(--a-text);
+  cursor: pointer;
+}
+
+.admin-icon-btn:hover:not(:disabled) {
+  background: var(--a-surface-2);
+}
+
+.admin-icon-btn--danger:hover:not(:disabled) {
+  background: var(--a-cancelled-bg);
+  color: var(--a-cancelled-fg);
+}
+
+.admin-icon-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.admin-reservation-name {
+  font-size: 1.25rem;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.admin-reservation-when {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.2rem 0.9rem;
+}
+
+.admin-reservation-guests {
+  color: var(--a-muted);
+  font-weight: 600;
+}
+
+.admin-reservation-contact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.admin-reservation-contact .btn {
+  max-width: 100%;
+  height: auto;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+.admin-reservation-reward {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-radius: var(--a-radius);
+  background: var(--a-surface-2);
+}
+
+.admin-reservation-reward-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.admin-count {
+  padding: 0.1rem 0.6rem;
+  border-radius: 999px;
+  background: var(--a-surface);
+  box-shadow: inset 0 0 0 1px var(--a-line);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.admin-reservation-details summary {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.admin-reservation-details p {
+  margin-top: 0.3rem;
+  color: var(--a-muted);
+  overflow-wrap: anywhere;
+}
+
+.admin-status-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 0.4rem;
+}
+
+.admin-status-group .btn.is-current {
+  background: var(--a-accent);
+  border-color: var(--a-accent);
+  color: var(--a-on-accent);
+}
+
+.admin-reservation-meta {
+  font-size: 0.8rem;
+}
+
+.admin-skeleton-card {
+  display: grid;
+  gap: 0.7rem;
+  padding: 1rem;
+  border: 1px solid var(--a-line);
+  border-radius: var(--a-radius);
+  background: var(--a-surface);
+}
+
+.admin-skeleton-line {
+  display: block;
+  height: 14px;
+  border-radius: 999px;
+  background: var(--a-surface-2);
+  animation: admin-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes admin-pulse {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@media (max-width: 520px) {
+  .admin-status-group {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ------------------------------------------------------------------------------------------
+ * Dialogs: glass sheets over a blurred, tinted backdrop
+ * ---------------------------------------------------------------------------------------- */
+.admin-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  border: 0;
+  background: rgba(8, 20, 24, 0.5);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+.admin-dialog-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 91;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.admin-dialog {
+  display: grid;
+  gap: 0.9rem;
+  width: min(440px, 100%);
+  max-height: 90dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 1.25rem;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--a-surface) 94%, transparent);
+  color: var(--a-text);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  box-shadow:
+    inset 0 1px 0 var(--a-glass-edge),
+    inset 0 0 0 1px var(--a-line),
+    0 20px 50px var(--a-shadow);
+}
+
+.admin-dialog h2 {
+  font-size: 1.35rem;
+  line-height: 1.15;
+}
+
+.admin-dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
+
+@media (max-width: 520px) {
+  .admin-dialog-actions .btn {
+    flex: 1 1 100%;
+  }
+}

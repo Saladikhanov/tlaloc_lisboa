@@ -2,6 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import AdminReservationList from "@/components/admin-reservation-list";
 import AdminToday from "@/components/admin-today";
 import { useSearchParams } from "next/navigation";
 import type { AdminEvent } from "@/lib/admin-events";
@@ -194,7 +195,7 @@ const weekdayLabels = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "
 const mondayFirstOrder: number[] = [1, 2, 3, 4, 5, 6, 0];
 const weekdayShortMondayFirst = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 // Tabs that use the new admin look. Every other tab sits inside the dark "legacy" panel until it is migrated.
-const MIGRATED_TABS: TabId[] = ["today"];
+const MIGRATED_TABS: TabId[] = ["today", "reservations"];
 
 const adminTabIds: TabId[] = [
   "reservations",
@@ -1490,6 +1491,19 @@ export default function AdminBackOffice() {
     }
   }, [calendarCells, selectedCalendarDay]);
 
+  useEffect(() => {
+    if (!deleteReservationModal) {
+      return;
+    }
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setDeleteReservationModal(null);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [deleteReservationModal]);
+
   async function runAction(key: string, action: () => Promise<void>) {
     setActionKey(key);
     try {
@@ -2082,250 +2096,33 @@ export default function AdminBackOffice() {
 
       <div className={MIGRATED_TABS.includes(activeTab) ? "admin-v2" : "admin-legacy"}>
       {activeTab === "reservations" ? (
-        <div style={{ display: "grid", gap: "0.6rem" }}>
-          <label
-            className="ios-switch-field"
-            style={{ marginBottom: "0.2rem", alignSelf: "flex-start" }}
-          >
-            <input
-              className="ios-switch-input"
-              type="checkbox"
-              checked={showReadInPending}
-              onChange={(event) => setShowReadInPending(event.target.checked)}
-            />
-            <span className="ios-switch" aria-hidden="true" />
-            <span>Show read reservations</span>
-          </label>
-          {isLoading ? (
-            <div className="reservation-list-loader" aria-live="polite" aria-busy="true">
-              <article className="card reservation-skeleton-card">
-                <div className="skeleton-line w-35" />
-                <div className="skeleton-line w-75" />
-                <div className="skeleton-line w-55" />
-                <div className="skeleton-line w-65" />
-              </article>
-              <article className="card reservation-skeleton-card">
-                <div className="skeleton-line w-40" />
-                <div className="skeleton-line w-70" />
-                <div className="skeleton-line w-60" />
-                <div className="skeleton-line w-50" />
-              </article>
-            </div>
-          ) : activeReservations.length === 0 ? (
-            <div className="card">No reservations in inbox.</div>
-          ) : (
-            activeReservations.map((reservation) => (
-              <article
-                className={`card reservation-anchor-card ${
-                  highlightedReservationIds.includes(reservation.id) ? "reservation-card-fresh" : ""
-                }`}
-                key={reservation.id}
-                id={`reservation-card-${reservation.id}`}
-              >
-                <div className="reservation-card-actions">
-                  <button
-                    className={`icon-btn reservation-delete-corner-btn ${reservation.isRead ? "read-icon-btn" : ""}`}
-                    type="button"
-                    id={`reservation-read-btn-${reservation.id}`}
-                    aria-label={`${reservation.isRead ? "Already read" : "Mark as read"} for ${reservation.firstName} ${reservation.lastName}`}
-                    title={reservation.isRead ? "Already read" : "Mark as read"}
-                    onClick={() => {
-                      void markReservationRead(reservation.id);
-                    }}
-                    disabled={actionKey !== null || reservation.isRead}
-                  >
-                    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-                      <path
-                        d="M5 12.5l4.2 4.2L19 7"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.8"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </button>
-                  <button
-                    className="icon-btn danger-icon-btn reservation-delete-corner-btn"
-                    type="button"
-                    id={`reservation-delete-btn-${reservation.id}`}
-                    aria-label={`Delete reservation for ${reservation.firstName} ${reservation.lastName}`}
-                    title="Delete reservation"
-                    onClick={() => {
-                      setDeleteReservationModal({
-                        id: reservation.id,
-                        guestName: `${reservation.firstName} ${reservation.lastName}`,
-                      });
-                    }}
-                    disabled={actionKey !== null}
-                  >
-                    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-                      <path
-                        d="M3 6h18M9 6V4h6v2M8 10v7M12 10v7M16 10v7M6 6l1 14h10l1-14"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.8"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </button>
-                </div>
-                <div className="reservation-meta-row">
-                  <p className="footer-note" style={{ marginTop: 0, marginBottom: "0.35rem" }}>
-                    Reservation #{reservation.id.slice(0, 8)}
-                  </p>
-                  <div style={{ display: "flex", gap: "0.35rem", flexWrap: "wrap" }}>
-                    <span className="pill reservation-locale-chip">
-                      {getMessageLanguageLabel(reservation)}
-                    </span>
-                    <span className="pill reservation-locale-chip">{reservation.version}</span>
-                  </div>
-                </div>
-                {reservation.isRead ? (
-                  <p className="footer-note" style={{ marginTop: 0, marginBottom: "0.35rem" }}>
-                    Read
-                  </p>
-                ) : null}
-                <strong>
-                  {reservation.firstName} {reservation.lastName}
-                </strong>
-                <p>
-                  {formatEuropeanDate(reservation.date)} at {reservation.time} · Guests:{" "}
-                  {reservation.guests}
-                </p>
-                <p>
-                  <a
-                    id={`reservation-phone-link-${reservation.id}`}
-                    href={toWhatsAppUrl(reservation.phone, reservation, messageTemplates)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {reservation.phone}
-                  </a>
-                </p>
-                <p>
-                  <a
-                    id={`reservation-email-link-${reservation.id}`}
-                    href={toEmailUrl(reservation.email, reservation, messageTemplates)}
-                  >
-                    {reservation.email}
-                  </a>
-                </p>
-                {(() => {
-                  const activeRewardCode = getActiveRewardCodeForReservation(reservation, rewardCodes);
-                  return activeRewardCode ? (
-                    <div className="card admin-reward-card">
-                      <div className="admin-reward-head">
-                        <strong>Guest reward</strong>
-                        <span className="pill reservation-locale-chip">{activeRewardCode.status}</span>
-                      </div>
-                      <p className="footer-note" style={{ marginTop: "0.25rem" }}>
-                        <strong>{activeRewardCode.code}</strong> · {activeRewardCode.rewardLabel}
-                      </p>
-                      <div style={{ display: "flex", gap: "0.45rem", flexWrap: "wrap", marginTop: "0.5rem" }}>
-                        <a
-                          className="btn btn-secondary"
-                          href={toRewardWhatsAppUrl(reservation.phone, activeRewardCode, reservation.locale)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          Send reward WhatsApp
-                        </a>
-                        <a
-                          className="btn btn-secondary"
-                          href={toRewardEmailUrl(reservation.email, activeRewardCode, reservation.locale)}
-                        >
-                          Send reward email
-                        </a>
-                      </div>
-                    </div>
-                  ) : null;
-                })()}
-                {hasReservationExtraDetails(reservation) ? (
-                  <details className="reservation-extra-details">
-                    <summary>More details</summary>
-                    {reservation.version === "v1" ? (
-                      <>
-                        <p className="footer-note" style={{ marginTop: "0.45rem" }}>
-                          <strong>Occasion:</strong>{" "}
-                          {reservation.occasion?.trim() ? reservation.occasion : "-"}
-                        </p>
-                        <p className="footer-note" style={{ marginTop: "0.25rem" }}>
-                          <strong>Special requests:</strong>{" "}
-                          {reservation.notes?.trim() ? reservation.notes : "-"}
-                        </p>
-                      </>
-                    ) : (
-                      <p className="footer-note" style={{ marginTop: "0.45rem" }}>
-                        <strong>Other information:</strong>{" "}
-                        {reservation.notes?.trim() ? reservation.notes : "-"}
-                      </p>
-                    )}
-                  </details>
-                ) : null}
-                <div
-                  id={`reservation-status-actions-${reservation.id}`}
-                  style={{ display: "flex", gap: "0.5rem", marginTop: "0.4rem", flexWrap: "wrap" }}
-                >
-                  <button
-                    className="btn btn-secondary"
-                    type="button"
-                    disabled={actionKey !== null}
-                    onClick={() => {
-                      void changeReservationStatus(reservation.id, "new");
-                    }}
-                  >
-                    {actionKey === `reservation-${reservation.id}-new`
-                      ? "Updating..."
-                      : "New"}
-                  </button>
-                  <button
-                    className="btn btn-secondary"
-                    type="button"
-                    disabled={actionKey !== null}
-                    onClick={() => {
-                      void changeReservationStatus(reservation.id, "confirmed");
-                    }}
-                  >
-                    {actionKey === `reservation-${reservation.id}-confirmed`
-                      ? "Updating..."
-                      : "Confirmed"}
-                  </button>
-                  <button
-                    className="btn btn-secondary"
-                    type="button"
-                    disabled={actionKey !== null}
-                    onClick={() => {
-                      void changeReservationStatus(reservation.id, "cancelled");
-                    }}
-                  >
-                    {actionKey === `reservation-${reservation.id}-cancelled`
-                      ? "Updating..."
-                      : "Cancelled"}
-                  </button>
-                  <button
-                    className="btn btn-secondary"
-                    type="button"
-                    disabled={actionKey !== null}
-                    onClick={() => {
-                      void changeReservationStatus(reservation.id, "no_show");
-                    }}
-                  >
-                    {actionKey === `reservation-${reservation.id}-no_show`
-                      ? "Updating..."
-                      : "No show"}
-                  </button>
-                  <span
-                    className={`pill reservation-status reservation-status-${reservation.status}`}
-                  >
-                    {reservation.status}
-                  </span>
-                </div>
-              </article>
-            ))
-          )}
-        </div>
+        <AdminReservationList
+          reservations={activeReservations}
+          isLoading={isLoading}
+          showRead={showReadInPending}
+          onShowReadChange={setShowReadInPending}
+          highlightedIds={highlightedReservationIds}
+          actionKey={actionKey}
+          formatDate={formatEuropeanDate}
+          languageLabel={getMessageLanguageLabel}
+          phoneHref={(reservation) => toWhatsAppUrl(reservation.phone, reservation, messageTemplates)}
+          emailHref={(reservation) => toEmailUrl(reservation.email, reservation, messageTemplates)}
+          rewardFor={(reservation) => {
+            const code = getActiveRewardCodeForReservation(reservation, rewardCodes);
+            return code
+              ? {
+                  code: code.code,
+                  status: code.status,
+                  label: code.rewardLabel,
+                  whatsappHref: toRewardWhatsAppUrl(reservation.phone, code, reservation.locale),
+                  emailHref: toRewardEmailUrl(reservation.email, code, reservation.locale),
+                }
+              : null;
+          }}
+          onMarkRead={(id) => void markReservationRead(id)}
+          onChangeStatus={(id, status) => void changeReservationStatus(id, status)}
+          onDelete={(id, guestName) => setDeleteReservationModal({ id, guestName })}
+        />
       ) : null}
 
       {activeTab === "today" ? (
@@ -3960,26 +3757,28 @@ export default function AdminBackOffice() {
       </div>
 
       {deleteReservationModal ? (
-        <>
+        <div className="admin-v2">
           <button
-            className="confirm-modal-backdrop"
+            className="admin-dialog-backdrop"
             type="button"
             aria-label="Close delete confirmation"
             onClick={() => setDeleteReservationModal(null)}
           />
-          <div className="confirm-modal-wrap" onClick={() => setDeleteReservationModal(null)}>
+          <div className="admin-dialog-wrap" onClick={() => setDeleteReservationModal(null)}>
             <section
-              className="confirm-modal-card"
-              role="dialog"
+              className="admin-dialog"
+              role="alertdialog"
               aria-modal="true"
+              aria-labelledby="delete-reservation-title"
+              aria-describedby="delete-reservation-text"
               onClick={(event) => event.stopPropagation()}
             >
-              <h3>Delete reservation?</h3>
-              <p className="footer-note" style={{ marginTop: "0.6rem" }}>
+              <h2 id="delete-reservation-title">Delete reservation?</h2>
+              <p id="delete-reservation-text">
                 This will permanently remove reservation for{" "}
                 <strong>{deleteReservationModal.guestName}</strong>.
               </p>
-              <div className="confirm-modal-actions">
+              <div className="admin-dialog-actions">
                 <button
                   className="btn btn-secondary"
                   type="button"
@@ -3995,13 +3794,13 @@ export default function AdminBackOffice() {
                   disabled={actionKey !== null}
                 >
                   {actionKey === `delete-reservation-${deleteReservationModal.id}`
-                    ? "Deleting..."
+                    ? "Deleting…"
                     : "Delete"}
                 </button>
               </div>
             </section>
           </div>
-        </>
+        </div>
       ) : null}
 
       {isManualReservationFormOpen && selectedCalendarDate ? (
