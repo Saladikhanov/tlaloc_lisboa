@@ -199,6 +199,9 @@ type ReservationTutorialHintMode = "contact" | "status" | "clean";
 const weekdayLabels = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const mondayFirstOrder: number[] = [1, 2, 3, 4, 5, 6, 0];
 const weekdayShortMondayFirst = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+// Tabs that use the new admin look. Every other tab sits inside the dark "legacy" panel until it is migrated.
+const MIGRATED_TABS: TabId[] = [];
+
 const adminTabIds: TabId[] = [
   "reservations",
   "today",
@@ -2304,6 +2307,7 @@ export default function AdminBackOffice() {
 
   return (
     <div style={{ marginTop: "1rem", display: "grid", gap: "1rem" }}>
+      <div className="admin-legacy admin-legacy--bar">
       {activeTab === "today" ? (
         <div>
           <button
@@ -2396,6 +2400,7 @@ export default function AdminBackOffice() {
           </button>
         </div>
       )}
+      </div>
 
       <AnimatePresence>
         {adminToasts.length > 0 ? (
@@ -2689,6 +2694,7 @@ export default function AdminBackOffice() {
         </button>
       ) : null}
 
+      <div className={MIGRATED_TABS.includes(activeTab) ? "admin-v2" : "admin-legacy"}>
       {activeTab === "reservations" ? (
         <div style={{ display: "grid", gap: "0.6rem" }}>
           <label
@@ -4738,6 +4744,7 @@ export default function AdminBackOffice() {
           </div>
         </section>
       ) : null}
+      </div>
 
       {deleteReservationModal ? (
         <>

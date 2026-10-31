@@ -88,4 +88,4 @@ no layout shift from images. After building, audit with `web-design-guidelines` 
 - **High-resolution mascot:** the 512 px app icon is a blurry upscale of a 200 px file; a vector or
   large transparent version would fix the icons and allow a cleaner mascot everywhere.
 - **Hero photo:** the five existing photos work; a dedicated hero shot is optional.
-- **Admin back office:** redesigned in feature 002 on the same tokens (it keeps its legacy look until then).
+- **Admin back office:** feature 002 gives it a calm, dense look with a light and a dark theme (`--a-*` tokens in `src/app/admin/admin.css`); tabs not yet migrated keep their old look as a dark panel.

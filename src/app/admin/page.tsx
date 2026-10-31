@@ -27,7 +27,9 @@ export default async function AdminPage({
       <AdminTopNav />
 
       <main className="site-shell form-shell">
-        <AdminPageHeader />
+        <div className="admin-legacy admin-legacy--bar">
+          <AdminPageHeader />
+        </div>
         <AdminBackOffice />
       </main>
     </>

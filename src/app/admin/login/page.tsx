@@ -41,6 +41,7 @@ export default function AdminLoginPage() {
   }
 
   return (
+    <div className="admin-legacy admin-legacy--page">
     <main className="site-shell form-shell">
       <h1>Admin Login</h1>
       <p className="footer-note">Authorized staff only.</p>
@@ -123,5 +124,6 @@ export default function AdminLoginPage() {
         <Link href="/menu">Back to menu</Link>
       </p>
     </main>
+    </div>
   );
 }

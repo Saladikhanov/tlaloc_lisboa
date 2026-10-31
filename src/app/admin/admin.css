@@ -1,0 +1,70 @@
+/*
+ * Admin design tokens and themes (feature 002, see specs/002-admin-redesign/contracts/admin-ui-contract.md).
+ * Loaded only by the admin layout so public pages do not ship it.
+ *
+ * The theme is chosen by the data-admin-theme attribute on <html> (set before first paint by a small inline
+ * script, and kept in sync by AdminThemeScope). Keep these values in sync with scripts/check-contrast.mjs,
+ * which fails if any pair drops below WCAG AA.
+ */
+
+html[data-admin-theme="light"] {
+  color-scheme: light;
+  --a-bg: #f4f6f5;
+  --a-surface: #ffffff;
+  --a-surface-2: #ecf0ef;
+  --a-text: #0a2b36;
+  --a-muted: #4f6168;
+  --a-line: rgba(10, 43, 54, 0.18);
+  --a-accent: #0a2b36;
+  --a-on-accent: #fbfbf8;
+  --a-action: #d62f25;
+  --a-on-action: #ffffff;
+  --a-glass: rgba(255, 255, 255, 0.72);
+  --a-glass-edge: rgba(255, 255, 255, 0.95);
+  --a-shadow: rgba(10, 43, 54, 0.16);
+
+  --a-new-bg: #ddf0fa;
+  --a-new-fg: #0a2b36;
+  --a-confirmed-bg: #d9efe3;
+  --a-confirmed-fg: #134d35;
+  --a-cancelled-bg: #fbe0de;
+  --a-cancelled-fg: #8e1f18;
+  --a-noshow-bg: #e8e8e4;
+  --a-noshow-fg: #3d4a4f;
+  --a-warn-bg: #fbe9cc;
+  --a-warn-fg: #6b3f00;
+}
+
+html[data-admin-theme="dark"] {
+  color-scheme: dark;
+  --a-bg: #0b1417;
+  --a-surface: #121d21;
+  --a-surface-2: #1a282d;
+  --a-text: #eaf1f1;
+  --a-muted: #9db0b5;
+  --a-line: rgba(255, 255, 255, 0.14);
+  --a-accent: #c9e265;
+  --a-on-accent: #0b1417;
+  --a-action: #d62f25;
+  --a-on-action: #ffffff;
+  --a-glass: rgba(18, 29, 33, 0.72);
+  --a-glass-edge: rgba(255, 255, 255, 0.2);
+  --a-shadow: rgba(0, 0, 0, 0.45);
+
+  --a-new-bg: #12384a;
+  --a-new-fg: #bee6f7;
+  --a-confirmed-bg: #14402e;
+  --a-confirmed-fg: #bfe8d2;
+  --a-cancelled-bg: #4a1b18;
+  --a-cancelled-fg: #f6c6c2;
+  --a-noshow-bg: #2a3539;
+  --a-noshow-fg: #c9d4d6;
+  --a-warn-bg: #4a3410;
+  --a-warn-fg: #f6dcb0;
+}
+
+/* Focus ring for the new admin components */
+.admin-v2 :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 3px solid var(--a-accent);
+  outline-offset: 2px;
+}
