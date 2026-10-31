@@ -2,7 +2,10 @@
   "Nav": {
     "menu": "Menu",
     "reserve": "Reserve",
-    "admin": "Back Office"
+    "admin": "Back Office",
+    "skip": "Skip to content",
+    "main": "Main",
+    "toggleMenu": "Open or close the menu"
   },
   "Footer": {
     "tagline": "Mexican restaurant in Alcântara, Lisbon.",
@@ -51,7 +54,7 @@
     "galleryAlt2": "Green enchiladas topped with cream and red onion, with chips and black beans",
     "galleryAlt3": "Three shredded chicken tacos with red onion, with a side salad and green salsa",
     "galleryAlt4": "A child colouring a Tláloc activity sheet at a wooden table in the restaurant",
-    "galleryAlt5": "A child giving two thumbs up in front of the restaurant's turquoise wall and pink flower mural"
+    "galleryAlt5": "A child giving two thumbs up in front of the restaurant’s turquoise wall and pink flower mural"
   },
   "MenuPage": {
     "title": "Menu",
@@ -89,7 +92,7 @@
     "success": "Reservation request sent. We will contact you via WhatsApp or email."
   },
   "NotFound": {
-    "title": "We couldn't find that page",
+    "title": "We couldn’t find that page",
     "body": "The link may be old, or the page may have moved. The menu and the booking page are one tap away.",
     "home": "Back to home",
     "menu": "See the menu",
@@ -97,7 +100,7 @@
   },
   "Error": {
     "title": "Something went wrong",
-    "body": "We couldn't load this page. Please try again, or book by phone on +351 21 809 3388.",
+    "body": "We couldn’t load this page. Please try again, or book by phone on +351 21 809 3388.",
     "retry": "Try again",
     "home": "Back to home"
   }

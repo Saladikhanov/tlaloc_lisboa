@@ -2,7 +2,10 @@
   "Nav": {
     "menu": "Menu",
     "reserve": "Reservas",
-    "admin": "Back Office"
+    "admin": "Back Office",
+    "skip": "Saltar para o conteúdo",
+    "main": "Principal",
+    "toggleMenu": "Abrir ou fechar o menu"
   },
   "Footer": {
     "tagline": "Restaurante mexicano em Alcântara, Lisboa.",

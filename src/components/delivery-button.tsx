@@ -8,10 +8,21 @@ const UBER_EATS_WEB_URL =
 // - iOS: try custom scheme first, then fallback to web URL.
 // Browsers do not provide a reliable API to definitively detect app installation.
 export default function DeliveryButton({ label }: { label: string }) {
-  const onOpenDelivery = () => {
+  const onOpenDelivery = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    // Keep native link behaviour (new tab, copy link, Cmd/Ctrl-click) except for the app deep link on phones.
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) {
+      return;
+    }
+
     const ua = navigator.userAgent || navigator.vendor;
     const isAndroid = /Android/i.test(ua);
     const isIOS = /iPhone|iPad|iPod/i.test(ua);
+
+    if (!isAndroid && !isIOS) {
+      return;
+    }
+
+    event.preventDefault();
 
     if (isAndroid) {
       const intentUrl =
@@ -40,13 +51,17 @@ export default function DeliveryButton({ label }: { label: string }) {
       }, 900);
       return;
     }
-
-    window.open(UBER_EATS_WEB_URL, "_blank", "noopener,noreferrer");
   };
 
   return (
-    <button type="button" className="btn btn-secondary" onClick={onOpenDelivery}>
+    <a
+      className="btn btn-secondary"
+      href={UBER_EATS_WEB_URL}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={onOpenDelivery}
+    >
       {label}
-    </button>
+    </a>
   );
 }

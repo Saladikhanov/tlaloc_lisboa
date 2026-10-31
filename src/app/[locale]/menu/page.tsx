@@ -39,17 +39,16 @@ export default async function MenuPage({ params }: Props) {
       ? routeLocale
       : routing.defaultLocale
   ) as Locale;
-  const t = await getTranslations({
-    locale,
-    namespace: "MenuPage",
-  });
-  const menuData = await getMenuData();
+  const [t, menuData] = await Promise.all([
+    getTranslations({ locale, namespace: "MenuPage" }),
+    getMenuData(),
+  ]);
 
   return (
     <>
       <PublicNav />
 
-      <main className="site-shell menu-page">
+      <main id="main-content" className="site-shell menu-page">
         <header className="menu-head">
           <h1>{t("title")}</h1>
         </header>

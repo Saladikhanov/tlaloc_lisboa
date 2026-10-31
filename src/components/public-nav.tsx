@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import NextLink from "next/link";
 import Image from "next/image";
-import { AnimatePresence, motion } from "framer-motion";
 import { useLocale, useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
 import { Link } from "@/i18n/navigation";
@@ -77,9 +76,17 @@ export default function PublicNav({ headerTitle }: PublicNavProps) {
       }
     };
 
-    void loadAdminSession();
+    const hasIdle = "requestIdleCallback" in window;
+    const idle = hasIdle
+      ? window.requestIdleCallback(() => void loadAdminSession())
+      : window.setTimeout(() => void loadAdminSession(), 1);
     return () => {
       active = false;
+      if (hasIdle) {
+        window.cancelIdleCallback(idle);
+      } else {
+        window.clearTimeout(idle);
+      }
     };
   }, [pathname]);
 
@@ -125,7 +132,7 @@ export default function PublicNav({ headerTitle }: PublicNavProps) {
 
   return (
     <>
-      <nav className="site-nav">
+      <nav className="site-nav" aria-label={t("main")}>
         <div className="site-nav-inner">
           <Link className="brand" href="/">
             <Image
@@ -145,24 +152,15 @@ export default function PublicNav({ headerTitle }: PublicNavProps) {
             </div>
             <button
               type="button"
-              className="nav-toggle"
+              className="nav-toggle burger"
               aria-expanded={isMenuOpen}
               aria-controls="public-mobile-menu"
-              aria-label="Toggle navigation menu"
+              aria-label={t("toggleMenu")}
               onClick={() => setIsMenuOpen((prev) => !prev)}
             >
-              <motion.span
-                animate={isMenuOpen ? { rotate: 45, y: 7 } : { rotate: 0, y: 0 }}
-                transition={{ duration: 0.2 }}
-              />
-              <motion.span
-                animate={isMenuOpen ? { opacity: 0 } : { opacity: 1 }}
-                transition={{ duration: 0.18 }}
-              />
-              <motion.span
-                animate={isMenuOpen ? { rotate: -45, y: -7 } : { rotate: 0, y: 0 }}
-                transition={{ duration: 0.2 }}
-              />
+              <span />
+              <span />
+              <span />
             </button>
           </div>
           <div className="nav-links desktop-nav-links">
@@ -171,20 +169,12 @@ export default function PublicNav({ headerTitle }: PublicNavProps) {
           </div>
         </div>
       </nav>
-      <AnimatePresence>
-        {isMenuOpen ? (
-          <motion.div
-            id="public-mobile-menu"
-            className="nav-links mobile-nav-links open"
-            initial={{ opacity: 0, y: -8, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -8, scale: 0.98 }}
-            transition={{ duration: 0.18, ease: "easeOut" }}
-          >
-            {renderLinks(true)}
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
+      <div
+        id="public-mobile-menu"
+        className={`nav-links mobile-nav-links${isMenuOpen ? " open" : ""}`}
+      >
+        {renderLinks(true)}
+      </div>
     </>
   );
 }

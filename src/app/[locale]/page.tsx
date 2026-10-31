@@ -92,11 +92,8 @@ export default async function HomePage({ params }: Props) {
   const activeLocale = routing.locales.includes(locale as "en" | "pt")
     ? locale
     : routing.defaultLocale;
-  const t = await getTranslations({
-    locale: activeLocale,
-    namespace: "Home",
-  });
-  const [schedule, businessContact] = await Promise.all([
+  const [t, schedule, businessContact] = await Promise.all([
+    getTranslations({ locale: activeLocale, namespace: "Home" }),
     listWorkingHours(),
     listTutorialSettings(),
   ]);
@@ -187,7 +184,7 @@ export default async function HomePage({ params }: Props) {
       />
       <PublicNav />
 
-      <main className="site-shell">
+      <main id="main-content" className="site-shell">
         <section className="home-hero full-bleed" aria-labelledby="home-hero-title">
           <div className="home-hero-copy">
             <HomeOpenStatus

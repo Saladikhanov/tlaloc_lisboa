@@ -11,7 +11,7 @@ export default function LocaleError({ reset }: { error: Error; reset: () => void
   return (
     <>
       <PublicNav />
-      <main className="site-shell">
+      <main id="main-content" className="site-shell">
       <section className="status-band full-bleed" aria-labelledby="error-title">
         <div className="status-inner">
           <Image

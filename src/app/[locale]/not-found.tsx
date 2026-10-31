@@ -9,7 +9,7 @@ export default async function LocaleNotFound() {
   return (
     <>
       <PublicNav />
-      <main className="site-shell">
+      <main id="main-content" className="site-shell">
         <section className="status-band full-bleed" aria-labelledby="not-found-title">
           <div className="status-inner">
             <Image

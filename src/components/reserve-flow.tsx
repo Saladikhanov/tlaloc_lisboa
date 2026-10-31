@@ -73,36 +73,6 @@ type ReserveText = {
   stepsLabel: string;
 };
 
-const weekdayShortMondayFirst = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-const weekdayShortMondayFirstPt = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
-const monthNamesEn = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
-const monthNamesPt = [
-  "Janeiro",
-  "Fevereiro",
-  "Março",
-  "Abril",
-  "Maio",
-  "Junho",
-  "Julho",
-  "Agosto",
-  "Setembro",
-  "Outubro",
-  "Novembro",
-  "Dezembro",
-];
 
 const getTodayMonthKey = (): string => {
   const now = new Date();
@@ -127,12 +97,21 @@ const parseMonthKey = (value: string): { year: number; month: number } | null =>
   return { year: Number(match[1]), month: Number(match[2]) };
 };
 
-const formatEuroDate = (value: string): string => {
+const intlLocaleFor = (locale: Locale): string => (locale === "pt" ? "pt-PT" : "en-GB");
+
+const capitalize = (value: string): string => value.charAt(0).toUpperCase() + value.slice(1);
+
+const formatEuroDate = (value: string, locale: Locale): string => {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
   if (!match) {
     return value;
   }
-  return `${match[3]}-${match[2]}-${match[1]}`;
+  return new Intl.DateTimeFormat(intlLocaleFor(locale), {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]), 12)));
 };
 
 const texts = {
@@ -172,7 +151,7 @@ const texts = {
     close: "Close",
     dayClosedTitle: "Closed that day",
     dayClosedBody: "We are closed on this day. Please choose another date.",
-    fullTitle: "Sorry, we're full",
+    fullTitle: "Sorry, we’re full",
     fullBody: "There are no available reservation times on that day.",
     selectDateFirst: "Pick a date first.",
     selectTimeFirst: "Pick a time first.",
@@ -258,7 +237,6 @@ function ModalStatusIcon({ variant }: { variant: "full" | "closed" }) {
 export default function ReserveFlow() {
   const localeValue = useLocale();
   const locale = localeValue as Locale;
-  const isPortuguese = locale === "pt";
   const t = texts[locale];
   const [calendarMonth, setCalendarMonth] = useState(getTodayMonthKey);
   const [currentStep, setCurrentStep] = useState(1);
@@ -290,7 +268,22 @@ export default function ReserveFlow() {
     }
     return new Date(parsed.year, parsed.month - 1, 1);
   }, [calendarMonth]);
-  const monthLabel = `${(isPortuguese ? monthNamesPt : monthNamesEn)[calendarMonthDate.getMonth()]} ${calendarMonthDate.getFullYear()}`;
+  const monthLabel = capitalize(
+    new Intl.DateTimeFormat(intlLocaleFor(locale), { month: "long", year: "numeric" }).format(
+      calendarMonthDate,
+    ),
+  );
+  const weekdayLabels = useMemo(
+    () =>
+      Array.from({ length: 7 }, (_, index) =>
+        capitalize(
+          new Intl.DateTimeFormat(intlLocaleFor(locale), { weekday: "long", timeZone: "UTC" })
+            .format(new Date(Date.UTC(2024, 0, 1 + index, 12)))
+            .slice(0, 3),
+        ),
+      ),
+    [locale],
+  );
   const reduceMotion = useReducedMotion();
   const progressPercent = (currentStep / t.steps.length) * 100;
   const tacoPercent = Math.min(progressPercent, 94);
@@ -504,7 +497,7 @@ export default function ReserveFlow() {
   };
 
   return (
-    <main className="site-shell reserve-page">
+    <main id="main-content" className="site-shell reserve-page">
       <div className="reserve-band full-bleed">
         <div className="reserve-page-inner">
       <div className="reserve-intro">
@@ -635,13 +628,11 @@ export default function ReserveFlow() {
                 {monthLabel}
               </p>
               <div className="reserve-calendar-grid">
-                {(isPortuguese ? weekdayShortMondayFirstPt : weekdayShortMondayFirst).map(
-                  (weekday) => (
-                    <div key={weekday} className="reserve-calendar-weekday">
-                      {weekday}
-                    </div>
-                  ),
-                )}
+                {weekdayLabels.map((weekday) => (
+                  <div key={weekday} className="reserve-calendar-weekday">
+                    {weekday}
+                  </div>
+                ))}
                 {calendarCells.map((cell, index) => {
                   if (!cell.isoDate || !cell.day) {
                     return <div key={`empty-${index}`} className="reserve-calendar-empty" />;
@@ -797,7 +788,7 @@ export default function ReserveFlow() {
               <dl className="reserve-summary">
                 <div>
                   <dt>{t.summaryDate}</dt>
-                  <dd>{selectedDate ? formatEuroDate(selectedDate) : "-"}</dd>
+                  <dd>{selectedDate ? formatEuroDate(selectedDate, locale) : "-"}</dd>
                 </div>
                 <div>
                   <dt>{t.summaryTime}</dt>
@@ -982,7 +973,7 @@ export default function ReserveFlow() {
                       <dl className="reserve-summary">
                         <div>
                           <dt>{t.summaryDate}</dt>
-                          <dd>{formatEuroDate(successSummary.date)}</dd>
+                          <dd>{formatEuroDate(successSummary.date, locale)}</dd>
                         </div>
                         <div>
                           <dt>{t.summaryTime}</dt>

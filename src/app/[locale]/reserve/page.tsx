@@ -6,7 +6,7 @@ export default function ReservePage() {
   return (
     <>
       <PublicNav />
-      <Suspense fallback={<main className="site-shell form-shell" />}>
+      <Suspense fallback={<main id="main-content" className="site-shell form-shell" />}>
         <ReserveFlow />
       </Suspense>
     </>

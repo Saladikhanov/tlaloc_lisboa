@@ -14,7 +14,7 @@ export default function SiteFooter() {
     <footer className="site-footer">
       <div className="site-footer-inner">
         <div className="site-footer-block">
-          <p className="site-footer-brand">Tláloc</p>
+          <p className="site-footer-brand" translate="no">Tláloc</p>
           <p className="footer-note">{t("tagline")}</p>
         </div>
 

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
+import MotionProvider from "@/components/motion-provider";
 import { routing } from "@/i18n/routing";
 import { getSiteBaseUrl } from "@/lib/site-url";
 
@@ -24,5 +25,5 @@ export async function generateMetadata({ params }: Pick<Props, "params">): Promi
 }
 
 export default function ReserveLocaleLayout({ children }: Props) {
-  return children;
+  return <MotionProvider>{children}</MotionProvider>;
 }

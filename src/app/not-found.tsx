@@ -4,7 +4,7 @@ import Link from "next/link";
 // Unknown URLs outside any locale land here, so the copy is bilingual and static.
 export default function RootNotFound() {
   return (
-    <main className="site-shell">
+    <main id="main-content" className="site-shell">
       <section className="status-band full-bleed" aria-labelledby="root-not-found-title">
         <div className="status-inner">
           <Image
@@ -15,7 +15,7 @@ export default function RootNotFound() {
             height={112}
             priority
           />
-          <h1 id="root-not-found-title">We couldn&apos;t find that page</h1>
+          <h1 id="root-not-found-title">We couldn’t find that page</h1>
           <p>Não encontrámos essa página.</p>
           <div className="status-actions">
             <Link className="btn btn-primary" href="/en">
