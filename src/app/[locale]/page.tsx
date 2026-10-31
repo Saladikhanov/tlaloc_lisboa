@@ -225,11 +225,6 @@ export default async function HomePage({ params }: Props) {
           <p className="home-section-kicker">🕐 {isPortuguese ? "HORARIO" : "OPENING HOURS"}</p>
           <div className="home-hours-head">
             <h3>{t("workingHoursTitle")}</h3>
-            <HomeOpenStatus
-              initialOpen={isOpenNow}
-              openLabel={t("currentlyOpen")}
-              closedLabel={t("currentlyClosed")}
-            />
           </div>
           <div className="home-hours-summary">
             <p className="home-hours-line">
