@@ -189,85 +189,37 @@ export default async function HomePage({ params }: Props) {
       <PublicNav />
 
       <main className="site-shell">
-        <div className="menu-top-zigzag" aria-hidden="true" />
-
-        <div className="hero-fullbleed">
-          <section className="hero">
-            <div className="hero-bg-layer" aria-hidden="true">
-              <Image
-                className="hero-bg-image hero-bg-image--base"
-                src="/backgroundTlaloc.webp"
-                alt=""
-                fill
-                priority
-                fetchPriority="high"
-                quality={85}
-                sizes="100vw"
-              />
-              <Image
-                className="hero-bg-image hero-bg-image--blur-top"
-                src="/backgroundTlaloc.webp"
-                alt=""
-                fill
-                loading="lazy"
-                fetchPriority="low"
-                quality={55}
-                sizes="100vw"
-              />
-              <Image
-                className="hero-bg-image hero-bg-image--blur-band"
-                src="/backgroundTlaloc.webp"
-                alt=""
-                fill
-                loading="lazy"
-                fetchPriority="low"
-                quality={55}
-                sizes="100vw"
-              />
-            </div>
-            <div className="hero-scrim" aria-hidden="true" />
-
-            <div className="home-hero-content">
-              <Image
-                className="home-hero-image"
-                src="/op_image.webp"
-                alt={t("heroImageAlt")}
-                width={1200}
-                height={630}
-                loading="eager"
-                fetchPriority="low"
-                quality={85}
-              />
-
-              <h1>
-                <span className="hero-h1-primary">{t("heroHeading")}</span>
-                <span className="hero-h1-secondary">{t("heroSubheading")}</span>
-              </h1>
-              <p>{t("heroDescription")}</p>
-            </div>
-
+        <section className="home-hero" aria-labelledby="home-hero-title">
+          <div className="home-hero-copy">
+            <HomeOpenStatus
+              initialOpen={isOpenNow}
+              openLabel={t("currentlyOpen")}
+              closedLabel={t("currentlyClosed")}
+            />
+            <h1 id="home-hero-title">{t("heroHeading")}</h1>
+            <p className="home-hero-sub">{t("heroSubheading")}</p>
             <div className="hero-ctas">
-              <Link className="btn btn-primary" href="/menu">
-                {t("openMenu")}
-              </Link>
-              <Link className="btn btn-secondary" href="/reserve">
+              <Link className="btn btn-primary" href="/reserve">
                 {t("reserve")}
+              </Link>
+              <Link className="btn btn-secondary" href="/menu">
+                {t("openMenu")}
               </Link>
               <DeliveryButton label={t("orderDelivery")} />
             </div>
-          </section>
-        </div>
-
-        {/* <section className="home-discount-banner" aria-label={t("discountBannerHeadline")}>
-          <div className="offer-block">
-            <div className="offer-pct">20%</div>
-            <div className="offer-label">{t("discountBannerHeadline")}</div>
-            <div className="offer-desc">{t("discountBannerBody")}</div>
-            <Link className="btn btn-primary home-discount-banner-cta" href="/reserve">
-              <span className="btn-cta-shine-label">{t("discountBannerCta")}</span>
-            </Link>
+            <p className="home-hero-desc">{t("heroDescription")}</p>
           </div>
-        </section> */}
+          <div className="home-hero-media">
+            <Image
+              src="/backgroundTlaloc.webp"
+              alt={t("heroImageAlt")}
+              fill
+              priority
+              quality={80}
+              sizes="(min-width: 861px) 55vw, 100vw"
+            />
+          </div>
+        </section>
 
         <section className="card home-hours-card">
           <p className="home-section-kicker">🕐 {isPortuguese ? "HORARIO" : "OPENING HOURS"}</p>
@@ -346,7 +298,6 @@ export default async function HomePage({ params }: Props) {
           </div>
         </section>
 
-        <div className="menu-bottom-stripe" aria-hidden="true" />
       </main>
     </>
   );
