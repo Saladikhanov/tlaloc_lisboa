@@ -9,6 +9,8 @@ import { getSiteBaseUrl } from "@/lib/site-url";
 
 export const dynamic = "force-dynamic";
 
+const BAND_COLORS = ["lime", "chile", "teal", "cyan"] as const;
+
 type Props = {
   params: Promise<{ locale: string }>;
 };
@@ -24,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const base = getSiteBaseUrl();
   const path = `/${locale}/menu`;
   return {
-    title: t("metaTitle"),
+    title: { absolute: t("metaTitle") },
     description: t("metaDescription"),
     alternates: { canonical: `${base}${path}` },
   };
@@ -37,58 +39,65 @@ export default async function MenuPage({ params }: Props) {
       ? routeLocale
       : routing.defaultLocale
   ) as Locale;
-  const t = await getTranslations({
-    locale,
-    namespace: "MenuPage",
-  });
-  const menuData = await getMenuData();
+  const [t, menuData] = await Promise.all([
+    getTranslations({ locale, namespace: "MenuPage" }),
+    getMenuData(),
+  ]);
 
   return (
     <>
-      <PublicNav headerTitle={t("headerTitle")} />
+      <PublicNav />
 
-      <main className="site-shell menu-page">
-        <div className="menu-top-zigzag" aria-hidden="true" />
+      <main id="main-content" className="site-shell menu-page">
+        <header className="menu-head">
+          <h1>{t("title")}</h1>
+        </header>
 
         <MenuQuickFind
           quickFindLabel={t("quickFind")}
+          closeLabel={t("closeQuickFind")}
           categories={menuData.map((category) => ({
             id: category.id,
             label: category.title[locale],
           }))}
         />
 
-        <section className="menu-block">
-          {menuData.map((category) => (
-            <section className="menu-section" id={category.id} key={category.id}>
-              <h2>{category.title[locale]}</h2>
-              {category.subtitle ? <p className="footer-note">{category.subtitle[locale]}</p> : null}
-              <div className="items-grid" style={{ marginTop: "0.7rem" }}>
-                {category.items.map((item) => (
-                  <article className="item" key={`${category.id}-${item.name.en}`}>
-                    <div className="item-top">
-                      <h3>
-                        {item.name[locale]}
-                        {item.vegetarian ? (
-                          <span className="title-veg" aria-label="Vegetarian">
-                            {" "}
-                            🌱
-                          </span>
-                        ) : null}
-                      </h3>
-                      <span className="item-price">{item.price}</span>
-                    </div>
-                    <p>{item.description[locale]}</p>
-                  </article>
-                ))}
+        {menuData.map((category, index) => (
+          <section
+            className="menu-section"
+            id={category.id}
+            key={category.id}
+            aria-labelledby={`${category.id}-title`}
+          >
+            <div className={`menu-band full-bleed band-${BAND_COLORS[index % BAND_COLORS.length]}`}>
+              <div className="menu-band-inner">
+                <h2 id={`${category.id}-title`}>{category.title[locale]}</h2>
+                {category.subtitle ? (
+                  <p className="menu-section-note">{category.subtitle[locale]}</p>
+                ) : null}
               </div>
-            </section>
-          ))}
-        </section>
+            </div>
+            <ul className="menu-items">
+              {category.items.map((item) => (
+                <li className="menu-item" key={`${category.id}-${item.name.en}`}>
+                  <div className="menu-item-top">
+                    <div className="menu-item-name">
+                      <h3>{item.name[locale]}</h3>
+                      {item.vegetarian ? (
+                        <span className="menu-veg">{t("vegetarian")}</span>
+                      ) : null}
+                    </div>
+                    <span className="menu-item-dots" aria-hidden="true" />
+                    <span className="menu-item-price">{item.price}</span>
+                  </div>
+                  {item.description[locale] ? <p>{item.description[locale]}</p> : null}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
 
-        <p className="footer-note">{t("footnote")}</p>
-
-        <div className="menu-bottom-stripe" aria-hidden="true" />
+        <p className="menu-footnote">{t("footnote")}</p>
       </main>
     </>
   );

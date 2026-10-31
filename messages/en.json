@@ -2,7 +2,10 @@
   "Nav": {
     "menu": "Menu",
     "reserve": "Reserve",
-    "admin": "Back Office"
+    "admin": "Back Office",
+    "skip": "Skip to content",
+    "main": "Main",
+    "toggleMenu": "Open or close the menu"
   },
   "Footer": {
     "tagline": "Mexican restaurant in Alcântara, Lisbon.",
@@ -14,14 +17,12 @@
     "copyright": "© Tláloc Restaurant. All rights reserved."
   },
   "Home": {
-    "title": "One project: QR menu, reservations, and SEO website.",
-    "body": "This architecture starts with the customer QR menu and is ready to expand into reservation management and full back-office CMS. Public pages stay SEO friendly while staff tools are isolated in admin routes.",
     "openMenu": "Open Menu",
-    "reserve": "Book a Table",
+    "reserve": "Book a table",
     "orderDelivery": "Order Delivery",
     "heroHeading": "Mexican restaurant in Lisbon",
-    "heroSubheading": "Tacos · Margaritas · Good vibes",
-    "heroDescription": "Mexican restaurant in Lisbon, in the Alcântara neighbourhood. Homestyle recipes, craft margaritas, and warm hospitality — an authentic taste of Mexico in Portugal.",
+    "heroSubheading": "Tacos, margaritas and homestyle cooking in Alcântara.",
+    "heroDescription": "Homestyle recipes, craft margaritas and warm hospitality. An authentic taste of Mexico in Portugal.",
     "metaTitle": "Mexican Restaurant in Lisbon & Alcântara | Tláloc",
     "metaDescription": "Tláloc is a Mexican restaurant in Lisbon (Alcântara): tacos, margaritas, homestyle Mexican food and online reservations.",
     "heroImageAlt": "Tláloc — Mexican restaurant in Lisbon, Alcântara",
@@ -35,39 +36,34 @@
     "faqAnswer2": "At Tláloc in Alcântara you can order craft margaritas alongside tacos and Mexican dishes in a relaxed restaurant setting.",
     "faqQuestion3": "Can I book a table online at Tláloc?",
     "faqAnswer3": "Yes. You can book a table online through the reservation page and choose the date, time, and number of guests.",
-    "workingHoursTitle": "Working Hours",
+    "workingHoursTitle": "Opening hours",
     "currentlyOpen": "We are currently open",
     "currentlyClosed": "We are currently closed",
     "closedLabel": "Closed",
-    "pricingInfo": "Cards accepted · €€ · avg ~14€/person",
-    "discountBannerHeadline": "DISCOUNT — ONLINE EXCLUSIVE",
-    "discountBannerBody": "🎉 For the first 20 customers who book their table online!",
-    "discountBannerCta": "Reserve online",
-    "qrTitle": "1) Menu",
-    "qrBody": "Customer-facing mobile menu route, ideal for table QR codes and quick updates.",
-    "reservationTitle": "2) Reservation System",
-    "reservationBody": "Online booking form connected to API endpoints, ready for database and notifications.",
-    "seoTitle": "3) SEO Landing",
-    "seoBody": "Server-rendered pages for Google discovery while reusing the same content model.",
+    "pricingInfo": "Cards accepted. About €14 per person.",
     "galleryTitle": "Gallery",
-    "galleryPrev": "Previous photo",
-    "galleryNext": "Next photo",
-    "galleryNextTap": "Show next photo",
-    "galleryPhotoAlt": "Tláloc Restaurant — photo {n}",
-    "galleryGoTo": "Go to photo {n}"
+    "visitTitle": "Find us",
+    "addressLabel": "Address",
+    "phoneLabel": "Phone",
+    "whatsappLabel": "WhatsApp",
+    "emailLabel": "Email",
+    "dayMonThu": "Mon to Thu",
+    "dayFriSat": "Fri and Sat",
+    "daySun": "Sunday",
+    "galleryAlt1": "A wooden board with the Tláloc name, a skillet of chicken fajitas, tortillas, sauces and a watermelon margarita",
+    "galleryAlt2": "Green enchiladas topped with cream and red onion, with chips and black beans",
+    "galleryAlt3": "Three shredded chicken tacos with red onion, with a side salad and green salsa",
+    "galleryAlt4": "A child colouring a Tláloc activity sheet at a wooden table in the restaurant",
+    "galleryAlt5": "A child giving two thumbs up in front of the restaurant’s turquoise wall and pink flower mural"
   },
   "MenuPage": {
-    "headerTitle": "Menu",
     "title": "Menu",
     "metaTitle": "Menu — Mexican Food in Lisbon | Tláloc",
     "metaDescription": "Mexican food and drinks menu at Tláloc in Lisbon (Alcântara). Tacos, margaritas, and more.",
-    "subtitle": "This page is optimized for phone scanning from table QR codes.",
-    "quickFind": "Quick find",
-    "jumpFood": "Food",
-    "jumpDrinks": "Drinks",
-    "foodSection": "Food",
-    "drinksSection": "Drinks",
-    "footnote": "Please inform staff about allergies. Prices and dishes can change seasonally."
+    "quickFind": "Jump to",
+    "footnote": "Please tell staff about allergies. Prices and dishes can change with the season.",
+    "closeQuickFind": "Close",
+    "vegetarian": "Vegetarian"
   },
   "ReservePage": {
     "title": "Reservation Request",
@@ -94,5 +90,18 @@
     "successModalTitle": "Reservation Sent",
     "successModalClose": "Close",
     "success": "Reservation request sent. We will contact you via WhatsApp or email."
+  },
+  "NotFound": {
+    "title": "We couldn’t find that page",
+    "body": "The link may be old, or the page may have moved. The menu and the booking page are one tap away.",
+    "home": "Back to home",
+    "menu": "See the menu",
+    "reserve": "Book a table"
+  },
+  "Error": {
+    "title": "Something went wrong",
+    "body": "We couldn’t load this page. Please try again, or book by phone on +351 21 809 3388.",
+    "retry": "Try again",
+    "home": "Back to home"
   }
 }

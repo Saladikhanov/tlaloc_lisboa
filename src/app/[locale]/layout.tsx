@@ -1,6 +1,7 @@
 import { NextIntlClientProvider, hasLocale } from "next-intl";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
+import HtmlLang from "@/components/html-lang";
 import SiteFooter from "@/components/site-footer";
 import { routing } from "@/i18n/routing";
 
@@ -21,10 +22,18 @@ export default async function LocaleLayout({ children, params }: Props) {
   }
 
   setRequestLocale(locale);
-  const messages = (await import(`../../../messages/${locale}.json`)).default;
+  const [messagesModule, tNav] = await Promise.all([
+    import(`../../../messages/${locale}.json`),
+    getTranslations({ locale, namespace: "Nav" }),
+  ]);
+  const messages = messagesModule.default;
 
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
+      <HtmlLang locale={locale} />
+      <a className="skip-link" href="#main-content">
+        {tNav("skip")}
+      </a>
       {children}
       <SiteFooter />
     </NextIntlClientProvider>

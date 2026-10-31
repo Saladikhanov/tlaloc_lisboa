@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { computeIsOpenNow } from "@/lib/working-hours-open-now";
 import type { WorkingHoursRecord } from "@/lib/working-hours-store";
@@ -45,7 +46,17 @@ export default function HomeOpenStatus({ initialOpen, openLabel, closedLabel }: 
 
   return (
     <p className={`home-open-status ${open ? "open" : "closed"}`}>
-      <span className="home-open-status-dot" />
+      {open ? (
+        <span className="home-open-status-dot" />
+      ) : (
+        <Image
+          className="home-open-status-mascot"
+          src="/mascot_logo.webp"
+          alt=""
+          width={28}
+          height={28}
+        />
+      )}
       {open ? openLabel : closedLabel}
     </p>
   );

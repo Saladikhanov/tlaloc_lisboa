@@ -2,7 +2,10 @@
   "Nav": {
     "menu": "Menu",
     "reserve": "Reservas",
-    "admin": "Back Office"
+    "admin": "Back Office",
+    "skip": "Saltar para o conteúdo",
+    "main": "Principal",
+    "toggleMenu": "Abrir ou fechar o menu"
   },
   "Footer": {
     "tagline": "Restaurante mexicano em Alcântara, Lisboa.",
@@ -14,14 +17,12 @@
     "copyright": "© Tláloc Restaurant. Todos os direitos reservados."
   },
   "Home": {
-    "title": "Um projeto: menu QR, reservas e website SEO.",
-    "body": "Esta arquitetura comeca pelo menu QR e cresce para gestao de reservas e CMS interno. As paginas publicas sao otimizadas para SEO e o back office fica isolado nas rotas admin.",
     "openMenu": "Abrir Menu",
-    "reserve": "Reservar Mesa",
+    "reserve": "Reservar mesa",
     "orderDelivery": "Pedir Entrega",
     "heroHeading": "Restaurante mexicano em Lisboa",
-    "heroSubheading": "Tacos · Margaritas · Boas vibrações",
-    "heroDescription": "Restaurante mexicano em Lisboa, no bairro de Alcântara. Receitas caseiras, margaritas artesanais e hospitalidade calorosa — o sabor autentico do Mexico em Portugal.",
+    "heroSubheading": "Tacos, margaritas e cozinha caseira em Alcântara.",
+    "heroDescription": "Receitas caseiras, margaritas artesanais e hospitalidade calorosa. O sabor autêntico do México em Portugal.",
     "metaTitle": "Restaurante Mexicano em Lisboa e Alcântara | Tláloc",
     "metaDescription": "O Tláloc e um restaurante mexicano em Lisboa (Alcântara): tacos, margaritas, comida mexicana caseira e reservas online.",
     "heroImageAlt": "Tláloc — restaurante mexicano em Lisboa, Alcântara",
@@ -35,39 +36,34 @@
     "faqAnswer2": "No Tláloc, em Alcântara, pode pedir margaritas artesanais com tacos e pratos mexicanos num ambiente descontraído.",
     "faqQuestion3": "Posso reservar mesa online no Tláloc?",
     "faqAnswer3": "Sim. Pode reservar mesa online na pagina de reservas e escolher a data, hora e numero de pessoas.",
-    "workingHoursTitle": "Horario de Funcionamento",
+    "workingHoursTitle": "Horário de funcionamento",
     "currentlyOpen": "Estamos abertos agora",
     "currentlyClosed": "Estamos fechados agora",
     "closedLabel": "Fechado",
-    "pricingInfo": "Cartoes aceites · €€ · media ~14€/pessoa",
-    "discountBannerHeadline": "DESCONTO — EXCLUSIVO ONLINE",
-    "discountBannerBody": "🎉 Para os primeiros 20 clientes que reservam mesa online!",
-    "discountBannerCta": "Reservar online",
-    "qrTitle": "1) Menu",
-    "qrBody": "Pagina mobile para clientes via QR nas mesas, com atualizacao simples de conteudos.",
-    "reservationTitle": "2) Sistema de Reservas",
-    "reservationBody": "Formulario online ligado a API, pronto para regras de disponibilidade, base de dados e notificacoes.",
-    "seoTitle": "3) Landing SEO",
-    "seoBody": "Paginas server-rendered para Google, reaproveitando o mesmo modelo de dados do menu.",
+    "pricingInfo": "Aceitamos cartões. Cerca de 14 € por pessoa.",
     "galleryTitle": "Galeria",
-    "galleryPrev": "Fotografia anterior",
-    "galleryNext": "Fotografia seguinte",
-    "galleryNextTap": "Ver fotografia seguinte",
-    "galleryPhotoAlt": "Tláloc Restaurant — fotografia {n}",
-    "galleryGoTo": "Ir para fotografia {n}"
+    "visitTitle": "Onde estamos",
+    "addressLabel": "Morada",
+    "phoneLabel": "Telefone",
+    "whatsappLabel": "WhatsApp",
+    "emailLabel": "Email",
+    "dayMonThu": "Seg a Qui",
+    "dayFriSat": "Sex e Sáb",
+    "daySun": "Domingo",
+    "galleryAlt1": "Uma tábua de madeira com o nome Tláloc, uma frigideira de fajitas de frango, tortilhas, molhos e uma margarita de melancia",
+    "galleryAlt2": "Enchiladas verdes com natas e cebola roxa, com nachos e feijão preto",
+    "galleryAlt3": "Três tacos de frango desfiado com cebola roxa, com salada e salsa verde",
+    "galleryAlt4": "Uma criança a colorir uma folha de atividades do Tláloc numa mesa de madeira do restaurante",
+    "galleryAlt5": "Uma criança com os polegares para cima em frente à parede turquesa e ao mural de flores cor-de-rosa do restaurante"
   },
   "MenuPage": {
-    "headerTitle": "Menu",
     "title": "Menu",
     "metaTitle": "Menu — Comida Mexicana em Lisboa | Tláloc",
     "metaDescription": "Menu de comida e bebidas mexicanas no Tláloc, Lisboa (Alcântara). Tacos, margaritas e mais.",
-    "subtitle": "Pagina otimizada para telemovel e leitura por QR nas mesas.",
-    "quickFind": "Pesquisa rapida",
-    "jumpFood": "Comida",
-    "jumpDrinks": "Bebidas",
-    "foodSection": "Comida",
-    "drinksSection": "Bebidas",
-    "footnote": "Informe a equipa sobre alergias. Precos e pratos podem mudar sazonalmente."
+    "quickFind": "Ir para",
+    "footnote": "Informe a equipa sobre alergias. Preços e pratos podem mudar consoante a estação.",
+    "closeQuickFind": "Fechar",
+    "vegetarian": "Vegetariano"
   },
   "ReservePage": {
     "title": "Pedido de Reserva",
@@ -94,5 +90,18 @@
     "successModalTitle": "Reserva Enviada",
     "successModalClose": "Fechar",
     "success": "Pedido de reserva enviado. Vamos entrar em contacto por WhatsApp ou email."
+  },
+  "NotFound": {
+    "title": "Não encontrámos essa página",
+    "body": "A ligação pode ser antiga ou a página mudou de sítio. O menu e a página de reservas estão a um toque.",
+    "home": "Voltar ao início",
+    "menu": "Ver o menu",
+    "reserve": "Reservar mesa"
+  },
+  "Error": {
+    "title": "Algo correu mal",
+    "body": "Não conseguimos carregar esta página. Tente novamente ou reserve por telefone para +351 21 809 3388.",
+    "retry": "Tentar novamente",
+    "home": "Voltar ao início"
   }
 }

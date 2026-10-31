@@ -52,7 +52,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       ];
 
   return {
-    title: t("metaTitle"),
+    title: { absolute: t("metaTitle") },
     description: t("metaDescription"),
     keywords,
     alternates: {
@@ -92,12 +92,8 @@ export default async function HomePage({ params }: Props) {
   const activeLocale = routing.locales.includes(locale as "en" | "pt")
     ? locale
     : routing.defaultLocale;
-  const isPortuguese = activeLocale === "pt";
-  const t = await getTranslations({
-    locale: activeLocale,
-    namespace: "Home",
-  });
-  const [schedule, businessContact] = await Promise.all([
+  const [t, schedule, businessContact] = await Promise.all([
+    getTranslations({ locale: activeLocale, namespace: "Home" }),
     listWorkingHours(),
     listTutorialSettings(),
   ]);
@@ -188,165 +184,127 @@ export default async function HomePage({ params }: Props) {
       />
       <PublicNav />
 
-      <main className="site-shell">
-        <div className="menu-top-zigzag" aria-hidden="true" />
-
-        <div className="hero-fullbleed">
-          <section className="hero">
-            <div className="hero-bg-layer" aria-hidden="true">
-              <Image
-                className="hero-bg-image hero-bg-image--base"
-                src="/backgroundTlaloc.webp"
-                alt=""
-                fill
-                priority
-                fetchPriority="high"
-                quality={85}
-                sizes="100vw"
-              />
-              <Image
-                className="hero-bg-image hero-bg-image--blur-top"
-                src="/backgroundTlaloc.webp"
-                alt=""
-                fill
-                loading="lazy"
-                fetchPriority="low"
-                quality={55}
-                sizes="100vw"
-              />
-              <Image
-                className="hero-bg-image hero-bg-image--blur-band"
-                src="/backgroundTlaloc.webp"
-                alt=""
-                fill
-                loading="lazy"
-                fetchPriority="low"
-                quality={55}
-                sizes="100vw"
-              />
-            </div>
-            <div className="hero-scrim" aria-hidden="true" />
-
-            <div className="home-hero-content">
-              <Image
-                className="home-hero-image"
-                src="/op_image.webp"
-                alt={t("heroImageAlt")}
-                width={1200}
-                height={630}
-                loading="eager"
-                fetchPriority="low"
-                quality={85}
-              />
-
-              <h1>
-                <span className="hero-h1-primary">{t("heroHeading")}</span>
-                <span className="hero-h1-secondary">{t("heroSubheading")}</span>
-              </h1>
-              <p>{t("heroDescription")}</p>
-            </div>
-
-            <div className="hero-ctas">
-              <Link className="btn btn-primary" href="/menu">
-                {t("openMenu")}
-              </Link>
-              <Link className="btn btn-secondary" href="/reserve">
-                {t("reserve")}
-              </Link>
-              <DeliveryButton label={t("orderDelivery")} />
-            </div>
-          </section>
-        </div>
-
-        {/* <section className="home-discount-banner" aria-label={t("discountBannerHeadline")}>
-          <div className="offer-block">
-            <div className="offer-pct">20%</div>
-            <div className="offer-label">{t("discountBannerHeadline")}</div>
-            <div className="offer-desc">{t("discountBannerBody")}</div>
-            <Link className="btn btn-primary home-discount-banner-cta" href="/reserve">
-              <span className="btn-cta-shine-label">{t("discountBannerCta")}</span>
-            </Link>
-          </div>
-        </section> */}
-
-        <section className="card home-hours-card">
-          <p className="home-section-kicker">🕐 {isPortuguese ? "HORARIO" : "OPENING HOURS"}</p>
-          <div className="home-hours-head">
-            <h3>{t("workingHoursTitle")}</h3>
+      <main id="main-content" className="site-shell">
+        <section className="home-hero full-bleed" aria-labelledby="home-hero-title">
+          <div className="home-hero-copy">
             <HomeOpenStatus
               initialOpen={isOpenNow}
               openLabel={t("currentlyOpen")}
               closedLabel={t("currentlyClosed")}
             />
+            <h1 id="home-hero-title">{t("heroHeading")}</h1>
+            <p className="home-hero-sub">{t("heroSubheading")}</p>
+            <div className="hero-ctas">
+              <Link className="btn btn-primary" href="/reserve">
+                {t("reserve")}
+              </Link>
+              <Link className="btn btn-secondary" href="/menu">
+                {t("openMenu")}
+              </Link>
+              <DeliveryButton label={t("orderDelivery")} />
+            </div>
+            <p className="home-hero-desc">{t("heroDescription")}</p>
           </div>
-          <div className="home-hours-summary">
-            <p className="home-hours-line">
-              <strong>{isPortuguese ? "Seg - Qui" : "Mon - Thu"}</strong>
-              <span>{monThuText}</span>
-            </p>
-            <p className="home-hours-line">
-              <strong>{isPortuguese ? "Sex - Sab" : "Fri - Sat"}</strong>
-              <span>{friSatText}</span>
-            </p>
-            <p className="home-hours-line">
-              <strong>{isPortuguese ? "Domingo" : "Sunday"}</strong>
-              <span>{sundayText}</span>
-            </p>
+          <div className="home-hero-media">
+            <Image
+              src="/backgroundTlaloc.webp"
+              alt={t("heroImageAlt")}
+              fill
+              priority
+              quality={80}
+              sizes="(min-width: 861px) 55vw, 100vw"
+            />
+          </div>
+        </section>
+
+        <section className="home-visit full-bleed on-teal" aria-label={t("visitTitle")}>
+          <div className="home-visit-inner">
+            <div className="home-visit-block">
+              <h2>{t("workingHoursTitle")}</h2>
+              <dl className="home-facts">
+                <div>
+                  <dt>{t("dayMonThu")}</dt>
+                  <dd>{monThuText}</dd>
+                </div>
+                <div>
+                  <dt>{t("dayFriSat")}</dt>
+                  <dd>{friSatText}</dd>
+                </div>
+                <div>
+                  <dt>{t("daySun")}</dt>
+                  <dd>{sundayText}</dd>
+                </div>
+              </dl>
+            </div>
+            <div className="home-visit-block">
+              <h2>{t("visitTitle")}</h2>
+              <address className="home-facts-address">
+                <dl className="home-facts">
+                  <div>
+                    <dt>{t("addressLabel")}</dt>
+                    <dd>
+                      <a href={mapsUrl} target="_blank" rel="noopener noreferrer">
+                        R. do Cruzeiro 1, 1300-160 Lisboa
+                      </a>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>{t("phoneLabel")}</dt>
+                    <dd>
+                      <a href="tel:+351218093388">+351 21 809 3388</a>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>{t("whatsappLabel")}</dt>
+                    <dd>
+                      <a
+                        href={`https://wa.me/${whatsappDigits}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {businessContact.businessPhone}
+                      </a>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>{t("emailLabel")}</dt>
+                    <dd>
+                      <a href={`mailto:${businessContact.businessEmail}`}>
+                        {businessContact.businessEmail}
+                      </a>
+                    </dd>
+                  </div>
+                </dl>
+              </address>
+              <p className="home-visit-note">{t("pricingInfo")}</p>
+              <Link className="btn btn-primary" href="/reserve">
+                {t("reserve")}
+              </Link>
+            </div>
           </div>
         </section>
 
         <HomeGallery />
 
-        <section className="card home-seo-card">
-          <p className="home-section-kicker">🌮 {t("seoBlockTitle")}</p>
-          <h3>{isPortuguese ? "Restaurante mexicano em Lisboa e Alcântara" : "Mexican restaurant in Lisbon and Alcântara"}</h3>
-          <p>{t("seoBlockBody1")}</p>
-          <p className="footer-note" style={{ marginTop: "0.75rem" }}>
-            {t("seoBlockBody2")}
-          </p>
+        <section className="home-about" aria-labelledby="home-about-title">
+          <h2 id="home-about-title">{t("seoBlockTitle")}</h2>
+          <div className="home-about-text">
+            <p>{t("seoBlockBody1")}</p>
+            <p>{t("seoBlockBody2")}</p>
+          </div>
         </section>
 
-        <section className="card home-contact-card">
-          <p className="home-section-kicker">📍 LOCATION & CONTACT</p>
-          <p>
-            <strong>🏠</strong>{" "}
-            <a href={mapsUrl} target="_blank" rel="noopener noreferrer">
-              R. do Cruzeiro 1, 1300-160 Lisboa
-            </a>
-          </p>
-          <p className="footer-note" style={{ marginTop: "0.35rem" }}>
-            Alcântara, Lisbon
-          </p>
-          <p style={{ marginTop: "0.55rem" }}>
-            <strong>📞</strong> <a href="tel:+351218093388">+351 21 809 3388</a>
-          </p>
-          <p style={{ marginTop: "0.25rem" }}>
-            <strong>📱</strong>{" "}
-            <a href={`https://wa.me/${whatsappDigits}`} target="_blank" rel="noopener noreferrer">
-              {businessContact.businessPhone} (WhatsApp)
-            </a>
-          </p>
-          <p style={{ marginTop: "0.25rem" }}>
-            <strong>✉️</strong> <a href={`mailto:${businessContact.businessEmail}`}>{businessContact.businessEmail}</a>
-          </p>
-          <p className="footer-note" style={{ marginTop: "0.55rem" }}>
-            {t("pricingInfo")}
-          </p>
-        </section>
-
-        <section className="card home-faq-card">
-          <p className="home-section-kicker">❓ {t("faqTitle")}</p>
+        <section className="home-faq" aria-labelledby="home-faq-title">
+          <h2 id="home-faq-title">{t("faqTitle")}</h2>
           <div className="home-faq-list">
             {faqItems.map((item) => (
               <details key={item.question} className="home-faq-item">
                 <summary>{item.question}</summary>
-                <p className="footer-note">{item.answer}</p>
+                <p>{item.answer}</p>
               </details>
             ))}
           </div>
         </section>
-
-        <div className="menu-bottom-stripe" aria-hidden="true" />
       </main>
     </>
   );

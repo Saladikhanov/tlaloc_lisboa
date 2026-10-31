@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type QuickFindCategory = {
   id: string;
@@ -10,33 +9,12 @@ type QuickFindCategory = {
 
 type Props = {
   quickFindLabel: string;
+  closeLabel: string;
   categories: QuickFindCategory[];
 };
 
-export default function MenuQuickFind({
-  quickFindLabel,
-  categories,
-}: Props) {
+export default function MenuQuickFind({ quickFindLabel, closeLabel, categories }: Props) {
   const [isOpen, setIsOpen] = useState(false);
-
-  const categoryEmoji = (id: string): string => {
-    switch (id) {
-      case "starters":
-        return "🥑";
-      case "tacos":
-        return "🌮";
-      case "burritos":
-        return "🌯";
-      case "signature":
-        return "⭐";
-      case "desserts":
-        return "🍰";
-      case "drinks":
-        return "🍹";
-      default:
-        return "🍽️";
-    }
-  };
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -54,37 +32,38 @@ export default function MenuQuickFind({
       <button
         type="button"
         className={`quick-filter-backdrop ${isOpen ? "open" : ""}`}
-        aria-label="Close quick filter"
+        aria-label={closeLabel}
+        tabIndex={isOpen ? 0 : -1}
         onClick={() => setIsOpen(false)}
       />
 
       <button
         type="button"
         className="quick-filter-fab"
-        aria-label={quickFindLabel}
         aria-expanded={isOpen}
+        aria-controls="menu-quick-find-panel"
         onClick={() => setIsOpen((prev) => !prev)}
       >
-        <span className="btn-cta-shine-label">{isOpen ? "✕" : quickFindLabel}</span>
+        {isOpen ? closeLabel : quickFindLabel}
       </button>
 
-      <section
+      <nav
+        id="menu-quick-find-panel"
         className={`quick-filter-panel ${isOpen ? "open" : ""}`}
         aria-label={quickFindLabel}
-        aria-hidden={!isOpen}
       >
         <strong>{quickFindLabel}</strong>
         {categories.map((category) => (
           <a
-            className="quick-chip category-chip"
+            className="quick-chip"
             href={`#${category.id}`}
             key={`jump-${category.id}`}
             onClick={() => setIsOpen(false)}
           >
-            {categoryEmoji(category.id)} {category.label}
+            {category.label}
           </a>
         ))}
-      </section>
+      </nav>
     </>
   );
 }
