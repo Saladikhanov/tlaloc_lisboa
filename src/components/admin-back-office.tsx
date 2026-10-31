@@ -1067,6 +1067,9 @@ export default function AdminBackOffice() {
     setManualReservationForm(defaultManualReservationForm);
   }, [selectedCalendarDate]);
 
+  // Ids already shown to staff, so the stream and the polling fallback never alert twice.
+  const knownReservationIdsRef = useRef<Set<string> | null>(null);
+
   const loadAll = useCallback(async (showFullLoader = false, silentRefresh = false) => {
     if (showFullLoader) {
       setIsLoading(true);
@@ -1121,10 +1124,14 @@ export default function AdminBackOffice() {
         data?: AdminBusinessContact;
       };
 
-      setReservations([
+      const loadedReservations = [
         ...(reservationJson.data ?? []).map(toAdminReservationRecord),
         ...(reservationV2Json.data ?? []).map(toAdminReservationV2Record),
-      ]);
+      ];
+      const knownIds = knownReservationIdsRef.current ?? new Set<string>();
+      loadedReservations.forEach((reservation) => knownIds.add(reservation.id));
+      knownReservationIdsRef.current = knownIds;
+      setReservations(loadedReservations);
       setMenuSections(menuJson.data ?? []);
       setWorkingHours(workingHoursJson.data ?? []);
       setReservationClosures(reservationClosuresJson.data ?? []);
@@ -1423,13 +1430,8 @@ export default function AdminBackOffice() {
     setActiveTab((currentTab) => (currentTab === nextTab ? currentTab : nextTab));
   }, [searchParams]);
 
-  useEffect(() => {
-    let eventSource: EventSource | null = null;
-    let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
-    let isDisposed = false;
-
-    const handleReservationCreated = (message: Event) => {
-      const event = JSON.parse((message as MessageEvent<string>).data) as AdminEvent;
+  const announceNewReservation = useCallback(
+    (event: AdminEvent) => {
       pushAdminToast(
         "New reservation",
         `${event.guestName} · ${formatEuropeanDate(event.date)} at ${event.time}`,
@@ -1442,6 +1444,31 @@ export default function AdminBackOffice() {
       }
       if (adminRealtimeSettings.desktopEnabled) {
         showDesktopReservationNotification(event);
+      }
+    },
+    [
+      adminRealtimeSettings.desktopEnabled,
+      adminRealtimeSettings.notificationTheme,
+      adminRealtimeSettings.soundEnabled,
+      highlightReservationCard,
+      playAdminNotificationSound,
+      pushAdminToast,
+      showDesktopReservationNotification,
+    ],
+  );
+
+  useEffect(() => {
+    let eventSource: EventSource | null = null;
+    let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+    let isDisposed = false;
+
+    const handleReservationCreated = (message: Event) => {
+      const event = JSON.parse((message as MessageEvent<string>).data) as AdminEvent;
+      const knownIds = knownReservationIdsRef.current ?? new Set<string>();
+      knownReservationIdsRef.current = knownIds;
+      if (!knownIds.has(event.reservationId)) {
+        knownIds.add(event.reservationId);
+        announceNewReservation(event);
       }
       void loadAll(false, true);
     };
@@ -1471,16 +1498,87 @@ export default function AdminBackOffice() {
       eventSource?.removeEventListener("reservation_created", handleReservationCreated);
       eventSource?.close();
     };
-  }, [
-    adminRealtimeSettings.desktopEnabled,
-    adminRealtimeSettings.notificationTheme,
-    adminRealtimeSettings.soundEnabled,
-    highlightReservationCard,
-    loadAll,
-    playAdminNotificationSound,
-    pushAdminToast,
-    showDesktopReservationNotification,
-  ]);
+  }, [announceNewReservation, loadAll]);
+
+  // Fallback for hosts where the stream cannot see bookings made on another server instance:
+  // check the lists (15s visible, 60s hidden) and announce anything the stream has not already shown.
+  useEffect(() => {
+    let isDisposed = false;
+
+    const poll = async () => {
+      const knownIds = knownReservationIdsRef.current;
+      if (!knownIds) {
+        return;
+      }
+      try {
+        const [v1Response, v2Response] = await Promise.all([
+          fetch("/api/reservations", { cache: "no-store" }),
+          fetch("/api/reservations-v2", { cache: "no-store" }),
+        ]);
+        if (!v1Response.ok || !v2Response.ok || isDisposed) {
+          return;
+        }
+        const v1Json = (await v1Response.json()) as { data?: ReservationRecord[] };
+        const v2Json = (await v2Response.json()) as { data?: ReservationV2Record[] };
+        const latest = [
+          ...(v1Json.data ?? []).map(toAdminReservationRecord),
+          ...(v2Json.data ?? []).map(toAdminReservationV2Record),
+        ];
+        const fresh = latest.filter((reservation) => !knownIds.has(reservation.id));
+        if (fresh.length === 0 || isDisposed) {
+          return;
+        }
+        fresh.forEach((reservation) => knownIds.add(reservation.id));
+        setReservations(latest);
+        fresh.slice(0, 3).forEach((reservation) =>
+          announceNewReservation({
+            type: "reservation_created",
+            reservationId: reservation.id,
+            reservationVersion: reservation.version,
+            guestName: `${reservation.firstName} ${reservation.lastName}`.trim(),
+            date: reservation.date,
+            time: reservation.time,
+            createdAt: reservation.createdAt,
+          }),
+        );
+      } catch {
+        // Offline or signed out: the next tick tries again.
+      }
+    };
+
+    // Visible tab: every 15 seconds. Hidden tab: once a minute. Coming back checks right away.
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const schedule = () => {
+      timer = setTimeout(async () => {
+        await poll();
+        if (!isDisposed) {
+          schedule();
+        }
+      }, document.hidden ? 60000 : 15000);
+    };
+    const onVisibilityChange = () => {
+      if (document.hidden) {
+        return;
+      }
+      if (timer) {
+        clearTimeout(timer);
+      }
+      void poll().then(() => {
+        if (!isDisposed) {
+          schedule();
+        }
+      });
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    schedule();
+    return () => {
+      isDisposed = true;
+      if (timer) {
+        clearTimeout(timer);
+      }
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
+  }, [announceNewReservation]);
 
   useEffect(() => {
     if (selectedCalendarDay === null) {
