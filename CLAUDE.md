@@ -16,6 +16,8 @@ Next.js 16 App Router · React 19 · TypeScript · Prisma 7/PostgreSQL · next-i
 ## Design
 - Redesign is split: `001-public-site-redesign` (in progress), then `002-admin-redesign`.
   Until 002, the admin stays on its frozen look (`.admin-theme`, `src/app/admin/layout.tsx`).
+- Shape rule: page content is square (2px on buttons/inputs); the glass layer (header, floating
+  controls, sheets, modals, booking panel) is rounded. See `docs/design.md`.
 - Use the `frontend-design` skill (`.claude/skills/frontend-design`) for UI work. Tokens live in `src/app/globals.css`; see constitution VII.
 - After building or changing UI, audit it with `web-design-guidelines` (a11y/UX) and
   `vercel-react-best-practices` (React/Next.js performance).

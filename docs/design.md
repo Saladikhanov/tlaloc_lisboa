@@ -1,6 +1,6 @@
 # Tláloc Design Direction
 
-Status: **draft v1** (2026-10-31). Scope: public site (landing, menu, reservation flow).
+Status: **v1 implemented** (2026-10-31). Scope: public site (landing, menu, reservation flow).
 The admin back office stays plain and consistent, and only adopts the new tokens.
 
 ## Why we're changing
@@ -75,6 +75,17 @@ Responsive down to small phones, visible `:focus-visible`, AA contrast, reduced 
 no layout shift from images. After building, audit with `web-design-guidelines` and
 `vercel-react-best-practices`.
 
+## Decisions made while building
+- **Mascot:** shown as a circle (the file has a black square behind it, no transparency), in the
+  header, the closed-state status, the success modal and the not-found and error pages.
+- **Color fields:** lime for the landing hero, booking and status pages; teal for the visit band
+  and footer; chile red only for the main action; menu category bands rotate lime, chile, teal, cyan.
+- **Taco progress bar:** kept on the booking page with its original looping bob and sway; it only
+  animates when the visitor allows motion.
+- **Photos:** the two gallery photos with children are approved by the parents.
+
 ## Open decisions
-- Whether the mascot is the primary logo or sits beside the wordmark.
-- Photo set: current five gallery shots are the minimum; consider a reshoot for the hero.
+- **High-resolution mascot:** the 512 px app icon is a blurry upscale of a 200 px file; a vector or
+  large transparent version would fix the icons and allow a cleaner mascot everywhere.
+- **Hero photo:** the five existing photos work; a dedicated hero shot is optional.
+- **Admin back office:** redesigned in feature 002 on the same tokens (it keeps its legacy look until then).

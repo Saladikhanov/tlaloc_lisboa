@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const base = getSiteBaseUrl();
   const path = `/${locale}/menu`;
   return {
-    title: t("metaTitle"),
+    title: { absolute: t("metaTitle") },
     description: t("metaDescription"),
     alternates: { canonical: `${base}${path}` },
   };

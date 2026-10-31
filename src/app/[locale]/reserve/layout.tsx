@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: Pick<Props, "params">): Promi
   const base = getSiteBaseUrl();
   const path = `/${activeLocale}/reserve`;
   return {
-    title: t("metaTitle"),
+    title: { absolute: t("metaTitle") },
     description: t("metaDescription"),
     alternates: { canonical: `${base}${path}` },
   };

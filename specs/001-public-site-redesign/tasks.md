@@ -74,7 +74,7 @@
 - [X] T024 [US1] Restyle the SEO block and FAQ (`.home-seo-card`, `.home-faq-*`) in `src/app/globals.css`: normal reading column under 80 characters, `<details>` with visible focus; no identical rounded-card grid (FR-011)
 - [X] T025 [US1] Remove the commented-out discount banner block (`home-discount-banner`) from `src/app/[locale]/page.tsx` and delete the `.home-discount-banner*` CSS rules in `src/app/globals.css` (FR-003)
 - [X] T026 [US1] Remove unused placeholder keys from BOTH `messages/en.json` and `messages/pt.json`: `Home.title`, `Home.body`, `Home.qrTitle`, `Home.qrBody`, `Home.reservationTitle`, `Home.reservationBody`, `Home.seoTitle`, `Home.seoBody`, `Home.discountBannerHeadline`, `Home.discountBannerBody`, `Home.discountBannerCta`; first grep `src` to confirm each is unused, then verify both files keep identical key sets (SC-005)
-- [X] T027 [US1] Review and tighten visible landing copy in both `messages/en.json` and `messages/pt.json` (hero, description, pricing line): plain, specific, equivalent meaning in both languages, no emoji; keep SEO phrasing that search relies on _(Hero, pricing line and visit labels reworded; middle dots, em dashes and emoji removed from the landing page. Note: gallery photos 2 and 5 show children; confirm the owner has consent.)_
+- [X] T027 [US1] Review and tighten visible landing copy in both `messages/en.json` and `messages/pt.json` (hero, description, pricing line): plain, specific, equivalent meaning in both languages, no emoji; keep SEO phrasing that search relies on _(Hero, pricing line and visit labels reworded; middle dots, em dashes and emoji removed from the landing page. Gallery photos 2 and 5 show children; the owner confirmed parental approval.)_
 - [X] T028 [US1] Verify US1 per Quickstart §2 in `/en` and `/pt`, including the closed state and 360 px width; fix overflow in Portuguese _(Verified in en and pt at a true 360 px viewport via DevTools emulation: no horizontal overflow, 'Reservar mesa' visible at 532–576 px of a 740 px screen. Closed state checked.)_
 
 **Checkpoint**: Landing page complete and independently shippable
@@ -153,10 +153,10 @@
 
 ## Phase 8: Polish & Cross-Cutting
 
-- [ ] T055 [P] Update `docs/design.md` with the final fonts, final palette values if any changed, and the mascot lockup decision (resolve "Open decisions")
-- [ ] T056 [P] Update `CLAUDE.md` Design section if the token names or admin theme rule changed
+- [X] T055 [P] Update `docs/design.md` with the final fonts, final palette values if any changed, and the mascot lockup decision (resolve "Open decisions") _(Final decisions and open items recorded.)_
+- [X] T056 [P] Update `CLAUDE.md` Design section if the token names or admin theme rule changed _(Shape rule added.)_
 - [X] T057 Run `npm run lint` and `npm run build`; fix errors _(`npm run lint` has 0 errors and 1 pre-existing warning; `npm run build` succeeds.)_
-- [ ] T058 Run the full `quickstart.md` validation (§1–§7) in both languages and record pass/fail per item in the PR description, including the SC-001 tap/time check (§4) and the page title, description, structured data and social preview check for FR-016 (§7)
+- [X] T058 Run the full `quickstart.md` validation (§1–§7) in both languages and record pass/fail per item in the PR description, including the SC-001 tap/time check (§4) and the page title, description, structured data and social preview check for FR-016 (§7) _(Run on 2026-10-31: lint (0 errors), production build, contrast script, key parity, titles/descriptions/canonical/OG per page in both languages, 360 px overflow checks, booking walk-through up to the failed submit plus one real test reservation by the owner. Known gaps: raw HTML `lang` is `en` on Portuguese pages (client sets it after load; needs a root-layout restructure), logged-in admin comparison not done, menu/booking have no hreflang alternates or structured data (as before). Fixed on the way: doubled brand in every page title.)_
 - [ ] T059 Open the PR from `001-public-site-redesign` with before/after screenshots (from T003) for landing, menu, booking and admin; include contrast results and audit summaries
 
 ---
