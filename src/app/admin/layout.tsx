@@ -1,3 +1,4 @@
+import type { Viewport } from "next";
 import { Bebas_Neue, Geist } from "next/font/google";
 
 // The back office keeps its original look (see ADMIN THEME in globals.css), including the
@@ -12,6 +13,11 @@ const bebasNeue = Bebas_Neue({
   subsets: ["latin"],
   weight: "400",
 });
+
+// The admin keeps its dark brown look until feature 002 migrates it, so the browser bar matches.
+export const viewport: Viewport = {
+  themeColor: "#130800",
+};
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (

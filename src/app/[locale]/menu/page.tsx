@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "@/lib/types";
 import PublicNav from "@/components/public-nav";
@@ -8,6 +8,11 @@ import { getMenuData } from "@/lib/menu-store";
 import { getSiteBaseUrl } from "@/lib/site-url";
 
 export const dynamic = "force-dynamic";
+
+// The menu page starts on the plain page color (the other pages start on lime).
+export const viewport: Viewport = {
+  themeColor: "#fbfbf8",
+};
 
 const BAND_COLORS = ["lime", "chile", "teal", "cyan"] as const;
 
