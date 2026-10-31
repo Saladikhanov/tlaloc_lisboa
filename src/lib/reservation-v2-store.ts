@@ -83,6 +83,54 @@ export const listReservationsV2 = async (): Promise<ReservationV2Record[]> => {
   return reservations.map(toReservationV2Record);
 };
 
+export type NewReservationSummary = {
+  id: string;
+  version: "v1" | "v2";
+  guestName: string;
+  date: string;
+  time: string;
+  createdAt: string;
+};
+
+export const listNewReservationSummaries = async (
+  since: Date,
+): Promise<NewReservationSummary[]> => {
+  const client = getPrisma();
+  const [v2, v1] = await Promise.all([
+    client.reservationV2.findMany({
+      where: { archivedAt: null, createdAt: { gt: since } },
+      select: { id: true, fullName: true, date: true, time: true, createdAt: true },
+      orderBy: { createdAt: "asc" },
+      take: 50,
+    }),
+    client.reservation.findMany({
+      where: { createdAt: { gt: since } },
+      select: { id: true, firstName: true, lastName: true, date: true, time: true, createdAt: true },
+      orderBy: { createdAt: "asc" },
+      take: 50,
+    }),
+  ]);
+
+  return [
+    ...v2.map((row) => ({
+      id: row.id,
+      version: "v2" as const,
+      guestName: row.fullName,
+      date: row.date,
+      time: row.time,
+      createdAt: row.createdAt.toISOString(),
+    })),
+    ...v1.map((row) => ({
+      id: row.id,
+      version: "v1" as const,
+      guestName: `${row.firstName} ${row.lastName}`.trim(),
+      date: row.date,
+      time: row.time,
+      createdAt: row.createdAt.toISOString(),
+    })),
+  ].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+};
+
 export const updateReservationV2Status = async (
   id: string,
   status: ReservationV2Record["status"],

@@ -477,6 +477,17 @@ summary,
   box-shadow: 0 14px 30px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(208, 216, 226, 0.05) inset;
 }
 
+.admin-toast-preview {
+  display: grid;
+  gap: 0.6rem;
+  justify-items: start;
+  max-width: 360px;
+}
+
+.admin-toast-preview .admin-toast {
+  width: 100%;
+}
+
 .admin-toast .btn {
   flex-shrink: 0;
 }

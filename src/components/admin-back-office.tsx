@@ -1069,6 +1069,8 @@ export default function AdminBackOffice() {
 
   // Ids already shown to staff, so the stream and the polling fallback never alert twice.
   const knownReservationIdsRef = useRef<Set<string> | null>(null);
+  // Newest booking time seen so far; the polling fallback only asks for anything after it.
+  const latestReservationAtRef = useRef<string>(new Date(0).toISOString());
 
   const loadAll = useCallback(async (showFullLoader = false, silentRefresh = false) => {
     if (showFullLoader) {
@@ -1131,6 +1133,11 @@ export default function AdminBackOffice() {
       const knownIds = knownReservationIdsRef.current ?? new Set<string>();
       loadedReservations.forEach((reservation) => knownIds.add(reservation.id));
       knownReservationIdsRef.current = knownIds;
+      loadedReservations.forEach((reservation) => {
+        if (reservation.createdAt > latestReservationAtRef.current) {
+          latestReservationAtRef.current = reservation.createdAt;
+        }
+      });
       setReservations(loadedReservations);
       setMenuSections(menuJson.data ?? []);
       setWorkingHours(workingHoursJson.data ?? []);
@@ -1511,36 +1518,48 @@ export default function AdminBackOffice() {
         return;
       }
       try {
-        const [v1Response, v2Response] = await Promise.all([
-          fetch("/api/reservations", { cache: "no-store" }),
-          fetch("/api/reservations-v2", { cache: "no-store" }),
-        ]);
-        if (!v1Response.ok || !v2Response.ok || isDisposed) {
+        const response = await fetch(
+          `/api/admin/reservations/new?since=${encodeURIComponent(latestReservationAtRef.current)}`,
+          { cache: "no-store" },
+        );
+        if (!response.ok || isDisposed) {
           return;
         }
-        const v1Json = (await v1Response.json()) as { data?: ReservationRecord[] };
-        const v2Json = (await v2Response.json()) as { data?: ReservationV2Record[] };
-        const latest = [
-          ...(v1Json.data ?? []).map(toAdminReservationRecord),
-          ...(v2Json.data ?? []).map(toAdminReservationV2Record),
-        ];
-        const fresh = latest.filter((reservation) => !knownIds.has(reservation.id));
-        if (fresh.length === 0 || isDisposed) {
+        const json = (await response.json()) as {
+          data?: {
+            id: string;
+            version: "v1" | "v2";
+            guestName: string;
+            date: string;
+            time: string;
+            createdAt: string;
+          }[];
+        };
+        const latest = json.data ?? [];
+        if (latest.length === 0 || isDisposed) {
           return;
         }
-        fresh.forEach((reservation) => knownIds.add(reservation.id));
-        setReservations(latest);
-        fresh.slice(0, 3).forEach((reservation) =>
+        latest.forEach((item) => {
+          if (item.createdAt > latestReservationAtRef.current) {
+            latestReservationAtRef.current = item.createdAt;
+          }
+        });
+        const fresh = latest.filter((item) => !knownIds.has(item.id));
+        fresh.forEach((item) => knownIds.add(item.id));
+        fresh.slice(0, 3).forEach((item) =>
           announceNewReservation({
             type: "reservation_created",
-            reservationId: reservation.id,
-            reservationVersion: reservation.version,
-            guestName: `${reservation.firstName} ${reservation.lastName}`.trim(),
-            date: reservation.date,
-            time: reservation.time,
-            createdAt: reservation.createdAt,
+            reservationId: item.id,
+            reservationVersion: item.version,
+            guestName: item.guestName,
+            date: item.date,
+            time: item.time,
+            createdAt: item.createdAt,
           }),
         );
+        if (fresh.length > 0) {
+          void loadAll(false, true);
+        }
       } catch {
         // Offline or signed out: the next tick tries again.
       }
@@ -1578,7 +1597,7 @@ export default function AdminBackOffice() {
       }
       document.removeEventListener("visibilitychange", onVisibilityChange);
     };
-  }, [announceNewReservation]);
+  }, [announceNewReservation, loadAll]);
 
   useEffect(() => {
     if (selectedCalendarDay === null) {
@@ -3495,6 +3514,38 @@ export default function AdminBackOffice() {
                     {option.label}
                   </button>
                 ))}
+              </div>
+              <p className="footer-note" style={{ marginBottom: "0.4rem" }}>
+                Preview of a new reservation alert in this theme:
+              </p>
+              <div className="admin-toast-preview">
+                <div
+                  className={`admin-toast admin-toast-theme-${adminRealtimeSettings.notificationTheme}`}
+                >
+                  <div>
+                    <strong>New reservation</strong>
+                    <p className="footer-note" style={{ marginTop: "0.25rem" }}>
+                      Maria Silva · 14/11/2026 at 20:00
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    pushAdminToast(
+                      "New reservation",
+                      "Maria Silva · 14/11/2026 at 20:00",
+                      "reservation",
+                      adminRealtimeSettings.notificationTheme,
+                    );
+                    if (adminRealtimeSettings.soundEnabled) {
+                      playAdminNotificationSound();
+                    }
+                  }}
+                >
+                  Send a test alert
+                </button>
               </div>
             </div>
           </section>
