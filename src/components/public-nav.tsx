@@ -17,7 +17,6 @@ export default function PublicNav({ headerTitle }: PublicNavProps) {
   const locale = useLocale();
   const pathname = usePathname();
   const t = useTranslations("Nav");
-  const [isCompact, setIsCompact] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -30,16 +29,6 @@ export default function PublicNav({ headerTitle }: PublicNavProps) {
 
     return `/${targetLocale}${segments.length > 0 ? `/${segments.join("/")}` : ""}`;
   };
-
-  useEffect(() => {
-    const onScroll = () => {
-      setIsCompact(window.scrollY > 16);
-    };
-
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   useEffect(() => {
     let active = true;
@@ -109,7 +98,7 @@ export default function PublicNav({ headerTitle }: PublicNavProps) {
   );
 
   return (
-    <nav className={`site-nav ${isCompact ? "compact" : ""}`}>
+    <nav className="site-nav">
       <div className="site-nav-inner">
         <Link className="brand" href="/">
           <Image

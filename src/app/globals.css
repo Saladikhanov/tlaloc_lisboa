@@ -167,11 +167,6 @@ a {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  transition: min-height 0.2s ease;
-}
-
-.site-nav.compact .site-nav-inner {
-  min-height: 50px;
 }
 
 .brand {
@@ -181,10 +176,6 @@ a {
   display: inline-flex;
   align-items: center;
   flex-shrink: 0;
-}
-
-.site-nav.compact .brand {
-  transform: scale(0.96);
 }
 
 .brand-image {
@@ -774,7 +765,6 @@ a {
   box-shadow: 0 8px 18px rgba(148, 163, 184, 0.28);
 }
 
-
 .full-bleed {
   width: 100vw;
   margin-left: calc(50% - 50vw);
@@ -863,9 +853,6 @@ a {
     width: 100%;
   }
 }
-
-
-
 
 
 
@@ -1137,15 +1124,6 @@ a {
 
 
 
-
-
-
-
-
-
-
-
-
 .cards {
   margin: 2rem 0 3rem;
   display: grid;
@@ -1170,15 +1148,6 @@ a {
   line-height: 1.5;
   font-size: 0.95rem;
 }
-
-
-
-
-
-
-
-
-
 
 
 
@@ -2334,8 +2303,6 @@ textarea {
 
 
 
-
-
   .header-page-title {
     flex: 1 1 auto;
     min-width: 0;
@@ -2446,8 +2413,6 @@ textarea {
     border: 0;
     background: transparent;
   }
-
-
 
 
 
@@ -2765,10 +2730,6 @@ body:has(.admin-theme) .scroll-top-btn {
 
 :where(.admin-theme) .site-nav-inner {
   min-height: 70px;
-}
-
-:where(.admin-theme) .site-nav.compact .site-nav-inner {
-  min-height: 56px;
 }
 
 :where(.admin-theme) .header-page-title {
