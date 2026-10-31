@@ -24,7 +24,7 @@ how the theme is chosen, which tokens exist, how tabs are addressed, and how sta
 | `--a-muted` | `#4F6168` | `#9DB0B5` | secondary text |
 | `--a-line` | `rgba(10,43,54,.18)` | `rgba(255,255,255,.14)` | dividers, outlines |
 | `--a-accent` | `#0A2B36` | `#C9E265` | active tab, links, focus ring |
-| `--a-action` | `#D62F25` | `#D62F25` | the one hot color: main action, destructive confirm (label `#FFFFFF`) |
+| `--a-danger` | `#D62F25` | `#D62F25` | the one hot color: destructive confirm and the "now" marker only (label `#FFFFFF`). Main actions use the accent pair, so red always means "careful". |
 
 Contrast checks (text pairs need 4.5:1, large text and non-text need 3:1):
 

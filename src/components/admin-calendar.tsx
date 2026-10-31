@@ -331,7 +331,7 @@ export default function AdminCalendar<R extends CardReservation>({
                   Cancel
                 </button>
                 <button
-                  className="btn btn-primary"
+                  className="btn btn-danger"
                   type="button"
                   disabled={busy}
                   onClick={() => {

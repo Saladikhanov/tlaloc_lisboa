@@ -29,7 +29,7 @@ Semantic CSS custom properties with a light and a dark value set; names, values 
 |---|---|
 | Surfaces | `--a-bg`, `--a-surface`, `--a-surface-2` |
 | Text and lines | `--a-text`, `--a-muted`, `--a-line` |
-| Accent and action | `--a-accent`, `--a-action` (the one hot color) |
+| Accent and action | `--a-accent` (main actions), `--a-danger` (the one hot color, destructive only) |
 | Status chips | `--a-new-*`, `--a-confirmed-*`, `--a-cancelled-*`, `--a-noshow-*` (background and text) |
 | Alert styles | `--a-alert-green-*`, `--a-alert-orange-*`, `--a-alert-neutral-*` |
 

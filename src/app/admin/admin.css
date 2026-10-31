@@ -17,8 +17,8 @@ html[data-admin-theme="light"] {
   --a-line: rgba(10, 43, 54, 0.18);
   --a-accent: #0a2b36;
   --a-on-accent: #fbfbf8;
-  --a-action: #d62f25;
-  --a-on-action: #ffffff;
+  --a-danger: #d62f25;
+  --a-on-danger: #ffffff;
   --a-glass: rgba(255, 255, 255, 0.72);
   --a-glass-edge: rgba(255, 255, 255, 0.95);
   --a-shadow: rgba(10, 43, 54, 0.16);
@@ -48,8 +48,8 @@ html[data-admin-theme="dark"] {
   --a-line: rgba(255, 255, 255, 0.14);
   --a-accent: #c9e265;
   --a-on-accent: #0b1417;
-  --a-action: #d62f25;
-  --a-on-action: #ffffff;
+  --a-danger: #d62f25;
+  --a-on-danger: #ffffff;
   --a-glass: rgba(18, 29, 33, 0.72);
   --a-glass-edge: rgba(255, 255, 255, 0.2);
   --a-shadow: rgba(0, 0, 0, 0.45);
@@ -126,12 +126,23 @@ html[data-admin-theme="dark"] {
 }
 
 .admin-v2 .btn-primary {
-  background: var(--a-action);
-  border-color: var(--a-action);
-  color: var(--a-on-action);
+  background: var(--a-accent);
+  border-color: var(--a-accent);
+  color: var(--a-on-accent);
 }
 
 .admin-v2 .btn-primary:hover {
+  filter: brightness(0.92);
+}
+
+/* Red is reserved for destructive confirmations and the "now" marker */
+.admin-v2 .btn-danger {
+  background: var(--a-danger);
+  border-color: var(--a-danger);
+  color: var(--a-on-danger);
+}
+
+.admin-v2 .btn-danger:hover {
   filter: brightness(0.92);
 }
 
@@ -729,7 +740,7 @@ html[data-admin-theme="dark"] {
   align-items: center;
   gap: 0.6rem;
   margin: 0.3rem 0 0.6rem;
-  color: var(--a-action);
+  color: var(--a-danger);
   font-size: 0.8rem;
   font-weight: 800;
 }
@@ -738,7 +749,7 @@ html[data-admin-theme="dark"] {
   content: "";
   flex: 1;
   height: 2px;
-  background: var(--a-action);
+  background: var(--a-danger);
 }
 
 .admin-today-row {

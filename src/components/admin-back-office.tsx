@@ -3674,7 +3674,7 @@ export default function AdminBackOffice() {
                   Cancel
                 </button>
                 <button
-                  className="btn btn-primary"
+                  className="btn btn-danger"
                   type="button"
                   onClick={confirmDeleteReservation}
                   disabled={actionKey !== null}
