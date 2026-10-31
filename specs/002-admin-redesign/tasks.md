@@ -126,10 +126,10 @@
 
 **Independent Test**: Quickstart §6.
 
-- [ ] T034 [US5] Restyle the calendar tab in `src/components/admin-back-office.tsx` and `src/app/admin/admin.css`: month grid, day cells that show confirmed counts and closure markers with text or shape, selected-day detail panel, 44 px day targets on phones
-- [ ] T035 [US5] Restyle the closure tools and the closure list: field labels, clear error when the start is after the end, remove actions with confirmation
-- [ ] T036 [US5] Add `"calendar"` to `MIGRATED_TABS` and delete the legacy `admin-calendar-*` rules from `src/app/globals.css`
-- [ ] T037 [US5] Verify US5 per quickstart §6 including that the public booking page reflects added and removed closures
+- [x] T034 [US5] Restyle the calendar tab in `src/components/admin-back-office.tsx` and `src/app/admin/admin.css`: month grid, day cells that show confirmed counts and closure markers with text or shape, selected-day detail panel, 44 px day targets on phones
+- [x] T035 [US5] Restyle the closure tools and the closure list: field labels, clear error when the start is after the end, remove actions with confirmation
+- [x] T036 [US5] Add `"calendar"` to `MIGRATED_TABS` and delete the legacy `admin-calendar-*` rules from `src/app/globals.css`
+- [x] T037 [US5] Verify US5 per quickstart §6 including that the public booking page reflects added and removed closures
 
 **Checkpoint**: Calendar migrated: open a pull request
 
