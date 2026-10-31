@@ -1,6 +1,6 @@
 # Feature Specification: Public Site Redesign
 
-**Feature Branch**: `chore/adopt-spec-kit` (spec directory is independent of branch name)
+**Feature Branch**: `001-public-site-redesign`
 
 **Created**: 2026-10-31
 
@@ -201,15 +201,17 @@ of the landing page.
 
 - **SC-001**: On a phone, a first-time visitor can start a booking from the landing page
   in no more than 2 taps and under 10 seconds.
-- **SC-002**: A guest can complete a booking in under 2 minutes on a phone, with no loss
-  in booking completion compared with the current flow.
+- **SC-002**: A guest can complete a booking in under 2 minutes on a phone, using no more
+  steps and no more taps than the current flow. (Real-world completion rate is monitored
+  after launch; it is not a pre-release gate because there is no baseline.)
 - **SC-003**: 100% of text and background pairs on public pages meet AA contrast.
 - **SC-004**: 0 pages show the old brown backgrounds or orange/gold brand accents.
 - **SC-005**: 0 leftover placeholder or developer-facing strings remain in either language.
 - **SC-006**: Every public page is fully usable with keyboard only, with a visible focus
   indicator on every interactive element.
-- **SC-007**: The landing page shows its main content in under 3 seconds on a typical
-  mobile connection, with no visible content jumping.
+- **SC-007**: The landing page shows its main content in under 3 seconds on a mid-range
+  phone over a Slow 4G connection (browser developer-tools throttling), with no visible
+  content jumping.
 - **SC-008**: In a review against `docs/design.md`, all listed generic patterns are
   absent, and the owner approves the look on landing, menu and booking pages.
 - **SC-009**: Zero regressions in booking rules: every existing availability, closure and

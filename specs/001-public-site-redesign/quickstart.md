@@ -32,7 +32,8 @@ Expected: all three succeed (SC-003).
 Complete these in both languages on a phone-size screen:
 
 1. Happy path: pick an open day and slot, fill details, submit; confirmation shows date,
-   time, party size.
+   time, party size. Also time it from the landing page: booking starts in at most 2 taps
+   and under 10 seconds, and the full booking uses no more steps or taps than before (SC-001, SC-002).
 2. Fully booked day and closed weekday are disabled and distinguishable without color.
 3. Same-day booking: slots closer than the cutoff are not offered.
 4. Submit with a missing required field: error next to the field, focus on the first error.
@@ -42,14 +43,17 @@ Complete these in both languages on a phone-size screen:
 
 ## 5. Admin unchanged (FR-017)
 
-Open `/admin/login` and `/admin` before and after: layout and colors identical.
+Open `/admin/login` and the logged-in `/admin` screen (use the local `.env` admin credentials)
+before and after: top nav, tabs, calendar, tables, buttons, toasts, layout and colors identical.
 
 ## 6. Accessibility and performance (US5; SC-006, SC-007)
 
 1. Keyboard only through every public page: focus always visible, nothing hidden behind bars.
 2. Turn on reduced motion in the OS: no non-essential animation.
 3. 200% text zoom and landscape: no overlap or clipped controls.
-4. Throttled mobile load of `/en`: main content under 3 s, no layout jump from images/fonts.
+4. Mobile load of `/en` with DevTools Slow 4G + 4x CPU slowdown: main content under 3 s, no
+   layout jump from images/fonts. Also check landscape orientation and 200% text zoom on
+   landing, menu and booking, and a very long guest name and note in the booking form.
 5. Run `/web-design-guidelines` and `/vercel-react-best-practices` on changed files; resolve
    or record each finding.
 

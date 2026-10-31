@@ -102,8 +102,8 @@ src/components/
 └── reserve-flow.tsx                   # booking UI (visual only)
 ```
 
-**Structure Decision**: Single Next.js app, no new directories except `scripts/` (already
-present, currently empty) for the contrast check. Admin files are touched only to attach the
+**Structure Decision**: Single Next.js app, no new directories except `scripts/` for the
+contrast check (an empty, untracked folder exists locally; the file creation makes it real). Admin files are touched only to attach the
 scoped theme.
 
 ## Phasing
@@ -111,7 +111,7 @@ scoped theme.
 | Slice | Delivers | Spec stories |
 |---|---|---|
 | 0. Foundations | Tokens, fonts, admin freeze, contrast script, body/manifest colors | US4 base |
-| 1. Shell | Nav, footer, buttons, focus states | US4, US5 |
+| 1. Shell (done inside Phase 2 of tasks.md, since every page needs it) | Nav, footer, buttons, focus states; shared admin selectors mirrored into the admin theme | US4, US5 |
 | 2. Landing | Hero, status, hours, gallery, FAQ/SEO block, copy cleanup | US1 |
 | 3. Menu | Sections, quick-find, dish rows, vegetarian marker | US2 |
 | 4. Booking | Calendar, slots, form errors, confirmation, mascot states | US3 |

@@ -30,7 +30,7 @@
 
 - [ ] T001 [P] Create `scripts/check-contrast.mjs`: plain Node ESM, no dependencies; hold the token palette and the allowed foreground/background pairs from `contracts/design-tokens.md`, compute WCAG ratios, print each pair, and exit non-zero if any normal-text pair is under 4.5:1 or any large-text pair under 3:1
 - [ ] T002 [P] Delete unused starter file `src/app/page.module.css` (confirm with `grep -rn "page.module" src` that nothing imports it)
-- [ ] T003 Record "before" baselines for comparison: screenshots of `/en`, `/pt`, `/en/menu`, `/en/reserve`, `/admin/login` at 360 px and 1280 px, saved outside the repo (scratchpad); note any brown-literal count with `grep -cE "#130800|#1a0a00|#2a1505|#3a1f0b" src/app/globals.css`
+- [ ] T003 Record "before" baselines for comparison: screenshots of `/en`, `/pt`, `/en/menu`, `/en/reserve`, `/admin/login` at 360 px and 1280 px, plus the logged-in `/admin` screen (sign in with the local `ADMIN_USERNAME`/`ADMIN_PASSWORD` from `.env`), saved outside the repo (scratchpad); note any brown-literal count with `grep -cE "#130800|#1a0a00|#2a1505|#3a1f0b" src/app/globals.css`
 
 ---
 
@@ -48,12 +48,12 @@
 - [ ] T009 Swap fonts in `src/app/layout.tsx`: remove `Geist`, `Geist_Mono`, `Bebas_Neue`, `Pacifico`; add `Bricolage_Grotesque` (`--font-display`) and `Figtree` (`--font-body`) via `next/font/google` with `latin` and `latin-ext` subsets and `display: "swap"`; update every `font-family` reference in `src/app/globals.css` (Bebas Neue, Pacifico, Geist) to the new tokens
 - [ ] T010 **Checkpoint — font pairing**: run `npm run dev`, view the hero, nav and a Portuguese menu line with accents (á ã ç õ) at 360 px; if it reads wrong, switch headings to Familjen Grotesk (fallback in `research.md` R2) in `src/app/layout.tsx` and record the final choice in `docs/design.md` (depends on T009)
 - [ ] T011 [P] Update `src/app/manifest.ts` `background_color` and `theme_color` from `#130800` to the new page color, and add a matching `themeColor` to the viewport/metadata export in `src/app/layout.tsx`
-- [ ] T012 Restyle the shared shell with tokens in `src/app/globals.css` and `src/components/public-nav.tsx`: `.site-nav`, `.nav-links`, `.nav-toggle`, `.lang-btn`, brand mascot sizing, mobile menu; teal nav with paper text; no tracked all-caps labels (depends on T005)
-- [ ] T013 Restyle `src/components/site-footer.tsx` and its CSS to the teal/paper tokens, with links keeping visible focus (depends on T005)
+- [ ] T012 Restyle the shared shell with tokens in `src/app/globals.css` and `src/components/public-nav.tsx`: `.site-nav`, `.nav-links`, `.nav-toggle`, `.lang-btn`, brand mascot sizing, mobile menu; teal nav with paper text; no tracked all-caps labels; `src/components/admin-top-nav.tsx` uses the same `.site-nav`/`.site-nav-inner` classes, so mirror every shared selector touched here (`.site-nav*`, `.brand*`, `.nav-links*`, `.nav-toggle*`, `.lang-btn*`) into `.admin-theme` so the admin nav is unchanged (depends on T005, T006)
+- [ ] T013 Restyle `src/components/site-footer.tsx` and its CSS to the teal/paper tokens, with links keeping visible focus; if any footer selector is also used inside the admin, mirror it into `.admin-theme` (depends on T005, T006)
 - [ ] T014 Restyle buttons and cards in `src/app/globals.css`: primary = chile with white label (4.89:1), secondary = teal outline; `:focus-visible` ring on every interactive element using lime on teal and teal on paper; remove `outline: none` without replacement; list transition properties explicitly (no `transition: all`); mirror any needed look in `.admin-theme .btn` / `.admin-theme .card` so the admin is unchanged (depends on T006)
 - [ ] T015 Add a global `@media (prefers-reduced-motion: reduce)` block in `src/app/globals.css` that disables non-essential animation and smooth scrolling (FR-014)
 - [ ] T016 Wire the token pairs into `scripts/check-contrast.mjs` (T001) and run it; fix any failing pair (depends on T005, T012–T014)
-- [ ] T017 **Checkpoint — admin unchanged**: open `/admin/login` (and `/admin` if credentials are available) and compare with the T003 baseline; run `git diff --stat -- src/lib src/app/api` and confirm it is empty. Do not proceed until both pass
+- [ ] T017 **Checkpoint — admin unchanged**: open `/admin/login` AND the logged-in `/admin` screen (mandatory; use the local `.env` admin credentials; check the top nav, tabs, calendar, tables, buttons and toasts) and compare with the T003 baseline; run `git diff --stat -- src/lib src/app/api` and confirm it is empty. Do not proceed until both pass
 
 **Checkpoint**: Foundation ready; user stories can begin
 
@@ -103,10 +103,10 @@
 
 **Independent Test**: Quickstart §4 — full booking in both languages on a phone-size screen.
 
-- [ ] T034 [US3] Restyle the booking layout in `src/components/reserve-flow.tsx` and `src/app/[locale]/reserve/layout.tsx`: shell, progress bar (`.reserve-flow-progress*`), step panels (`.reserve-flow-step-panel`) with tokens; visual and markup-class changes only — do not alter state, availability calls or submit logic
+- [ ] T034 [US3] Restyle the booking layout in `src/components/reserve-flow.tsx` and `src/app/[locale]/reserve/layout.tsx`: shell, progress bar (`.reserve-flow-progress*`), step panels (`.reserve-flow-step-panel`) with tokens; visual and markup-class changes only, plus the minimal UI behavior in T037 (focus on first error); do not alter validation rules, availability calls or what is submitted
 - [ ] T035 [US3] Restyle the calendar (`.reserve-flow-calendar-grid`, day cells, month header) in `src/app/globals.css`: selected day, today, and disabled (closed or fully booked) days distinguishable without color alone (strike/pattern + `aria-disabled` or `disabled` + text in the accessible name); keep the existing fully-booked greying behavior working
 - [ ] T036 [US3] Restyle the time-slot buttons and guests/party-size controls: 44 px minimum touch targets, visible selected state, `:focus-visible`
-- [ ] T037 [US3] Restyle form fields: visible `<label>`, `autocomplete`, correct `type`/`inputmode` on phone and email, placeholders ending with `…`; error message directly under the field with a fix-oriented message; on failed submit focus moves to the first invalid field (UI-level behavior only; validation rules unchanged)
+- [ ] T037 [US3] Restyle form fields: visible `<label>`, `autocomplete`, correct `type`/`inputmode` on phone and email, placeholders ending with `…`; error message directly under the field with a fix-oriented message; on failed submit focus moves to the first invalid field (new UI-only behavior: `reserve-flow.tsx` has no `.focus()` call today; add it in the existing submit-error path without changing validation rules); also handle a very long guest name and a very long note without overflow or clipped controls
 - [ ] T038 [US3] Restyle the confirmation modal (`reservation-modal-*` in `src/components/reserve-flow.tsx` and CSS): states date, time and party size; says what happens next; consistent action vocabulary ("Book a table" → "Table booked"); mascot shown here with a purpose (FR-010)
 - [ ] T039 [US3] Review all booking copy in `messages/en.json` and `messages/pt.json` (labels, errors, success): active voice, specific button labels, equal meaning in both languages
 - [ ] T040 [US3] Verify US3 per Quickstart §4 in both languages: happy path, fully booked day, closed weekday, same-day cutoff, missing field, then `git diff --stat -- src/lib src/app/api` is empty (SC-009)
@@ -122,10 +122,10 @@
 **Independent Test**: Quickstart §2 across every public page and state; admin unchanged.
 
 - [ ] T041 [US4] Add a "closed today" presentation with the mascot on the landing page (`src/components/home-open-status.tsx` or the hours block in `src/app/[locale]/page.tsx`), shown only when the restaurant is closed
-- [ ] T042 [P] [US4] Add a branded not-found page at `src/app/[locale]/not-found.tsx` (both locales via `next-intl`, link back home and to booking); add the needed keys to `messages/en.json` and `messages/pt.json`
+- [ ] T042 [P] [US4] Add branded not-found pages: `src/app/[locale]/not-found.tsx` (both locales via `next-intl`, link back home and to booking, for `notFound()` inside locale routes) AND a root `src/app/not-found.tsx` (bilingual fallback without `next-intl` context) because unknown URLs fall through to the root not-found; add the needed keys to `messages/en.json` and `messages/pt.json`; verify by opening `/en/does-not-exist` and `/xyz`
 - [ ] T043 [P] [US4] Add a branded error boundary at `src/app/[locale]/error.tsx` (client component) with a fix-oriented message and a "Try again" action, both locales
 - [ ] T044 [US4] Review `public/og_image.jpg` and the icon set (`public/favicon*.{ico,webp}`, `public/apple-touch-icon*.png`, `public/icon-*.png`): if they carry the old brown, produce replacements in the new palette; keep file names or update references in `src/app/layout.tsx` and `src/app/[locale]/page.tsx`
-- [ ] T045 [US4] Sweep for leftover old-brand colors in public styles: `grep -nE "#130800|#1a0a00|#2a1505|#3a1f0b|#f5a623|#ffd166|#c4622d|#e8351a|#f0ddb8|#fff4e0" src/app/globals.css`; every remaining hit must be inside `.admin-theme`; replace the rest with tokens (SC-004)
+- [ ] T045 [US4] Sweep for leftover old-brand colors in public styles: `grep -nE "#130800|#1a0a00|#2a1505|#3a1f0b|#f5a623|#ffd166|#c4622d|#e8351a|#f0ddb8|#fff4e0" src/app/globals.css`; every remaining hit must be inside `.admin-theme`; replace the rest with tokens (SC-004). Then list ALL remaining color literals outside the token block and `.admin-theme` (`grep -nE "#[0-9a-fA-F]{3,8}\b|rgba?\(|hsla?\(" src/app/globals.css`, including `#fff`, `#000`, `#111827` and `rgba(...)`) and replace each with a token or a token-derived value (FR-009)
 - [ ] T046 [US4] Confirm FR-011 against `docs/design.md`: no identical rounded-card grid, no tracked all-caps eyebrows, no numbering on non-sequences, no fade-up on every section; fix offenders in `src/app/globals.css` and the page components
 - [ ] T047 [US4] Re-verify `/admin/login` and `/admin` against the T003 baseline (FR-017)
 
@@ -139,13 +139,13 @@
 
 **Independent Test**: Quickstart §6.
 
-- [ ] T048 [US5] Keyboard-only pass over `/en`, `/pt`, both menus and the booking flow: focus always visible, logical tab order, skip link to main content added in `src/app/[locale]/layout.tsx` if missing, sticky bars never cover the focused element (`scroll-padding-top` in `src/app/globals.css`)
+- [ ] T048 [US5] Keyboard-only pass over `/en`, `/pt`, both menus and the booking flow: focus always visible, logical tab order, skip link to main content added in `src/app/[locale]/layout.tsx` if missing, sticky bars never cover the focused element (`scroll-padding-top` in `src/app/globals.css`); also check landscape orientation on a phone and 200% text zoom on landing, menu and booking
 - [ ] T049 [P] [US5] Add explicit `width`/`height` (or `fill` with a sized parent) and correct `sizes` to every `next/image` on public pages (`src/app/[locale]/page.tsx`, `src/components/home-gallery.tsx`, `src/components/public-nav.tsx`); below-fold images lazy, hero `priority`; confirm no layout shift (FR-015)
 - [ ] T050 [P] [US5] Check heading hierarchy (single `<h1>` per page, ordered `h2`–`h3`), image `alt` text, `aria-live` for async messages in `src/components/reserve-flow.tsx`, and `lang` attribute per locale in `src/app/layout.tsx`
 - [ ] T051 [US5] Check behavior with OS reduced motion enabled: no non-essential animation on landing, gallery, nav or modal
 - [ ] T052 [US5] Run `/web-design-guidelines` on `src/app/[locale]/page.tsx`, `src/app/[locale]/menu/page.tsx`, `src/components/{public-nav,site-footer,home-gallery,home-open-status,menu-quick-find,reserve-flow}.tsx`; fix findings or record why a finding is skipped (ignore its Title Case rule, per `CLAUDE.md`)
 - [ ] T053 [US5] Run `/vercel-react-best-practices` on the same files, focusing on bundle size, image handling and client components; fix high-impact findings
-- [ ] T054 [US5] Run `node scripts/check-contrast.mjs` and a throttled mobile load of `/en` (landing main content under 3 s, SC-007); record results in the PR description
+- [ ] T054 [US5] Run `node scripts/check-contrast.mjs` and a mobile load of `/en` using Slow 4G + 4x CPU slowdown in DevTools (landing main content under 3 s, SC-007); record results in the PR description
 
 **Checkpoint**: All stories complete
 
@@ -156,7 +156,7 @@
 - [ ] T055 [P] Update `docs/design.md` with the final fonts, final palette values if any changed, and the mascot lockup decision (resolve "Open decisions")
 - [ ] T056 [P] Update `CLAUDE.md` Design section if the token names or admin theme rule changed
 - [ ] T057 Run `npm run lint` and `npm run build`; fix errors
-- [ ] T058 Run the full `quickstart.md` validation (§1–§7) in both languages and record pass/fail per item in the PR description
+- [ ] T058 Run the full `quickstart.md` validation (§1–§7) in both languages and record pass/fail per item in the PR description, including the SC-001 tap/time check (§4) and the page title, description, structured data and social preview check for FR-016 (§7)
 - [ ] T059 Open the PR from `001-public-site-redesign` with before/after screenshots (from T003) for landing, menu, booking and admin; include contrast results and audit summaries
 
 ---
