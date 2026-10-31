@@ -1003,17 +1003,17 @@ summary,
   font-style: normal;
 }
 
-.home-visit a {
+.home-visit a:not(.btn) {
   display: inline-block;
   padding: 2px 0;
   min-height: 24px;
   color: var(--accent);
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  text-decoration: none;
+  font-weight: 600;
 }
 
-.home-visit a:hover {
-  text-decoration-thickness: 2px;
+.home-visit a:not(.btn):hover {
+  color: var(--paper);
 }
 
 .home-visit a.btn {
