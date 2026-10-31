@@ -45,50 +45,53 @@ export default async function MenuPage({ params }: Props) {
 
   return (
     <>
-      <PublicNav headerTitle={t("headerTitle")} />
+      <PublicNav />
 
       <main className="site-shell menu-page">
-        <div className="menu-top-zigzag" aria-hidden="true" />
+        <header className="menu-head">
+          <h1>{t("title")}</h1>
+        </header>
 
         <MenuQuickFind
           quickFindLabel={t("quickFind")}
+          closeLabel={t("closeQuickFind")}
           categories={menuData.map((category) => ({
             id: category.id,
             label: category.title[locale],
           }))}
         />
 
-        <section className="menu-block">
-          {menuData.map((category) => (
-            <section className="menu-section" id={category.id} key={category.id}>
-              <h2>{category.title[locale]}</h2>
-              {category.subtitle ? <p className="footer-note">{category.subtitle[locale]}</p> : null}
-              <div className="items-grid" style={{ marginTop: "0.7rem" }}>
-                {category.items.map((item) => (
-                  <article className="item" key={`${category.id}-${item.name.en}`}>
-                    <div className="item-top">
-                      <h3>
-                        {item.name[locale]}
-                        {item.vegetarian ? (
-                          <span className="title-veg" aria-label="Vegetarian">
-                            {" "}
-                            🌱
-                          </span>
-                        ) : null}
-                      </h3>
-                      <span className="item-price">{item.price}</span>
+        {menuData.map((category) => (
+          <section
+            className="menu-section"
+            id={category.id}
+            key={category.id}
+            aria-labelledby={`${category.id}-title`}
+          >
+            <h2 id={`${category.id}-title`}>{category.title[locale]}</h2>
+            {category.subtitle ? (
+              <p className="menu-section-note">{category.subtitle[locale]}</p>
+            ) : null}
+            <ul className="menu-items">
+              {category.items.map((item) => (
+                <li className="menu-item" key={`${category.id}-${item.name.en}`}>
+                  <div className="menu-item-top">
+                    <div className="menu-item-name">
+                      <h3>{item.name[locale]}</h3>
+                      {item.vegetarian ? (
+                        <span className="menu-veg">{t("vegetarian")}</span>
+                      ) : null}
                     </div>
-                    <p>{item.description[locale]}</p>
-                  </article>
-                ))}
-              </div>
-            </section>
-          ))}
-        </section>
+                    <span className="menu-item-price">{item.price}</span>
+                  </div>
+                  {item.description[locale] ? <p>{item.description[locale]}</p> : null}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
 
-        <p className="footer-note">{t("footnote")}</p>
-
-        <div className="menu-bottom-stripe" aria-hidden="true" />
+        <p className="menu-footnote">{t("footnote")}</p>
       </main>
     </>
   );

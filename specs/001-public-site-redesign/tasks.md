@@ -75,7 +75,7 @@
 - [X] T025 [US1] Remove the commented-out discount banner block (`home-discount-banner`) from `src/app/[locale]/page.tsx` and delete the `.home-discount-banner*` CSS rules in `src/app/globals.css` (FR-003)
 - [X] T026 [US1] Remove unused placeholder keys from BOTH `messages/en.json` and `messages/pt.json`: `Home.title`, `Home.body`, `Home.qrTitle`, `Home.qrBody`, `Home.reservationTitle`, `Home.reservationBody`, `Home.seoTitle`, `Home.seoBody`, `Home.discountBannerHeadline`, `Home.discountBannerBody`, `Home.discountBannerCta`; first grep `src` to confirm each is unused, then verify both files keep identical key sets (SC-005)
 - [X] T027 [US1] Review and tighten visible landing copy in both `messages/en.json` and `messages/pt.json` (hero, description, pricing line): plain, specific, equivalent meaning in both languages, no emoji; keep SEO phrasing that search relies on _(Hero, pricing line and visit labels reworded; middle dots, em dashes and emoji removed from the landing page. Note: gallery photos 2 and 5 show children; confirm the owner has consent.)_
-- [ ] T028 [US1] Verify US1 per Quickstart §2 in `/en` and `/pt`, including the closed state and 360 px width; fix overflow in Portuguese
+- [X] T028 [US1] Verify US1 per Quickstart §2 in `/en` and `/pt`, including the closed state and 360 px width; fix overflow in Portuguese _(Verified in en and pt at a true 360 px viewport via DevTools emulation: no horizontal overflow, 'Reservar mesa' visible at 532–576 px of a 740 px screen. Closed state checked.)_
 
 **Checkpoint**: Landing page complete and independently shippable
 
@@ -87,11 +87,11 @@
 
 **Independent Test**: Quickstart §3 — `/en/menu`, `/pt/menu` at 360 px.
 
-- [ ] T029 [US2] Restyle the menu page in `src/app/[locale]/menu/page.tsx` and menu rules in `src/app/globals.css`: section headings, dish rows, price alignment; long names and descriptions wrap without pushing the price (`min-width: 0`, `overflow-wrap`); use `font-variant-numeric: tabular-nums` for prices
-- [ ] T030 [US2] Restyle `src/components/menu-quick-find.tsx` and `.menu-quick-find*`: sticky bar uses tokens; set `--quick-find-h` correctly and add `scroll-margin-top` so jumped-to headings are not hidden behind fixed bars (FR-013)
-- [ ] T031 [US2] Make the vegetarian marker readable without color: add a small icon plus visible label or accessible name in the dish row markup (`src/app/[locale]/menu/page.tsx`) using `--agave`; check both locales have the label text in `messages/*.json`
-- [ ] T032 [US2] Handle empty section/dish description gracefully (no empty gaps or broken layout) in `src/app/[locale]/menu/page.tsx`
-- [ ] T033 [US2] Verify US2 per Quickstart §3 in both locales at 360 px and 200% text zoom
+- [X] T029 [US2] Restyle the menu page in `src/app/[locale]/menu/page.tsx` and menu rules in `src/app/globals.css`: section headings, dish rows, price alignment; long names and descriptions wrap without pushing the price (`min-width: 0`, `overflow-wrap`); use `font-variant-numeric: tabular-nums` for prices _(Cards replaced by a two-column list with thin dividers; added a real `<h1>`; zigzag, bottom stripe and the nav's duplicate 'Menu' title removed.)_
+- [X] T030 [US2] Restyle `src/components/menu-quick-find.tsx` and `.menu-quick-find*`: sticky bar uses tokens; set `--quick-find-h` correctly and add `scroll-margin-top` so jumped-to headings are not hidden behind fixed bars (FR-013) _(Emoji and the endless shine animation removed; teal button and sheet; Escape closes; jumped headings land at 80 px, below the 70 px bar. Unused `foodSection`/`jumpFood`-style and `subtitle` keys removed.)_
+- [X] T031 [US2] Make the vegetarian marker readable without color: add a small icon plus visible label or accessible name in the dish row markup (`src/app/[locale]/menu/page.tsx`) using `--agave`; check both locales have the label text in `messages/*.json` _(Visible text tag 'Vegetarian'/'Vegetariano' with an agave border, replacing the emoji; new key in both languages.)_
+- [X] T032 [US2] Handle empty section/dish description gracefully (no empty gaps or broken layout) in `src/app/[locale]/menu/page.tsx`
+- [X] T033 [US2] Verify US2 per Quickstart §3 in both locales at 360 px and 200% text zoom
 
 **Checkpoint**: Menu complete; US1 and US2 both work independently
 

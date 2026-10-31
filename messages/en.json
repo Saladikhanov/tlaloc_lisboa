@@ -54,17 +54,13 @@
     "galleryAlt5": "A child giving two thumbs up in front of the restaurant's turquoise wall and pink flower mural"
   },
   "MenuPage": {
-    "headerTitle": "Menu",
     "title": "Menu",
     "metaTitle": "Menu — Mexican Food in Lisbon | Tláloc",
     "metaDescription": "Mexican food and drinks menu at Tláloc in Lisbon (Alcântara). Tacos, margaritas, and more.",
-    "subtitle": "This page is optimized for phone scanning from table QR codes.",
-    "quickFind": "Quick find",
-    "jumpFood": "Food",
-    "jumpDrinks": "Drinks",
-    "foodSection": "Food",
-    "drinksSection": "Drinks",
-    "footnote": "Please inform staff about allergies. Prices and dishes can change seasonally."
+    "quickFind": "Jump to",
+    "footnote": "Please tell staff about allergies. Prices and dishes can change with the season.",
+    "closeQuickFind": "Close",
+    "vegetarian": "Vegetarian"
   },
   "ReservePage": {
     "title": "Reservation Request",

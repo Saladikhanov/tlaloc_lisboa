@@ -54,17 +54,13 @@
     "galleryAlt5": "Uma criança com os polegares para cima em frente à parede turquesa e ao mural de flores cor-de-rosa do restaurante"
   },
   "MenuPage": {
-    "headerTitle": "Menu",
     "title": "Menu",
     "metaTitle": "Menu — Comida Mexicana em Lisboa | Tláloc",
     "metaDescription": "Menu de comida e bebidas mexicanas no Tláloc, Lisboa (Alcântara). Tacos, margaritas e mais.",
-    "subtitle": "Pagina otimizada para telemovel e leitura por QR nas mesas.",
-    "quickFind": "Pesquisa rapida",
-    "jumpFood": "Comida",
-    "jumpDrinks": "Bebidas",
-    "foodSection": "Comida",
-    "drinksSection": "Bebidas",
-    "footnote": "Informe a equipa sobre alergias. Precos e pratos podem mudar sazonalmente."
+    "quickFind": "Ir para",
+    "footnote": "Informe a equipa sobre alergias. Preços e pratos podem mudar consoante a estação.",
+    "closeQuickFind": "Fechar",
+    "vegetarian": "Vegetariano"
   },
   "ReservePage": {
     "title": "Pedido de Reserva",
