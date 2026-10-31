@@ -28,7 +28,7 @@
 
 ## Phase 1: Setup
 
-- [ ] T001 Record "before" baselines of `/admin/login` and every tab (reservations, today, calendar, metrics, rewards, menu, security, hours) plus the add and delete dialogs at 360 px and 1280 px, saved outside the repo; agree how logged-in screens are checked from now on: either the owner provides a throwaway test admin for a local-only database or environment file, or the owner sends screenshots and checks on a device
+- [X] T001 Record "before" baselines of `/admin/login` and every tab (reservations, today, calendar, metrics, rewards, menu, security, hours) plus the add and delete dialogs at 360 px and 1280 px, saved outside the repo; agree how logged-in screens are checked from now on: either the owner provides a throwaway test admin for a local-only database or environment file, or the owner sends screenshots and checks on a device _(Outcome 2026-10-31: throwaway Docker database `tlaloc-dev-pg`, a generated test admin in the git-ignored `.env.local`, notifications blanked, 12 fake reservations around today's date; baselines of the login page and all 8 tabs at 360 and 1280 px are saved outside the repo. The real admin login is never used.)_
 - [ ] T002 [P] Extend `scripts/check-contrast.mjs` with the admin pairs from `contracts/admin-ui-contract.md` for both themes: text and muted on bg, surface and surface-2; white on action; accent on surface; active-tab pairs; the four status chips; the orange alert pair; fail on any normal-text pair under 4.5:1 or non-text pair under 3:1
 
 ---
@@ -44,8 +44,8 @@
 - [ ] T005 Create `src/components/admin-theme-scope.tsx` (client): resolves the preference from storage key `tlaloc-admin-theme` (`light`, `dark`, or absent = follow the device), sets and clears `data-admin-theme` on `<html>`, follows `prefers-color-scheme` live when no explicit choice exists, updates `<meta name="theme-color">` to the theme's `--a-bg` value, removes the attribute on unmount, tolerates unavailable storage, and exposes the current preference and a setter through a hook
 - [ ] T006 Update `src/app/admin/layout.tsx`: import `./admin.css`, render a small inline script first that sets `data-admin-theme` before paint using the same resolution rules, wrap children in `AdminThemeScope`, change the wrapper class to `admin-app`, keep the legacy Geist and Bebas fonts until stage 4 (depends on T004, T005)
 - [ ] T007 In `src/app/globals.css` turn the `.admin-theme` mirror block into the `admin-legacy` island: rename selectors to `.admin-legacy`, give the island its own dark brown background, padding and radius so it reads as a self-contained panel in either theme, and re-point the `body:has(.admin-theme)` rules to `body:has(.admin-app)` using `--a-bg`/`--a-text` for the page and an admin-safe scroll-to-top style (depends on T006)
-- [ ] T008 In `src/components/admin-back-office.tsx` add a constant `MIGRATED_TABS` (initially empty) and wrap the returned content in `<div className={MIGRATED_TABS.includes(activeTab) ? "admin-v2" : "admin-legacy"}>`; no logic change (depends on T007)
-- [ ] T009 **Checkpoint — foundations**: confirm legacy tabs look identical to the T001 baselines inside the island in both themes, `npm run lint` and `npm run build` pass, the contrast script passes, `git diff --stat -- src/lib src/app/api` is empty, and after opening `/admin` then `/menu` no `data-admin-theme` attribute remains on the public page
+- [ ] T008 In `src/components/admin-back-office.tsx` add a constant `MIGRATED_TABS` (initially empty) and wrap only the tab sections in `<div className={MIGRATED_TABS.includes(activeTab) ? "admin-v2" : "admin-legacy"}>`; render the global fixed layers (toast stack, status toast, sync badge, tutorial overlay, add and delete dialogs) OUTSIDE that wrapper so they never take a tab's class; until each is restyled, keep it legacy-styled through its own selectors; also wrap the login page, the old top nav and the Today page header in an `admin-legacy` island until the stages that replace them; no logic change (depends on T007)
+- [ ] T009 **Checkpoint — foundations**: confirm legacy tabs, the login page, the old top nav and the Today header look identical to the T001 baselines in both themes, `npm run lint` and `npm run build` pass, the contrast script passes, `git diff --stat -- src/lib src/app/api` is empty, and after opening `/admin` then `/menu` no `data-admin-theme` attribute remains on the public page
 
 **Checkpoint**: Foundation ready; user stories can begin
 
@@ -58,7 +58,7 @@
 **Independent Test**: Quickstart §2.
 
 - [ ] T010 [P] [US1] Create `src/components/admin-theme-toggle.tsx`: a three-option control (Device, Light, Dark) with radio-group semantics, 44 px targets and visible focus, using the hook from T005
-- [ ] T011 [US1] Create `src/components/admin-shell.tsx`: desktop glass top bar (circular logo link, tab links with `aria-current` on the active one, theme control, sign-out through the existing logout button, links to the public site) and a phone glass bottom tab bar (Today, Reservations, Calendar, More) with a More sheet (other tabs, theme control, public links, sign out) that closes on outside tap and Escape; tabs are links to `/admin?tab=…` so deep links and browser back keep working; honor safe-area insets (depends on T010)
+- [ ] T011 [US1] Create `src/components/admin-shell.tsx`: desktop glass top bar (circular logo link, tab links with `aria-current` on the active one, theme control, sign-out through the existing logout button, links to the public site) and a phone glass bottom tab bar (Today, Reservations, Calendar, More) with a More sheet (other tabs, theme control, public links, sign out) that closes on outside tap and Escape; tabs use the same behaviour as today (`router.replace` of `?tab=…` plus local state, no extra history entries and no extra server round trip) so deep links keep working; honor safe-area insets (depends on T010)
 - [ ] T012 [US1] Style the shell in `src/app/admin/admin.css` for both themes: glass using theme-tinted translucent surfaces with the same highlight and shadow family as the public header, 44 px primary targets, no horizontal scroll at 360 px, z-index below modals and alerts (depends on T011)
 - [ ] T013 [US1] Use the shell in `src/app/admin/page.tsx` and remove the old tab-button row and the Back button from `src/components/admin-back-office.tsx` (markup only; keep `navigateToTab`), then delete `src/components/admin-top-nav.tsx` and its now-unused styles (depends on T012)
 - [ ] T014 [US1] Restyle `src/app/admin/login/page.tsx` with v2 tokens: card on `--a-bg`, theme control, labels, `autocomplete` for username and current password, error message next to the form with a fix-oriented message, username kept after a failed attempt, 44 px button; no logic change
@@ -96,7 +96,7 @@
 - [ ] T024 [US3] Extract the reservation list JSX (cards, loaders, empty state) from `src/components/admin-back-office.tsx` into `src/components/admin-reservation-list.tsx`; props are what it uses today; all handlers stay in the parent
 - [ ] T025 [US3] Restyle the list header and controls (read-state switch, filters) in v2: denser, 44 px targets on phones, replace the ios-switch look with the v2 switch styles
 - [ ] T026 [US3] Reservation card v2 in `src/components/admin-reservation-list.tsx`: date and time, name, party size, locale chip, unread label, contact actions (call, WhatsApp, email) at 44 px, status actions (confirm, cancel, no-show) reachable in two taps or fewer, extra-details disclosure, delete behind confirmation; long names and notes wrap without hiding actions
-- [ ] T027 [US3] Restyle the add-reservation and delete dialogs in v2 (sheet on phones, centered on desktop), `role="dialog"`, Escape to close, field errors next to fields with focus on the first invalid field, delete confirmation naming the guest and date; keep submit behavior unchanged
+- [ ] T027 [US3] First check from which tabs the add-reservation and delete dialogs can be opened (for example the Calendar day panel); then restyle them in v2 (sheet on phones, centered on desktop), `role="dialog"`, Escape to close, field errors next to fields with focus on the first invalid field, delete confirmation naming the guest and date; keep submit behavior unchanged; if a dialog can open from a legacy tab, give it v2 styling that also reads correctly there
 - [ ] T028 [US3] Add `"reservations"` to `MIGRATED_TABS` and delete the legacy `reservation-*`, `icon-btn` and skeleton rules from `src/app/globals.css` once nothing uses them
 - [ ] T029 [US3] Verify US3 per quickstart §4 with a test reservation (confirm, cancel, no-show, add, delete), long-name cases, and `git diff --stat -- src/lib src/app/api` empty
 
@@ -113,7 +113,7 @@
 - [ ] T030 [US4] Restyle the toast stack, status toast and sync badge (`admin-toast*`, `admin-status-toast*`, `sync-overlay-badge`) in `src/app/admin/admin.css` using the alert tokens; each shows a title and an icon; place them clear of the top bar and above the phone bottom bar
 - [ ] T031 [US4] Map the three alert styles (green, orange, neutral) to the contract's alert tokens in both themes; keep sound and desktop notifications untouched
 - [ ] T032 [US4] Delete the legacy toast rules from `src/app/globals.css`
-- [ ] T033 [US4] Verify US4 per quickstart §5: public-site booking while the admin is open, sound on and off, permission denied, reconnect behavior, all three styles in both themes
+- [ ] T033 [US4] Verify US4 per quickstart §5 (the sound switch and alert-style picker live in the Settings tab, which stays legacy until stage 3, so use them as they are): public-site booking while the admin is open, sound on and off, permission denied, reconnect behavior, all three styles in both themes
 
 **Checkpoint**: Release candidate for stage 1 (shell, Today, Reservations, alerts): open a pull request
 
@@ -160,7 +160,7 @@
 - [ ] T048 Run `/web-design-guidelines` on the new and changed admin files and `/vercel-react-best-practices` on the shell, theme scope and any extracted components; fix findings or record why skipped (ignore the Title Case rule per `CLAUDE.md`)
 - [ ] T049 [P] Update `docs/design.md` with the admin section (tokens, themes, navigation, statuses) and `CLAUDE.md` if rules changed
 - [ ] T050 Run `npm run lint`, `npm run build` and `node scripts/check-contrast.mjs`; run the full `quickstart.md` in both themes and record pass or fail per item
-- [ ] T051 Owner pass on a real phone and a desktop browser in both themes, including the browser bar color; then merge and close the feature
+- [ ] T051 Owner pass on a real phone and a desktop browser in both themes, including the browser bar color, plus a short walkthrough where a staff member who used the old admin does the Today, confirm and cancel tasks on the first try (SC-009); then merge and close the feature
 
 ---
 

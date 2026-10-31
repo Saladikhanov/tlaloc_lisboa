@@ -1,7 +1,6 @@
 # Quickstart: Validate the Admin Redesign
 
-Prerequisites: `npm install`, `.env` with a working database and admin credentials, `npm run dev`, and a signed-in
-admin session at <http://localhost:3000/admin>. Repeat checks in **both themes** and at **360 px and desktop** width.
+Prerequisites: `npm install`, `npm run dev`, and a signed-in admin session at <http://localhost:3000/admin>. For checks that sign in, use the throwaway Docker database and the generated test admin from `.env.local` (never the real admin login or database). Repeat checks in **both themes** and at **360 px and desktop** width.
 
 ## 1. Automated checks (every stage)
 
@@ -19,7 +18,7 @@ git diff --stat -- src/lib src/app/api # must be empty
 2. Wrong password: the error appears next to the form and the username stays.
 3. 360 px: no horizontal scroll; bottom bar shows Today, Reservations, Calendar, More; More lists the other tabs, the switch,
    public-site links and sign out. Desktop: top bar with all tabs.
-4. Deep links `/admin?tab=today` and `?tab=calendar` open the right tab; browser back works.
+4. Deep links `/admin?tab=today` and `?tab=calendar` open the right tab. Switching tabs replaces the address (no history spam), so browser back leaves the admin, as it does today.
 5. Leave the admin for `/menu` and confirm the public page is light and unaffected (no admin theme attribute left behind).
 
 ## 3. Today (US2)
