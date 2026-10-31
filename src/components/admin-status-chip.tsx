@@ -51,6 +51,14 @@ function Shape({ status }: { status: AdminChipStatus }) {
       </svg>
     );
   }
+  if (status === "unread") {
+    return (
+      <svg {...common}>
+        <rect x="1.5" y="2.5" width="9" height="7" rx="1.2" />
+        <path d="M2 3.5l4 3 4-3" />
+      </svg>
+    );
+  }
   return (
     <svg {...common}>
       <circle cx="6" cy="6" r="2.6" fill="currentColor" stroke="none" />

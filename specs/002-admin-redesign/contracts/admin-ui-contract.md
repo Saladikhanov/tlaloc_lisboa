@@ -37,14 +37,19 @@ Contrast checks (text pairs need 4.5:1, large text and non-text need 3:1):
 | accent on surface | 14.9 | 11.9 |
 | active tab (paper on teal / dark on lime) | 14.4 | 12.9 |
 
-## 3. Status chips (text and shape always present)
+## 3. Status chips (text, shape and a visible edge, never color alone)
 
-| Status | Light (background / text) | Dark (background / text) | Shape |
+Every chip also has a 1.5 px edge in its own text color so pale fills never look blank on a card. "New" is a status; "Unread" is a
+separate solid badge meaning nobody has opened the reservation yet, so a fresh booking shows both and they look clearly different.
+
+| Chip | Light (background / text) | Dark (background / text) | Shape |
 |---|---|---|---|
-| New or unread | `#DDF0FA` / `#0A2B36` (12.7) | `#12384A` / `#BEE6F7` (9.4) | filled dot |
-| Confirmed | `#D9EFE3` / `#134D35` (8.1) | `#14402E` / `#BFE8D2` (8.7) | check mark |
-| Cancelled | `#FBE0DE` / `#8E1F18` (7.1) | `#4A1B18` / `#F6C6C2` (9.4) | cross |
-| No-show | `#E8E8E4` / `#3D4A4F` (7.5) | `#2A3539` / `#C9D4D6` (8.3) | ring |
+| New | `#FFDD8A` / `#4D3200` (9.0) | `#6B4E12` / `#FFE6A8` (6.3) | filled dot |
+| Unread (solid badge) | `#0B6A8F` / `#FFFFFF` (6.1) | `#27A9D8` / `#0B1417` (6.9) | envelope |
+| Confirmed | `#BFE6CF` / `#0E3D29` (9.0) | `#1D5A40` / `#CFF0DF` (6.6) | check mark |
+| Cancelled | `#F7C6C2` / `#7A1812` (7.0) | `#6A2622` / `#FBD5D1` (8.1) | cross |
+| No-show | `#D9DAD5` / `#2F3B3F` (8.2) | `#3A474C` / `#DDE5E7` (7.5) | ring |
+| Next, Arriving now | accent / on-accent | accent / on-accent | arrow |
 
 ## 4. Alert styles (the three existing options)
 

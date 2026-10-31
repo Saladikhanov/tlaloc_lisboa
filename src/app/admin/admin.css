@@ -24,14 +24,16 @@ html[data-admin-theme="light"] {
   --a-shadow: rgba(10, 43, 54, 0.16);
   --a-radius: 6px;
 
-  --a-new-bg: #ddf0fa;
-  --a-new-fg: #0a2b36;
-  --a-confirmed-bg: #d9efe3;
-  --a-confirmed-fg: #134d35;
-  --a-cancelled-bg: #fbe0de;
-  --a-cancelled-fg: #8e1f18;
-  --a-noshow-bg: #e8e8e4;
-  --a-noshow-fg: #3d4a4f;
+  --a-new-bg: #ffdd8a;
+  --a-new-fg: #4d3200;
+  --a-unread-bg: #0b6a8f;
+  --a-unread-fg: #ffffff;
+  --a-confirmed-bg: #bfe6cf;
+  --a-confirmed-fg: #0e3d29;
+  --a-cancelled-bg: #f7c6c2;
+  --a-cancelled-fg: #7a1812;
+  --a-noshow-bg: #d9dad5;
+  --a-noshow-fg: #2f3b3f;
   --a-warn-bg: #fbe9cc;
   --a-warn-fg: #6b3f00;
 }
@@ -53,14 +55,16 @@ html[data-admin-theme="dark"] {
   --a-shadow: rgba(0, 0, 0, 0.45);
   --a-radius: 6px;
 
-  --a-new-bg: #12384a;
-  --a-new-fg: #bee6f7;
-  --a-confirmed-bg: #14402e;
-  --a-confirmed-fg: #bfe8d2;
-  --a-cancelled-bg: #4a1b18;
-  --a-cancelled-fg: #f6c6c2;
-  --a-noshow-bg: #2a3539;
-  --a-noshow-fg: #c9d4d6;
+  --a-new-bg: #6b4e12;
+  --a-new-fg: #ffe6a8;
+  --a-unread-bg: #27a9d8;
+  --a-unread-fg: #0b1417;
+  --a-confirmed-bg: #1d5a40;
+  --a-confirmed-fg: #cff0df;
+  --a-cancelled-bg: #6a2622;
+  --a-cancelled-fg: #fbd5d1;
+  --a-noshow-bg: #3a474c;
+  --a-noshow-fg: #dde5e7;
   --a-warn-bg: #4a3410;
   --a-warn-fg: #f6dcb0;
 }
@@ -579,18 +583,26 @@ html[data-admin-theme="dark"] {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  padding: 0.15rem 0.55rem;
+  padding: 0.15rem 0.6rem;
   border-radius: 999px;
+  /* a visible edge in the label's own color, so pale fills never look blank on a card */
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, currentColor 55%, transparent);
   font-size: 0.78rem;
   font-weight: 700;
   line-height: 1.5;
   white-space: nowrap;
 }
 
-.admin-chip--new,
-.admin-chip--unread {
+.admin-chip--new {
   background: var(--a-new-bg);
   color: var(--a-new-fg);
+}
+
+/* Unread is a "look at this" signal rather than a state, so it is a solid badge */
+.admin-chip--unread {
+  background: var(--a-unread-bg);
+  color: var(--a-unread-fg);
+  box-shadow: none;
 }
 
 .admin-chip--confirmed {
@@ -612,6 +624,7 @@ html[data-admin-theme="dark"] {
 .admin-chip--arriving {
   background: var(--a-accent);
   color: var(--a-on-accent);
+  box-shadow: none;
 }
 
 /* ------------------------------------------------------------------------------------------
