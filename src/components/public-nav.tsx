@@ -11,16 +11,13 @@ import { routing } from "@/i18n/routing";
 
 type PublicNavProps = {
   headerTitle?: string;
-  /** Set on pages whose hero slides under the bar: the bar is a glass fade only while the hero is behind it. */
-  overHero?: boolean;
 };
 
-export default function PublicNav({ headerTitle, overHero = false }: PublicNavProps) {
+export default function PublicNav({ headerTitle }: PublicNavProps) {
   const locale = useLocale();
   const pathname = usePathname();
   const t = useTranslations("Nav");
   const [isCompact, setIsCompact] = useState(false);
-  const [isGlass, setIsGlass] = useState(overHero);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -37,16 +34,12 @@ export default function PublicNav({ headerTitle, overHero = false }: PublicNavPr
   useEffect(() => {
     const onScroll = () => {
       setIsCompact(window.scrollY > 16);
-      if (overHero) {
-        const hero = document.querySelector(".home-hero");
-        setIsGlass(Boolean(hero && hero.getBoundingClientRect().bottom > 72));
-      }
     };
 
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, [overHero]);
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -116,13 +109,7 @@ export default function PublicNav({ headerTitle, overHero = false }: PublicNavPr
   );
 
   return (
-    <nav className={`site-nav ${isCompact ? "compact" : ""} ${isGlass ? "glass" : ""}`}>
-      <div className="site-nav-fade" aria-hidden="true">
-        <span />
-        <span />
-        <span />
-        <span />
-      </div>
+    <nav className={`site-nav ${isCompact ? "compact" : ""}`}>
       <div className="site-nav-inner">
         <Link className="brand" href="/">
           <Image

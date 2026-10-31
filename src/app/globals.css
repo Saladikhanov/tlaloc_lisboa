@@ -112,85 +112,53 @@ a {
   margin: 0 auto;
 }
 
+/*
+ * Liquid glass bar: a floating, rounded, translucent capsule. Tinted teal and fairly opaque so
+ * paper-colored text keeps AA contrast over any page color (about 8.7:1 over white, 15:1 over black). The blur,
+ * saturation boost, bright top edge and soft sheen are what read as glass; it works over the
+ * lime hero, photos and plain pages alike.
+ */
 .site-nav {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
+  top: 10px;
+  left: 10px;
+  right: 10px;
   z-index: 40;
-  background: var(--teal);
+  border-radius: 20px;
+  background: rgba(10, 43, 54, 0.84);
   color: var(--text);
-  transition: background-color 0.2s ease;
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.38),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.14),
+    0 10px 32px rgba(10, 43, 54, 0.28);
+  transition: box-shadow 0.2s ease;
 }
 
-.site-nav.glass {
-  background: transparent;
-}
-
-/*
- * Public nav glass (only while a hero sits behind the bar; otherwise the bar is solid teal):
- * gradient and progressive blur share exactly the bar's height.
- * Teal is solid behind the logo and links, then turns translucent toward the bottom edge,
- * where the blur (four layers, strongest around two thirds down) shows through and tapers
- * to nothing at the edge. Decorative only.
- */
-.site-nav-fade {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: var(--header-h);
-  z-index: -1;
-  pointer-events: none;
-  display: none;
-}
-
-.site-nav.glass .site-nav-fade {
-  display: block;
-}
-
-.site-nav-fade span {
-  position: absolute;
-  inset: 0;
-}
-
-.site-nav-fade span:nth-child(1) {
-  backdrop-filter: blur(0.5px);
-  mask-image: linear-gradient(to bottom, transparent 20%, #000 40%, #000 60%, transparent 85%);
-}
-
-.site-nav-fade span:nth-child(2) {
-  backdrop-filter: blur(1.5px);
-  mask-image: linear-gradient(to bottom, transparent 35%, #000 55%, #000 70%, transparent 90%);
-}
-
-.site-nav-fade span:nth-child(3) {
-  backdrop-filter: blur(3px);
-  mask-image: linear-gradient(to bottom, transparent 50%, #000 68%, #000 78%, transparent 95%);
-}
-
-.site-nav-fade span:nth-child(4) {
-  backdrop-filter: blur(4px);
-  mask-image: linear-gradient(to bottom, transparent 60%, #000 78%, #000 86%, transparent 100%);
-}
-
-.site-nav-fade::after {
+.site-nav::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    to bottom,
-    var(--teal) 0,
-    var(--teal) 45%,
-    rgba(10, 43, 54, 0.6) 80%,
-    rgba(10, 43, 54, 0) 100%
-  );
+  z-index: -1;
+  border-radius: inherit;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0) 38%);
+  pointer-events: none;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .site-nav {
+    background: var(--teal);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
 }
 
 .site-nav-inner {
   width: min(1120px, 100% - 2rem);
   margin: 0 auto;
-  min-height: 70px;
+  min-height: 58px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -199,7 +167,7 @@ a {
 }
 
 .site-nav.compact .site-nav-inner {
-  min-height: 56px;
+  min-height: 50px;
 }
 
 .brand {
@@ -2368,9 +2336,11 @@ textarea {
     max-width: calc(100vw - 2rem);
     padding: 1rem;
     border: 1px solid var(--line);
-    border-radius: var(--radius-md);
-    background: var(--teal);
-    box-shadow: 0 12px 24px rgba(10, 43, 54, 0.35);
+    border-radius: 18px;
+    background: rgba(10, 43, 54, 0.92);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(20px) saturate(180%);
+    box-shadow: 0 12px 32px rgba(10, 43, 54, 0.35);
     display: none;
     z-index: 69;
   }
@@ -2756,9 +2726,28 @@ body:has(.admin-theme) .scroll-top-btn {
   --line: rgba(245, 166, 35, 0.25);
   --accent: #f5a623;
   --focus-ring: #ffd166;
+  top: 0;
+  left: 0;
+  right: auto;
+  width: 100%;
+  border-radius: 0;
   background: rgba(19, 8, 0, 0.92);
   border-bottom: 1px solid var(--line);
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
   backdrop-filter: blur(8px);
+}
+
+:where(.admin-theme) .site-nav::before {
+  content: none;
+}
+
+:where(.admin-theme) .site-nav-inner {
+  min-height: 70px;
+}
+
+:where(.admin-theme) .site-nav.compact .site-nav-inner {
+  min-height: 56px;
 }
 
 :where(.admin-theme) .header-page-title {
