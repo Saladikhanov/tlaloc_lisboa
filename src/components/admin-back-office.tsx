@@ -3,6 +3,7 @@
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import AdminAlert from "@/components/admin-alert";
+import AdminCalendar from "@/components/admin-calendar";
 import AdminReservationList from "@/components/admin-reservation-list";
 import AdminToday from "@/components/admin-today";
 import { useSearchParams } from "next/navigation";
@@ -196,7 +197,7 @@ const weekdayLabels = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "
 const mondayFirstOrder: number[] = [1, 2, 3, 4, 5, 6, 0];
 const weekdayShortMondayFirst = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 // Tabs that use the new admin look. Every other tab sits inside the dark "legacy" panel until it is migrated.
-const MIGRATED_TABS: TabId[] = ["today", "reservations"];
+const MIGRATED_TABS: TabId[] = ["today", "reservations", "calendar"];
 
 const adminTabIds: TabId[] = [
   "reservations",
@@ -570,9 +571,6 @@ const toRewardEmailUrl = (
   });
   return `mailto:${normalized}?${params.toString()}`;
 };
-
-const hasReservationExtraDetails = (reservation: AdminReservationRecord): boolean =>
-  Boolean(reservation.occasion?.trim() || reservation.notes?.trim());
 
 
 export default function AdminBackOffice() {
@@ -1056,6 +1054,37 @@ export default function AdminBackOffice() {
 
     return reservationClosures.filter((closure) => closure.date === selectedCalendarDate);
   }, [reservationClosures, selectedCalendarDate]);
+  const calendarViewCells = useMemo(() => {
+    const year = calendarMonthDate.getFullYear();
+    const monthIndex = calendarMonthDate.getMonth();
+    const monthPrefix = `${year}-${String(monthIndex + 1).padStart(2, "0")}-`;
+    const closedDays = new Set(
+      reservationClosures
+        .filter((closure) => closure.date.startsWith(monthPrefix))
+        .map((closure) => Number(closure.date.slice(8, 10))),
+    );
+    const todayIso = getLisbonTodayIso();
+
+    return calendarCells.map((cell) => ({
+      day: cell.day,
+      count: cell.reservations.length,
+      hasClosure: cell.day !== null && closedDays.has(cell.day),
+      isToday: cell.day !== null && `${monthPrefix}${String(cell.day).padStart(2, "0")}` === todayIso,
+      label:
+        cell.day === null
+          ? ""
+          : new Date(year, monthIndex, cell.day).toLocaleDateString("en-GB", {
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+            }),
+    }));
+  }, [calendarCells, calendarMonthDate, reservationClosures]);
+  const shiftCalendarMonth = (offset: number) => {
+    const next = new Date(calendarMonthDate.getFullYear(), calendarMonthDate.getMonth() + offset, 1);
+    setCalendarMonth(`${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}`);
+    setSelectedCalendarDay(null);
+  };
   const workingHoursMondayFirst = useMemo(() => {
     return [...workingHours].sort(
       (a, b) => mondayFirstOrder.indexOf(a.weekday) - mondayFirstOrder.indexOf(b.weekday),
@@ -1609,6 +1638,19 @@ export default function AdminBackOffice() {
       setSelectedCalendarDay(null);
     }
   }, [calendarCells, selectedCalendarDay]);
+
+  useEffect(() => {
+    if (!isManualReservationFormOpen) {
+      return;
+    }
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsManualReservationFormOpen(false);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isManualReservationFormOpen]);
 
   useEffect(() => {
     if (!deleteReservationModal) {
@@ -2646,343 +2688,43 @@ export default function AdminBackOffice() {
       ) : null}
 
       {activeTab === "calendar" ? (
-        <section className="card">
-          <div className="admin-calendar-head">
-            <h3 className="admin-calendar-head-title">Confirmed Calendar</h3>
-            <div className="admin-calendar-controls">
-              <button
-                className="btn btn-secondary"
-                type="button"
-                onClick={() => {
-                  const prev = new Date(
-                    calendarMonthDate.getFullYear(),
-                    calendarMonthDate.getMonth() - 1,
-                    1,
-                  );
-                  setCalendarMonth(
-                    `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, "0")}`,
-                  );
-                  setSelectedCalendarDay(null);
-                }}
-              >
-                Prev
-              </button>
-              <button
-                className="btn btn-secondary"
-                type="button"
-                onClick={() => {
-                  const next = new Date(
-                    calendarMonthDate.getFullYear(),
-                    calendarMonthDate.getMonth() + 1,
-                    1,
-                  );
-                  setCalendarMonth(
-                    `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}`,
-                  );
-                  setSelectedCalendarDay(null);
-                }}
-              >
-                Next
-              </button>
-              <button
-                className="btn btn-secondary btn-icon"
-                type="button"
-                aria-label={selectedCalendarDate ? `Add reservation for ${selectedCalendarDate}` : "Select a day first"}
-                title={selectedCalendarDate ? "Add reservation" : "Select a day first"}
-                onClick={() => {
-                  if (!selectedCalendarDate) {
-                    setStatusMessage("Select a day in the calendar first.");
-                    return;
-                  }
-                  setIsManualReservationFormOpen(true);
-                }}
-              >
-                +
-              </button>
-            </div>
-          </div>
-          <p className="footer-note" style={{ marginTop: "0.5rem" }}>
-            {monthLabel}
-          </p>
-          <div className="admin-calendar-grid">
-            {weekdayShortMondayFirst.map((weekday) => (
-              <div key={weekday} className="admin-calendar-weekday">
-                {weekday}
-              </div>
-            ))}
-            {calendarCells.map((cell, index) =>
-              cell.day ? (
-                <button
-                  key={`${cell.day}-${index}`}
-                  type="button"
-                  className={`admin-calendar-day ${selectedCalendarDay === cell.day ? "active" : ""}`}
-                  onClick={() => setSelectedCalendarDay(cell.day)}
-                >
-                  <span>{cell.day}</span>
-                  {cell.reservations.length > 0 ? (
-                    <span className="admin-calendar-count">{cell.reservations.length}</span>
-                  ) : null}
-                </button>
-              ) : (
-                <div key={`empty-${index}`} className="admin-calendar-empty" />
-              ),
-            )}
-          </div>
-
-          <div style={{ marginTop: "0.9rem", display: "grid", gap: "0.6rem" }}>
-            {selectedCalendarDay === null ? (
-              <p className="footer-note" style={{ marginTop: 0 }}>
-                Select a day to view confirmed reservations.
-              </p>
-            ) : (
-              <>
-                <article className="card" style={{ padding: "0.9rem" }}>
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      gap: "0.8rem",
-                      flexWrap: "wrap",
-                    }}
-                  >
-                    <div>
-                      <h4 style={{ marginTop: 0, marginBottom: "0.3rem" }}>
-                        Close reservation window
-                      </h4>
-                      <p className="footer-note" style={{ marginTop: 0 }}>
-                        {selectedDayClosures.length > 0
-                          ? `${selectedDayClosures.length} closed window${selectedDayClosures.length === 1 ? "" : "s"} for ${selectedCalendarDate}`
-                          : `No closed windows for ${selectedCalendarDate}`}
-                      </p>
-                    </div>
-                    <label
-                      className="ios-switch-field"
-                      style={{ marginBottom: 0, alignSelf: "center", fontWeight: 600 }}
-                    >
-                      <input
-                        className="ios-switch-input"
-                        type="checkbox"
-                        checked={isClosureToolsOpen}
-                        onChange={(event) => setIsClosureToolsOpen(event.target.checked)}
-                      />
-                      <span className="ios-switch" aria-hidden="true" />
-                      Manage closed windows
-                    </label>
-                  </div>
-
-                  {isClosureToolsOpen ? (
-                    <div style={{ marginTop: "0.8rem", display: "grid", gap: "0.8rem" }}>
-                      <div className="form-grid">
-                        <div>
-                          <label>From</label>
-                          <input
-                            type="time"
-                            value={closureForm.startTime}
-                            onChange={(event) =>
-                              setClosureForm((prev) => ({ ...prev, startTime: event.target.value }))
-                            }
-                          />
-                        </div>
-                        <div>
-                          <label>Until</label>
-                          <input
-                            type="time"
-                            value={closureForm.endTime}
-                            onChange={(event) =>
-                              setClosureForm((prev) => ({ ...prev, endTime: event.target.value }))
-                            }
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <label>Reason (optional)</label>
-                        <input
-                          value={closureForm.note}
-                          placeholder="Private event, fully booked, etc."
-                          onChange={(event) =>
-                            setClosureForm((prev) => ({ ...prev, note: event.target.value }))
-                          }
-                        />
-                      </div>
-                      <div>
-                        <button
-                          className="btn btn-primary"
-                          type="button"
-                          disabled={actionKey !== null}
-                          onClick={createCalendarClosure}
-                        >
-                          {actionKey === "create-calendar-closure"
-                            ? "Saving..."
-                            : "Close reservation window"}
-                        </button>
-                      </div>
-                      <div style={{ display: "grid", gap: "0.5rem" }}>
-                        {selectedDayClosures.length === 0 ? (
-                          <p className="footer-note" style={{ marginTop: 0 }}>
-                            No closure windows for this day.
-                          </p>
-                        ) : (
-                          selectedDayClosures.map((closure) => (
-                            <div
-                              key={closure.id}
-                              className="card"
-                              style={{ padding: "0.7rem", display: "grid", gap: "0.35rem" }}
-                            >
-                              <strong>
-                                {closure.startTime} - {closure.endTime}
-                              </strong>
-                              <p className="footer-note" style={{ marginTop: 0 }}>
-                                {closure.note?.trim() || "Closed to new reservations in this window."}
-                              </p>
-                              <div>
-                                <button
-                                  className="btn btn-secondary"
-                                  type="button"
-                                  disabled={actionKey !== null}
-                                  onClick={() => deleteCalendarClosure(closure.id)}
-                                >
-                                  {actionKey === `delete-closure-${closure.id}`
-                                    ? "Removing..."
-                                    : "Remove closure"}
-                                </button>
-                              </div>
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    </div>
-                  ) : null}
-                </article>
-
-                {selectedDayReservations.length === 0 ? (
-                  <p className="footer-note" style={{ marginTop: 0 }}>
-                    No confirmed reservations for day {selectedCalendarDay}.
-                  </p>
-                ) : (
-                  selectedDayReservations.map((reservation) => (
-                    <article className="card" key={`confirmed-${reservation.id}`}>
-                      <div className="reservation-meta-row">
-                        <p className="footer-note" style={{ marginTop: 0, marginBottom: "0.35rem" }}>
-                          Reservation #{reservation.id.slice(0, 8)}
-                        </p>
-                        <div style={{ display: "flex", gap: "0.35rem", flexWrap: "wrap" }}>
-                          <span className="pill reservation-locale-chip">
-                            {getMessageLanguageLabel(reservation)}
-                          </span>
-                          <span className="pill reservation-locale-chip">{reservation.version}</span>
-                        </div>
-                      </div>
-                      <strong>
-                        {reservation.firstName} {reservation.lastName}
-                      </strong>
-                      <p>
-                        {formatEuropeanDate(reservation.date)} at {reservation.time} · Guests:{" "}
-                        {reservation.guests}
-                      </p>
-                      <p>
-                        <a
-                          href={toWhatsAppUrl(reservation.phone, reservation, messageTemplates)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {reservation.phone}
-                        </a>
-                      </p>
-                      <p>
-                        <a href={toEmailUrl(reservation.email, reservation, messageTemplates)}>
-                          {reservation.email}
-                        </a>
-                      </p>
-                      {(() => {
-                        const activeRewardCode = getActiveRewardCodeForReservation(reservation, rewardCodes);
-                        return activeRewardCode ? (
-                          <div className="card admin-reward-card">
-                            <div className="admin-reward-head">
-                              <strong>Guest reward</strong>
-                              <span className="pill reservation-locale-chip">{activeRewardCode.status}</span>
-                            </div>
-                            <p className="footer-note" style={{ marginTop: "0.25rem" }}>
-                              <strong>{activeRewardCode.code}</strong> · {activeRewardCode.rewardLabel}
-                            </p>
-                            <div style={{ display: "flex", gap: "0.45rem", flexWrap: "wrap", marginTop: "0.5rem" }}>
-                              <a
-                                className="btn btn-secondary"
-                                href={toRewardWhatsAppUrl(reservation.phone, activeRewardCode, reservation.locale)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                Send reward WhatsApp
-                              </a>
-                              <a
-                                className="btn btn-secondary"
-                                href={toRewardEmailUrl(reservation.email, activeRewardCode, reservation.locale)}
-                              >
-                                Send reward email
-                              </a>
-                            </div>
-                          </div>
-                        ) : null;
-                      })()}
-                      {hasReservationExtraDetails(reservation) ? (
-                        <details className="reservation-extra-details">
-                          <summary>More details</summary>
-                          {reservation.version === "v1" ? (
-                            <>
-                              <p className="footer-note" style={{ marginTop: "0.45rem" }}>
-                                <strong>Occasion:</strong>{" "}
-                                {reservation.occasion?.trim() ? reservation.occasion : "-"}
-                              </p>
-                              <p className="footer-note" style={{ marginTop: "0.25rem" }}>
-                                <strong>Special requests:</strong>{" "}
-                                {reservation.notes?.trim() ? reservation.notes : "-"}
-                              </p>
-                            </>
-                          ) : (
-                            <p className="footer-note" style={{ marginTop: "0.45rem" }}>
-                              <strong>Other information:</strong>{" "}
-                              {reservation.notes?.trim() ? reservation.notes : "-"}
-                            </p>
-                          )}
-                        </details>
-                      ) : null}
-                      <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.4rem", flexWrap: "wrap" }}>
-                        <button
-                          className="btn btn-secondary"
-                          type="button"
-                          disabled={actionKey !== null}
-                          onClick={() => changeReservationStatus(reservation.id, "new")}
-                        >
-                          {actionKey === `reservation-${reservation.id}-new` ? "Updating..." : "New"}
-                        </button>
-                        <button
-                          className="btn btn-secondary"
-                          type="button"
-                          disabled={actionKey !== null}
-                          onClick={() => changeReservationStatus(reservation.id, "cancelled")}
-                        >
-                          {actionKey === `reservation-${reservation.id}-cancelled`
-                            ? "Updating..."
-                            : "Cancelled"}
-                        </button>
-                        <button
-                          className="btn btn-secondary"
-                          type="button"
-                          disabled={actionKey !== null}
-                          onClick={() => changeReservationStatus(reservation.id, "no_show")}
-                        >
-                          {actionKey === `reservation-${reservation.id}-no_show`
-                            ? "Updating..."
-                            : "No show"}
-                        </button>
-                      </div>
-                    </article>
-                  ))
-                )}
-              </>
-            )}
-          </div>
-        </section>
+        <AdminCalendar
+          monthLabel={monthLabel}
+          weekdays={weekdayShortMondayFirst}
+          cells={calendarViewCells}
+          selectedDay={selectedCalendarDay}
+          selectedDate={selectedCalendarDate}
+          onSelectDay={setSelectedCalendarDay}
+          onPrevMonth={() => shiftCalendarMonth(-1)}
+          onNextMonth={() => shiftCalendarMonth(1)}
+          onAddReservation={() => setIsManualReservationFormOpen(true)}
+          actionKey={actionKey}
+          formatDate={formatEuropeanDate}
+          reservations={selectedDayReservations}
+          languageLabel={getMessageLanguageLabel}
+          phoneHref={(reservation) => toWhatsAppUrl(reservation.phone, reservation, messageTemplates)}
+          emailHref={(reservation) => toEmailUrl(reservation.email, reservation, messageTemplates)}
+          rewardFor={(reservation) => {
+            const code = getActiveRewardCodeForReservation(reservation, rewardCodes);
+            return code
+              ? {
+                  code: code.code,
+                  status: code.status,
+                  label: code.rewardLabel,
+                  whatsappHref: toRewardWhatsAppUrl(reservation.phone, code, reservation.locale),
+                  emailHref: toRewardEmailUrl(reservation.email, code, reservation.locale),
+                }
+              : null;
+          }}
+          onChangeStatus={changeReservationStatus}
+          closures={selectedDayClosures}
+          closureForm={closureForm}
+          onClosureFormChange={(patch) => setClosureForm((prev) => ({ ...prev, ...patch }))}
+          isClosureToolsOpen={isClosureToolsOpen}
+          onClosureToolsOpenChange={setIsClosureToolsOpen}
+          onCreateClosure={createCalendarClosure}
+          onRemoveClosure={deleteCalendarClosure}
+        />
       ) : null}
 
       {activeTab === "menu" ? (
@@ -3908,7 +3650,7 @@ export default function AdminBackOffice() {
             aria-label="Close remove confirmation"
             onClick={() => setDeleteReservationModal(null)}
           />
-          <div className="admin-dialog-wrap" onClick={() => setDeleteReservationModal(null)}>
+          <div className="admin-v2 admin-dialog-wrap" onClick={() => setDeleteReservationModal(null)}>
             <section
               className="admin-dialog"
               role="alertdialog"
@@ -3950,36 +3692,35 @@ export default function AdminBackOffice() {
       {isManualReservationFormOpen && selectedCalendarDate ? (
         <>
           <button
-            className="confirm-modal-backdrop"
+            className="admin-dialog-backdrop"
             type="button"
             aria-label="Close add reservation modal"
             onClick={() => setIsManualReservationFormOpen(false)}
           />
-          <div className="confirm-modal-wrap" onClick={() => setIsManualReservationFormOpen(false)}>
+          <div className="admin-v2 admin-dialog-wrap" onClick={() => setIsManualReservationFormOpen(false)}>
             <section
-              className="confirm-modal-card admin-manual-reservation-modal"
+              className="admin-dialog admin-dialog--wide"
               role="dialog"
               aria-modal="true"
+              aria-labelledby="add-reservation-title"
               onClick={(event) => event.stopPropagation()}
-              style={{ width: "min(640px, calc(100vw - 2rem))", maxHeight: "90dvh", overflowY: "auto" }}
             >
-              <h3>Add reservation</h3>
-              <p className="footer-note" style={{ marginTop: "0.5rem" }}>
+              <h2 id="add-reservation-title">Add reservation</h2>
+              <p className="admin-muted">
                 Add a phone or walk-in booking directly to the confirmed calendar for{" "}
                 {formatEuropeanDate(selectedCalendarDate)}.
               </p>
 
-              <div className="admin-manual-reservation-form">
-                <div className="admin-manual-choice-section">
-                  <label>Language</label>
-                  <div className="admin-manual-choice-grid admin-manual-choice-grid-tight admin-manual-choice-grid-language">
+              <div className="admin-dialog-form">
+                <div className="admin-choice-group" role="group" aria-label="Language">
+                  <span className="admin-choice-label">Language</span>
+                  <div className="admin-choice-grid">
                     {manualReservationLocaleOptions.map((option) => (
                       <button
                         key={option.value}
                         type="button"
-                        className={`admin-manual-choice admin-manual-choice-language ${
-                          manualReservationForm.locale === option.value ? "active" : ""
-                        }`}
+                        className={`admin-choice${manualReservationForm.locale === option.value ? " is-selected" : ""}`}
+                        aria-pressed={manualReservationForm.locale === option.value}
                         onClick={() =>
                           setManualReservationForm((prev) => ({
                             ...prev,
@@ -3993,14 +3734,15 @@ export default function AdminBackOffice() {
                   </div>
                 </div>
 
-                <div className="admin-manual-choice-section">
-                  <label>Time</label>
-                  <div className="admin-manual-choice-grid">
+                <div className="admin-choice-group" role="group" aria-label="Time">
+                  <span className="admin-choice-label">Time</span>
+                  <div className="admin-choice-grid">
                     {manualReservationTimeOptions.map((time) => (
                       <button
                         key={time}
                         type="button"
-                        className={`admin-manual-choice ${manualReservationForm.time === time ? "active" : ""}`}
+                        className={`admin-choice${manualReservationForm.time === time ? " is-selected" : ""}`}
+                        aria-pressed={manualReservationForm.time === time}
                         onClick={() => setManualReservationForm((prev) => ({ ...prev, time }))}
                       >
                         {time}
@@ -4009,14 +3751,15 @@ export default function AdminBackOffice() {
                   </div>
                 </div>
 
-                <div className="admin-manual-choice-section">
-                  <label>Guests</label>
-                  <div className="admin-manual-choice-grid admin-manual-choice-grid-tight">
+                <div className="admin-choice-group" role="group" aria-label="Guests">
+                  <span className="admin-choice-label">Guests</span>
+                  <div className="admin-choice-grid">
                     {manualReservationGuestOptions.map((guests) => (
                       <button
                         key={guests}
                         type="button"
-                        className={`admin-manual-choice ${manualReservationForm.guests === guests ? "active" : ""}`}
+                        className={`admin-choice${manualReservationForm.guests === guests ? " is-selected" : ""}`}
+                        aria-pressed={manualReservationForm.guests === guests}
                         onClick={() => setManualReservationForm((prev) => ({ ...prev, guests }))}
                       >
                         {guests}
@@ -4025,10 +3768,11 @@ export default function AdminBackOffice() {
                   </div>
                 </div>
 
-                <div className="form-grid">
+                <div className="admin-dialog-fields">
                   <div>
-                    <label>Full name</label>
+                    <label htmlFor="manual-name">Full name</label>
                     <input
+                      id="manual-name"
                       required
                       value={manualReservationForm.fullName}
                       onChange={(event) =>
@@ -4038,8 +3782,9 @@ export default function AdminBackOffice() {
                     />
                   </div>
                   <div>
-                    <label>Phone</label>
+                    <label htmlFor="manual-phone">Phone</label>
                     <input
+                      id="manual-phone"
                       required
                       inputMode="tel"
                       autoComplete="tel"
@@ -4051,8 +3796,9 @@ export default function AdminBackOffice() {
                     />
                   </div>
                   <div>
-                    <label>Email (optional)</label>
+                    <label htmlFor="manual-email">Email (optional)</label>
                     <input
+                      id="manual-email"
                       type="email"
                       value={manualReservationForm.email}
                       onChange={(event) =>
@@ -4061,9 +3807,10 @@ export default function AdminBackOffice() {
                       placeholder="guest@email.com"
                     />
                   </div>
-                  <div style={{ gridColumn: "1 / -1" }}>
-                    <label>Other information (optional)</label>
+                  <div className="admin-dialog-fields-wide">
+                    <label htmlFor="manual-info">Other information (optional)</label>
                     <textarea
+                      id="manual-info"
                       value={manualReservationForm.otherInfo}
                       onChange={(event) =>
                         setManualReservationForm((prev) => ({ ...prev, otherInfo: event.target.value }))
@@ -4073,7 +3820,7 @@ export default function AdminBackOffice() {
                   </div>
                 </div>
 
-                <div className="confirm-modal-actions">
+                <div className="admin-dialog-actions">
                   <button
                     className="btn btn-secondary"
                     type="button"

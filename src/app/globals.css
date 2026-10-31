@@ -3,7 +3,7 @@
  *
  * Shared by admin and public (audited 2026-10-31): site-shell, form-shell, form-grid, card,
  * btn, btn-primary, btn-secondary, footer-note, site-nav, site-nav-inner, brand, nav-toggle,
- * confirm-modal-*, admin-calendar-head, plus the global label/input/select/textarea rules.
+ * confirm-modal-*, plus the global label/input/select/textarea rules.
  * The admin keeps its original look through the ADMIN LEGACY LOOK block at the end of this file;
  * any shared rule restyled for the public site must be mirrored there.
  */
@@ -1132,25 +1132,6 @@ summary,
   font-weight: 800;
 }
 
-.admin-calendar-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 0.7rem;
-  flex-wrap: wrap;
-}
-
-.admin-calendar-head-title {
-  margin: 0;
-}
-
-.admin-calendar-controls {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  flex-wrap: wrap;
-}
-
 .admin-manual-reservation-form {
   margin-top: 0.8rem;
   display: grid;
@@ -1210,54 +1191,6 @@ summary,
 .admin-manual-choice.active {
   border-color: rgba(255, 209, 102, 0.5);
   background: rgba(245, 166, 35, 0.16);
-  color: var(--accent);
-}
-
-.admin-calendar-grid {
-  margin-top: 0.8rem;
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 0.45rem;
-}
-
-.admin-calendar-weekday {
-  font-size: 0.78rem;
-  color: var(--muted);
-  text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.admin-calendar-day,
-.admin-calendar-empty {
-  min-height: 62px;
-  border-radius: 10px;
-  border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.admin-calendar-empty {
-  opacity: 0.45;
-}
-
-.admin-calendar-day {
-  color: var(--text);
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: space-between;
-  padding: 0.45rem;
-}
-
-.admin-calendar-day.active {
-  border-color: var(--accent);
-  background: rgba(245, 166, 35, 0.14);
-}
-
-.admin-calendar-count {
-  font-size: 0.76rem;
-  font-weight: 700;
   color: var(--accent);
 }
 
