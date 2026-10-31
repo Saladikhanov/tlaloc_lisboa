@@ -14,9 +14,9 @@ Next.js 16 App Router · React 19 · TypeScript · Prisma 7/PostgreSQL · next-i
 - `src/components/` UI; `messages/{en,pt}.json` translations; `prisma/` schema + migrations
 
 ## Design
-- The public site is being redesigned; don't treat the current look as fixed.
-- Use the `frontend-design` skill (`.claude/skills/frontend-design`) for public pages. Keep
-  admin UI plain and consistent. Tokens live in `src/app/globals.css`; see constitution VII.
+- Redesign is split: `001-public-site-redesign` (in progress), then `002-admin-redesign`.
+  Until 002, the admin stays on its frozen look (`.admin-theme`, `src/app/admin/layout.tsx`).
+- Use the `frontend-design` skill (`.claude/skills/frontend-design`) for UI work. Tokens live in `src/app/globals.css`; see constitution VII.
 - After building or changing UI, audit it with `web-design-guidelines` (a11y/UX) and
   `vercel-react-best-practices` (React/Next.js performance).
 - Copy conflict: `web-design-guidelines` asks for Title Case headings/buttons; our copy
