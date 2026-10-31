@@ -1,3 +1,4 @@
+import { PLACEHOLDER_EMAIL, whatsappDigits } from "@/lib/contact";
 import { prisma } from "@/lib/prisma";
 
 export type TutorialSettingsRecord = {
@@ -8,7 +9,7 @@ export type TutorialSettingsRecord = {
 
 const DEFAULT_TUTORIAL_SETTINGS: Omit<TutorialSettingsRecord, "id"> = {
   businessPhone: "+351 933 357 555",
-  businessEmail: "reservas@tlaloc.local",
+  businessEmail: PLACEHOLDER_EMAIL,
 };
 
 const SYNTHETIC_ID = "default";
@@ -68,3 +69,6 @@ export const saveTutorialSettings = async (
 
   return normalize(row);
 };
+
+export const getPublicWhatsappNumber = async (): Promise<string> =>
+  whatsappDigits((await listTutorialSettings()).businessPhone);
