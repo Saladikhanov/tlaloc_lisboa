@@ -7,7 +7,6 @@ import { createReservationV2, listReservationsV2 } from "@/lib/reservation-v2-st
 import { listAvailableReservationV2Slots } from "@/lib/reservation-v2-availability";
 import type { ReservationV2Payload } from "@/lib/types";
 import { isAdminRequestAuthenticated } from "@/lib/admin-request";
-import { publishAdminEvent } from "@/lib/admin-events";
 
 const requiredFields: (keyof ReservationV2Payload)[] = [
   "locale",
@@ -60,15 +59,6 @@ export async function POST(request: Request) {
 
   try {
     const reservation = await createReservationV2(payload as ReservationV2Payload);
-    publishAdminEvent({
-      type: "reservation_created",
-      reservationId: reservation.id,
-      reservationVersion: "v2",
-      guestName: reservation.fullName,
-      date: reservation.date,
-      time: reservation.time,
-      createdAt: new Date().toISOString(),
-    });
     const [emailStatus, whatsappStatus] = await Promise.all([
       sendReservationV2Emails(reservation),
       sendReservationV2WhatsApp(reservation),

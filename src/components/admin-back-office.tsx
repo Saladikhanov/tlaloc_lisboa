@@ -1494,51 +1494,8 @@ export default function AdminBackOffice() {
     ],
   );
 
-  useEffect(() => {
-    let eventSource: EventSource | null = null;
-    let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
-    let isDisposed = false;
-
-    const handleReservationCreated = (message: Event) => {
-      const event = JSON.parse((message as MessageEvent<string>).data) as AdminEvent;
-      const knownIds = knownReservationIdsRef.current ?? new Set<string>();
-      knownReservationIdsRef.current = knownIds;
-      if (!knownIds.has(event.reservationId)) {
-        knownIds.add(event.reservationId);
-        announceNewReservation(event);
-      }
-      void loadAll(false, true);
-    };
-
-    const connect = () => {
-      if (isDisposed) {
-        return;
-      }
-
-      eventSource = new EventSource("/api/admin/reservations/stream");
-      eventSource.addEventListener("reservation_created", handleReservationCreated);
-      eventSource.onerror = () => {
-        eventSource?.close();
-        if (!isDisposed) {
-          reconnectTimer = setTimeout(connect, 3000);
-        }
-      };
-    };
-
-    connect();
-
-    return () => {
-      isDisposed = true;
-      if (reconnectTimer) {
-        clearTimeout(reconnectTimer);
-      }
-      eventSource?.removeEventListener("reservation_created", handleReservationCreated);
-      eventSource?.close();
-    };
-  }, [announceNewReservation, loadAll]);
-
-  // Fallback for hosts where the stream cannot see bookings made on another server instance:
-  // check the lists (15s visible, 60s hidden) and announce anything the stream has not already shown.
+  // New bookings reach the open admin by polling a light endpoint: it works on any hosting, unlike a
+  // server stream, which cannot cross server instances and keeps a function running while open.
   useEffect(() => {
     let isDisposed = false;
 
@@ -1595,7 +1552,7 @@ export default function AdminBackOffice() {
       }
     };
 
-    // Visible tab: every 15 seconds. Hidden tab: once a minute. Coming back checks right away.
+    // Visible tab: every 30 seconds. Hidden tab: every 2 minutes. Coming back checks right away.
     let timer: ReturnType<typeof setTimeout> | null = null;
     const schedule = () => {
       timer = setTimeout(async () => {
@@ -1603,7 +1560,7 @@ export default function AdminBackOffice() {
         if (!isDisposed) {
           schedule();
         }
-      }, document.hidden ? 60000 : 15000);
+      }, document.hidden ? 120000 : 30000);
     };
     const onVisibilityChange = () => {
       if (document.hidden) {

@@ -12,7 +12,6 @@ import { getReservationBlockingClosure } from "@/lib/reservation-closure-store";
 import { listAvailableReservationSlots } from "@/lib/reservation-request-availability";
 import { createReservationRequest } from "@/lib/reservation-request-store";
 import { isReservationWithinWorkingHours } from "@/lib/working-hours-store";
-import { publishAdminEvent } from "@/lib/admin-events";
 
 const legacyRequiredFields: (keyof ReservationPayload)[] = [
   "locale",
@@ -83,15 +82,6 @@ export async function POST(request: Request) {
 
     try {
       const reservation = await createReservationRequest(payload as ReservationRequestPayload);
-      publishAdminEvent({
-        type: "reservation_created",
-        reservationId: reservation.id,
-        reservationVersion: "v2",
-        guestName: reservation.fullName,
-        date: reservation.date,
-        time: reservation.time,
-        createdAt: new Date().toISOString(),
-      });
       const [emailStatus, whatsappStatus] = await Promise.all([
         sendReservationRequestEmails(reservation),
         sendReservationRequestWhatsApp(reservation),
@@ -163,15 +153,6 @@ export async function POST(request: Request) {
 
   try {
     const reservation = await createReservation(legacyPayload as ReservationPayload);
-    publishAdminEvent({
-      type: "reservation_created",
-      reservationId: reservation.id,
-      reservationVersion: "v1",
-      guestName: `${reservation.firstName} ${reservation.lastName}`.trim(),
-      date: reservation.date,
-      time: reservation.time,
-      createdAt: new Date().toISOString(),
-    });
     const [emailStatus, whatsappStatus] = await Promise.all([
       sendReservationEmails(reservation),
       sendReservationWhatsApp(reservation),
